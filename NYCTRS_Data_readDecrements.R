@@ -32,6 +32,10 @@ options(dplyr.print_min = 60) # default is 10
  # consistency issue:
  # why assumed probability != expected # / Total Exposed
 
+# TODO: 
+  # need to check the difference between elected and mandated 
+  # further check if the disability rates are accurate
+
 
 
 #*********************************************************************************************************
@@ -102,22 +106,198 @@ df_qxm_disbRet
 #      - qxm_act_male
 #      - qxm_act_female
 
-
-# df_qxm_disbRet <- 
-# 	left_join(get_mort1("Sheet10", "c10:j70", "qxm_disbRet_male"),
-# 						get_mort1("Sheet11", "c10:j70", "qxm_disbRet_female")
-# 	)
-# df_qxm_disbRet
+# Issue:
+# - Assumed rates for age 70-74 are 0, but the expected death are actually calculated using rates at age 69. 
+#   We use rates of 69 for age 70-74.
 
 
+get_mort2 <- function(data_sheet, data_range, rateName, calc_rate = TRUE, indexVar = "age", file = file_path) {
+
+ # data_sheet <- "Sheet17"
+ # data_range <- "A10:J65"
+ # file <- file_path
+ # rateName <- "qxt_act_male"
+ # calc_rate <- TRUE
+			
+	read_excel(file, sheet = data_sheet, range = data_range) %>% 
+		select(Index = 1, exposed = 3, num_assumed = 7, rate_assumed = 5) %>% 
+		mutate(calc_rate = calc_rate, # ifelse cannot take vector of conditions. If the condition is a single value while values are vectors, only the first element will be used. 
+			     !!rateName  := ifelse(calc_rate, num_assumed / exposed, rate_assumed),
+					 Index       = str_extract(Index , "\\d+") %>% as.numeric,
+					 !!indexVar  := Index) %>% 
+		select(!!indexVar, !!rateName)
+} 
+
+
+df_qxm_act <-
+	left_join(get_mort2("Sheet17", "A10:J65", "qxm_act_male",   calc_rate = FALSE),
+						get_mort2("Sheet18", "A10:J65", "qxm_act_female", calc_rate = FALSE)
+	)
+
+# Adjust rates for 70-74
+df_qxm_act %<>% 
+	mutate(qxm_act_male   = ifelse(age < 70, qxm_act_male,   qxm_act_male[age == 69]),
+				 qxm_act_female = ifelse(age < 70, qxm_act_female, qxm_act_female[age == 69]))
+
+df_qxm_act
+
+
+
+## 4. Retirement rate in the first year of eligibility  ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet24, female in Sheet25
+# - Output variables:
+#      - qxr_y1_male_EM    (elected+mandated)
+#      - qxr_y1_female_EM  (elected+mandated)
+ 
+
+df_qxr_y1_EM <-
+	left_join(get_mort2("Sheet24", "A10:J42", "qxr_y1_male_EM",   calc_rate = FALSE),
+						get_mort2("Sheet25", "A10:J42", "qxr_y1_female_EM", calc_rate = FALSE)
+	)
+df_qxr_y1_EM
+
+
+## 5. Retirement rate in the second year of eligibility ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet27, female in Sheet28
+# - Output variables:
+#      - qxr_y2_male_EM
+#      - qxr_y2_female_EM
+
+
+df_qxr_y2_EM <-
+	left_join(get_mort2("Sheet27", "A10:J42", "qxr_y2_male_EM",   calc_rate = FALSE),
+						get_mort2("Sheet28", "A10:J42", "qxr_y2_female_EM", calc_rate = FALSE)
+	)
+df_qxr_y2_EM
+
+
+
+## 5. Retirement rate AFTER the second year of eligibility ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet30, female in Sheet31
+# - Output variables:
+#      - qxr_y2post_male_EM
+#      - qxr_y2post_female_EM
+
+
+df_qxr_y2post_EM <-
+	left_join(get_mort2("Sheet30", "A10:J42", "qxr_y2post_male_EM",   calc_rate = FALSE),
+						get_mort2("Sheet31", "A10:J42", "qxr_y2post_female_EM", calc_rate = FALSE)
+	)
+df_qxr_y2post_EM
+
+
+
+## 6. Early Retirement rates ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet79, female in Sheet80 (same rate for male and female)
+# - Output variables:
+#      - qxr_early_male
+#      - qxr_early_female
+
+
+df_qxr_early <-
+	left_join(get_mort2("Sheet79", "A10:J42", "qxr_early_male",   calc_rate = FALSE),
+						get_mort2("Sheet80", "A10:J42", "qxr_early_female", calc_rate = FALSE)
+	)
+df_qxr_early
+
+
+
+## 7. Withdrawal rates for active members ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet79, female in Sheet80 (same rate for male and female)
+# - Output variables:
+#      - qxr_early_male
+#      - qxr_early_female
+
+
+df_qxt <-
+	left_join(get_mort2("Sheet87", "A10:J42", "qxt_male",   calc_rate = FALSE, indexVar = "yos"),
+						get_mort2("Sheet87", "A10:J42", "qxt_female", calc_rate = FALSE, indexVar = "yos")
+	)
+df_qxt
 
 
 
 
+## 8. Ordinary disability rates ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet93, female in Sheet94
+# - Output variables:
+#      - qxd_ord_male
+#      - qxd_ord_female
+
+
+df_qxd_ord <-
+	left_join(get_mort2("Sheet93", "A10:J65", "qxd_ord_male",   calc_rate = FALSE),
+						get_mort2("Sheet94", "A10:J65", "qxd_ord_female", calc_rate = FALSE)
+	)
+df_qxd_ord
+
+
+## 9. Accidental disability rates ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use Assumed probability under "current assumption" 
+# - Use 4-year period experience
+# - Data: Male in Sheet100, female in Sheet101
+# - Output variables:
+#      - qxd_acc_male
+#      - qxd_acc_female
+
+
+df_qxd_acc <-
+	left_join(get_mort2("Sheet100", "A10:J65", "qxd_acc_male",   calc_rate = FALSE),
+						get_mort2("Sheet101", "A10:J65", "qxd_acc_female", calc_rate = FALSE)
+	)
+df_qxd_acc
 
 
 
 
+## 10. Salary scales, total and merit ####
+
+# - We consider the assumed probabilities provided are accurate (not rounded). 
+# - Use "annual rates of salary increase"
+# - Use 4-year period experience
+# - Data: total in Sheet106, merit in Sheet111
+# - Output variables:
+#      - salScale_total
+#      - salScale_merit
+
+df_salScale <- 
+	left_join(
+		read_excel(file, sheet = "Sheet106", range = "A11:I42") %>% 
+	      select(yos = 1, salScale_total = 5) %>% 
+	      mutate(yos = str_extract(yos, "\\d+") %>% as.numeric),
+    
+    read_excel(file, sheet = "Sheet111", range = "A10:I41") %>% 
+    	  select(yos = 1, salScale_merit = 5) %>% 
+    	  mutate(yos = str_extract(yos, "\\d+") %>% as.numeric)
+	)
+df_salScale %>% 
+	mutate(dif = salScale_total - salScale_merit)
 
 
 
