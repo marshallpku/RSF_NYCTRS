@@ -37,13 +37,22 @@ options(dplyr.print_min = 60) # default is 10
   # further check if the disability rates are accurate
 
 
+# Notes on retirement rates of elected and mandated members
+#   -  Upto age X, the combined rates are heavily weighted toward elected members
+#   -  At ate X + 1, the combined rates are generally less weighted toward elected members (or even toward mandated members)
+#   -  After age X + 1, the combined rates are the same as the mandated rates.
+#   -  X = 
+#          60 for 1st year eligibility
+#          61 for 2nd year eligibility
+#          62 for after 2nd year eligibility
+
 
 #*********************************************************************************************************
 #                      ## Import Data  ####
 #*********************************************************************************************************
 
-dir_data  <- "Inputs_data/RawMaterials/"
-file_name <- "2015 FAA Experience Study Discussion through June 30, 2015_Part 3 of 3 TRS only converted by Nuance.xlsx" 
+dir_data  <- "Inputs_data/"
+file_name <- "RawMaterials/2015 FAA Experience Study Discussion through June 30, 2015_Part 3 of 3 TRS only converted by Nuance.xlsx" 
 file_path <- paste0(dir_data, file_name)
 file_path
 
@@ -73,8 +82,11 @@ get_mort1 <- function(data_sheet, data_range, rateName, file = file_path) {
 df_qxm_servRet <- 
 		left_join(get_mort1("Sheet3", "c10:j70", "qxm_servRet_male"),
 							get_mort1("Sheet4", "c10:j70", "qxm_servRet_female")
-		)
+		) %>% 
+  	mutate_all(funs(ifelse(is.nan(.), 0, .))) # convert NaNs to 0
+
 df_qxm_servRet
+
 
 
 ## 2. Mortality for disabiltiy retirees ####
@@ -161,6 +173,28 @@ df_qxr_y1_EM <-
 df_qxr_y1_EM
 
 
+df_qxr_y1_E <-
+	left_join(get_mort2("Sheet43", "A10:J42", "qxr_y1_male_E",   calc_rate = FALSE),
+						get_mort2("Sheet44", "A10:J42", "qxr_y1_female_E", calc_rate = FALSE)
+	)
+df_qxr_y1_E
+
+
+df_qxr_y1_M <-
+	left_join(get_mort2("Sheet61", "A10:J42", "qxr_y1_male_M",   calc_rate = FALSE),
+						get_mort2("Sheet62", "A10:J42", "qxr_y1_female_M", calc_rate = FALSE)
+	)
+df_qxr_y1_M
+
+df_qxr_y1 <- df_qxr_y1_EM %>% 
+	 left_join(df_qxr_y1_E) %>% 
+	 left_join(df_qxr_y1_M)
+
+df_qxr_y1
+
+
+
+
 ## 5. Retirement rate in the second year of eligibility ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
@@ -179,8 +213,27 @@ df_qxr_y2_EM <-
 df_qxr_y2_EM
 
 
+df_qxr_y2_E <-
+	left_join(get_mort2("Sheet46", "A10:J42", "qxr_y2_male_E",   calc_rate = FALSE),
+						get_mort2("Sheet47", "A10:J42", "qxr_y2_female_E", calc_rate = FALSE)
+	)
+df_qxr_y2_E
 
-## 5. Retirement rate AFTER the second year of eligibility ####
+df_qxr_y2_M <-
+	left_join(get_mort2("Sheet64", "A10:J42", "qxr_y2_male_M",   calc_rate = FALSE),
+						get_mort2("Sheet65", "A10:J42", "qxr_y2_female_M", calc_rate = FALSE)
+	)
+df_qxr_y2_M
+
+
+df_qxr_y2 <- df_qxr_y2_EM %>% 
+	 left_join(df_qxr_y2_E) %>% 
+	 left_join(df_qxr_y2_M)
+
+df_qxr_y2
+
+
+## 6. Retirement rate AFTER the second year of eligibility ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
 # - Use Assumed probability under "current assumption" 
@@ -198,8 +251,29 @@ df_qxr_y2post_EM <-
 df_qxr_y2post_EM
 
 
+df_qxr_y2post_E <-
+	left_join(get_mort2("Sheet49", "A10:J42", "qxr_y2post_male_E",   calc_rate = FALSE),
+						get_mort2("Sheet50", "A10:J42", "qxr_y2post_female_E", calc_rate = FALSE)
+	)
+df_qxr_y2post_E
 
-## 6. Early Retirement rates ####
+
+df_qxr_y2post_M <-
+	left_join(get_mort2("Sheet67", "A10:J42", "qxr_y2post_male_M",   calc_rate = FALSE),
+						get_mort2("Sheet68", "A10:J42", "qxr_y2post_female_M", calc_rate = FALSE)
+	)
+df_qxr_y2post_M
+
+
+
+df_qxr_y2post <- df_qxr_y2post_EM %>% 
+	left_join(df_qxr_y2post_E) %>% 
+	left_join(df_qxr_y2post_M)
+
+df_qxr_y2post
+
+
+## 7. Retirement rates, early retirement ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
 # - Use Assumed probability under "current assumption" 
@@ -218,7 +292,7 @@ df_qxr_early
 
 
 
-## 7. Withdrawal rates for active members ####
+## 8. Withdrawal rates for active members ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
 # - Use Assumed probability under "current assumption" 
@@ -238,7 +312,7 @@ df_qxt
 
 
 
-## 8. Ordinary disability rates ####
+## 9. Ordinary disability rates ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
 # - Use Assumed probability under "current assumption" 
@@ -256,7 +330,7 @@ df_qxd_ord <-
 df_qxd_ord
 
 
-## 9. Accidental disability rates ####
+## 10. Accidental disability rates ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
 # - Use Assumed probability under "current assumption" 
@@ -273,10 +347,12 @@ df_qxd_acc <-
 	)
 df_qxd_acc
 
+df_qxd <- left_join(df_qxd_ord, df_qxd_acc)
+df_qxd
 
 
 
-## 10. Salary scales, total and merit ####
+## 11. Salary scales, total and merit ####
 
 # - We consider the assumed probabilities provided are accurate (not rounded). 
 # - Use "annual rates of salary increase"
@@ -288,16 +364,50 @@ df_qxd_acc
 
 df_salScale <- 
 	left_join(
-		read_excel(file, sheet = "Sheet106", range = "A11:I42") %>% 
+		read_excel(file_path, sheet = "Sheet106", range = "A11:I42") %>% 
 	      select(yos = 1, salScale_total = 5) %>% 
 	      mutate(yos = str_extract(yos, "\\d+") %>% as.numeric),
     
-    read_excel(file, sheet = "Sheet111", range = "A10:I41") %>% 
+    read_excel(file_path, sheet = "Sheet111", range = "A10:I41") %>% 
     	  select(yos = 1, salScale_merit = 5) %>% 
     	  mutate(yos = str_extract(yos, "\\d+") %>% as.numeric)
 	)
+
 df_salScale %>% 
 	mutate(dif = salScale_total - salScale_merit)
+
+
+## Review and save results ####
+
+df_qxm_servRet
+df_qxm_disbRet
+df_qxm_act
+
+df_qxr_y1
+df_qxr_y2
+df_qxr_y2post
+df_qxr_early
+df_qxd
+
+df_qxt
+df_salScale
+
+save(df_qxm_servRet,
+		 df_qxm_disbRet,
+		 df_qxm_act,
+		 
+		 df_qxr_y1,
+		 df_qxr_y2,
+		 df_qxr_y2post,
+		 df_qxr_early,
+		 df_qxd,
+		 
+		 df_qxt,
+		 df_salScale,
+		 
+		 file = paste0(dir_data, "Data_ES2015.RData")
+		 )
+
 
 
 
