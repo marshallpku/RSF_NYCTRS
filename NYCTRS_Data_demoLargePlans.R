@@ -505,6 +505,58 @@ scale_salary
       # Better to include GATRS
 
 
+# Todo :
+  # remove implausible age-yos combos
+  # standardize age-yos ranges across large plans
+
+
+
+
+#*********************************************************************************************************
+#  5. Imputation    ####
+#*********************************************************************************************************
+
+df_NYCTRS <- 
+	df_nactives %>% 
+	mutate(plan = "NYCTRS",
+				 age.cell = age_lb + 2,
+				 nactives = nactives_male + nactives_female,
+				 salary  = (nactives_male * salary_male + nactives_female * salary_female) / (nactives_male + nactives_female),
+				 sal.avg = sum((nactives_male + nactives_female) * salary) / sum(nactives_male + nactives_female),
+				 sal.scale = salary/sal.avg
+	) %>% 
+	select(plan, age.cell, nactives, salary, sal.avg)
+
+df_NYCTRS
+
+
+scale_largePlans <- left_join(scale_nactives, scale_salary) %>% 
+	select(age.cell, yos.cell, scale_nact = nactives_share_s, scale_sal = sal.scale.s2)
+
+
+df_NYCTRS_impt <- 
+scale_largePlans %>% 
+	left_join(df_NYCTRS) %>% 
+	group_by(age.cell) %>% 
+	mutate(nactives_impt = nactives * scale_nact / sum(scale_nact, na.rm = TRUE),
+				 salary_impt   = scale_sal * salary * sum(nactives_impt) / sum(scale_sal * nactives_impt)
+				 )
+
+df_NYCTRS_impt
+	
+
+# Double check
+df_NYCTRS_impt %>% # average salary by group
+	group_by(age.cell) %>% 
+	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt),
+						sal.TRS = unique(salary))
+
+df_NYCTRS_impt %>% ungroup %>% # Overall average Target: 78038.98
+	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt))
+
+
+
+
 
 
 
