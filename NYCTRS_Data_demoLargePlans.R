@@ -143,7 +143,7 @@ df_largePlans
 
 
 #*********************************************************************************************************
-#                      ## Comparing distributions of actives  ####
+#                      ## 2.1 Comparing distributions of actives  ####
 #*********************************************************************************************************
 
 df_nactives_large <- 
@@ -210,7 +210,7 @@ df_nactives_large %>%
 
 
 #*********************************************************************************************************
-#                      ## Comparing distributions of salary  ####
+#                      ## 2.2 Comparing distributions of salary  ####
 #*********************************************************************************************************
 
 df_salary_large   <- df_largePlans %>% filter(type == "salary") %>% rename(salary = value) %>% 
@@ -223,47 +223,287 @@ df_sal_NYCTRS <-
 	df_nactives %>% 
 	mutate(plan = "NYCTRS",
 				 age.cell = age_lb + 2,
-				 salary = (nactives_male * salary_male + nactives_female * salary_female) / (nactives_male + nactives_female)) %>% 
-	select(plan, age.cell, salary)
+				 salary  = (nactives_male * salary_male + nactives_female * salary_female) / (nactives_male + nactives_female),
+				 sal.avg = sum((nactives_male + nactives_female) * salary) / sum(nactives_male + nactives_female),
+				 sal.scale = salary/sal.avg
+				 ) %>% 
+	select(plan, age.cell, salary, sal.avg, sal.scale)
 df_sal_NYCTRS
 
 
 
-# Age distribution
+# Age distribution, including NYCTRS
 df_salary_large %>%
 	group_by(plan, age.cell) %>% 
-	summarise(salary = sum(salary * nactives) / sum(nactives) ) %>% 
+	summarise(salary = sum(salary * nactives) / sum(nactives),
+						nactives = sum(nactives)) %>% 
+	mutate( sal.avg = sum(nactives * salary) / sum(nactives),
+					sal.scale = salary/sal.avg) %>% 
 	bind_rows(df_sal_NYCTRS) %>% 
-	ggplot(aes(x = age.cell, y = salary, color = plan)) + theme_bw() + 
+	ggplot(aes(x = age.cell, y = sal.scale, color = plan)) + theme_bw() + 
 	geom_point() + 
 	geom_line() 
 	#scale_y_continuous(breaks = seq(0, 100, 2))
+
+	# Notes: GATRS has higher salary at low ages and lower salary at high ages.
+         # Other Plans are quite comparable to NYCTRS
 
 
 # yos distribution
 df_salary_large %>%
 	group_by(plan, yos.cell) %>% 
-	summarise(salary = sum(salary * nactives) / sum(nactives) ) %>% 
-	ggplot(aes(x = yos.cell, y = salary, color = plan)) + theme_bw() + 
+	summarise(salary = sum(salary * nactives) / sum(nactives),
+						nactives = sum(nactives)) %>% 
+	mutate( sal.avg = sum(nactives * salary) / sum(nactives),
+					sal.scale = salary/sal.avg) %>% 
+	ggplot(aes(x = yos.cell, y = sal.scale, color = plan)) + theme_bw() + 
 	geom_point() + 
 	geom_line() 
 #scale_y_continuous(breaks = seq(0, 100, 2))
-
+  
+  # Notes: GATRS has high salary for low yos
 
 
 # yos distributions by age
-df_salary_large %>%
+df_salary_large %>% 
 	group_by(plan, age.cell) %>% 
-	ggplot(aes(x = yos.cell, y = salary, color = plan)) + theme_bw() + 
+	mutate( sal.avg = sum(nactives * salary) / sum(nactives),
+					sal.scale = salary/sal.avg) %>% 
+	ggplot(aes(x = yos.cell, y = sal.scale, color = plan)) + theme_bw() + 
 	facet_wrap( ~age.cell) + 
 	geom_point() + 
 	geom_line() 
 
+#  Notes
+	# Possible outliers:
+  #   (most at the end of the distributions, maybe caused by small sample size in those cells)
+	#  1. agegrp 27: OHSTRS yosgrp 12 
+  #  2. agegrp 37: NYSTRS yosgrp 22
+  #  3. agegrp 42: NYSTRS yosgrp 27
+  #  4. agegrp 47: OHSTRS yosgrp 32
+  #  5. agegrp 57: NYSTRS yosgrp 44
+  #  5. agegrp 62: NYSTRS yosgrp 47
+
+
 
 
 # Todo: 
-#  plot salary relative to average salary
-#  check salary scale of NYSTRS and NYCTRS
+  #  check salary scale of NYSTRS and NYCTRS
+
+
+
+#*********************************************************************************************************
+#           # 3. Construct average age-yos distributions for actives and salary    ####
+#*********************************************************************************************************
+
+
+# Distributions of actives
+ # 1. Weighted: sum up the number of actives of all plans in each age-yos cell, 
+ #    then calculate the share of each cell.
+ # 2. Simple average: Calcuate the share of each age-yos cell for every plan, 
+ #    then for each cell calcuate the simple average across all plans. 
+
+# Salary distribution
+ # 1. Weighted: For each age-yos, pool the members of all plans and calculate the average salaries, 
+ #    then calculate the ratio of the salary in each cell to overall average salary 
+ # 2. Simple average 1: For each plan, calculate the ratio of the salary in each cell to the overall salary,
+ #    then for each cell calculate the simple average across all plans. 
+#  2' Simple average 2: For each plan, calculate the ratio of the salary in each cell to the average salary of the age group,
+#     then for each cell calculate the simple average across all plans. 
+
+# Sensitivity tests:
+# 1. Excluding plans that may be significantly different from others: GATRS, CALSTRS
+# 2. Excluding possible outliers
+
+# To do:
+   # 1. calculate all average distributions
+   # 2. make small adjsutments
+   # 3. do sensitivity check
+   # 4. summarize and better document
+
+df_large <- df_salary_large
+
+
+
+# 3.1 Distribution of actives ####
+  
+  # Distributions of actives
+  	# 1. Weighted: sum up the number of actives of all plans in each age-yos cell, 
+  	#    then calculate the share of each cell.
+  	# 2. Simple average: Calcuate the share of each age-yos cell for every plan, 
+  	#    then for each cell calcuate the simple average across all plans. 
+
+scale_nactives <- 
+left_join(
+    df_large %>% # weighted
+    	group_by(age.cell, yos.cell) %>% 
+    	summarise(nactives = sum(nactives)) %>% 
+    	ungroup %>% 
+    	mutate(nactives_share_w = nactives / sum(nactives)) %>% 
+    	select(-nactives),
+    
+    df_large %>% # simple 
+    	group_by(plan) %>% 
+    	mutate(nactives_share = nactives / sum(nactives)) %>% 
+    	group_by(age.cell, yos.cell) %>% 
+    	summarise(nactives_share_s = mean(nactives_share, na.rm = TRUE))
+)
+scale_nactives
+
+
+# Plot and compare the scales by age group: very similar 
+scale_nactives %>% 
+	gather(scaleType, value, -age.cell, -yos.cell) %>% 
+	ggplot(aes(x = yos.cell, y = value, color = scaleType)) + theme_bw() +
+	facet_wrap(~age.cell) + 
+	geom_line()+
+	geom_point()
+
+
+# Compare the overal age distributions against TRS
+  # TRS has a younger age distribution than the estimated distributions
+  # Possible implications on the distributions of YOS by age?
+
+scale_nactives %>%
+	group_by(age.cell) %>%
+	summarise(
+		nactives_share_w = 100 * sum(nactives_share_w),
+		nactives_share_s = 100 * sum(nactives_share_s)
+	) %>%
+	left_join(df_age_NYCTRS %>% rename(nactives_share_TRS = nactives_share)) %>%
+	gather(type, value,-age.cell,-plan) %>%
+	ggplot(aes(x = age.cell, y = value, color = type)) + theme_bw() +
+	geom_line() +
+	geom_point()
+
+	
+# 3.2 Distribution of salary ####
+
+# Salary distribution
+  # 1. Weighted: For each age-yos, pool the members of all plans and calculate the average salaries, 
+  #    then calculate the ratio of the salary in each cell to overall average salary 
+  # 2. Simple average 1: For each plan, calculate the ratio of the salary in each cell to the overall salary,
+  #    then for each cell calculate the simple average across all plans. 
+  # 2' Simple average 2: For each plan, calculate the ratio of the salary in each cell to the average salary of the age group,
+  #    then for each cell calculate the simple average across all plans. 
+
+df_large
+
+scale_salary <-
+	left_join(
+		df_large %>% # weighted
+			group_by(age.cell, yos.cell) %>%
+			summarise(
+				nactives_cell = sum(nactives),
+				salary_cell   = sum(nactives * salary) / sum(nactives),
+			) %>%
+			ungroup %>%
+			mutate(
+				sal.avg = sum(nactives_cell * salary_cell, na.rm = TRUE) / sum(nactives_cell),
+				sal.scale_w = na2zero(salary_cell / sal.avg)
+			) %>%
+			select(age.cell, yos.cell, sal.scale_w) %>%
+			ungroup,
+		
+		
+		df_large %>% # simple
+			group_by(plan) %>%
+			mutate(
+				sal.avgPlan    = sum(nactives * salary) / sum(nactives),
+				sal.scale.plan = salary / sal.avgPlan
+			) %>%
+			group_by(age.cell, yos.cell) %>%
+			summarize(sal.scale.s1 = mean(sal.scale.plan, na.rm = TRUE)) %>%
+			ungroup) %>% 
+
+	left_join(
+		df_large %>% # simple
+			group_by(plan, age.cell) %>%
+			mutate(
+				sal.avgPlanAge    = sum(nactives * salary) / sum(nactives),
+				sal.scale.planAge = salary / sal.avgPlanAge
+			) %>%
+			group_by(age.cell, yos.cell) %>%
+			summarize(sal.scale.s2 = mean(sal.scale.planAge, na.rm = TRUE)) %>%
+			ungroup
+	)
+
+
+# Plot and compare the scales by age group: very similar 
+scale_salary %>% 
+    gather(scaleType, value, -age.cell, -yos.cell) %>% 
+	    group_by(scaleType, age.cell) %>% 
+	    mutate(value = value / mean(value)) %>% # all values standardized by age group mean 
+    	ggplot(aes(x = yos.cell, y = value, color = scaleType)) + theme_bw() +
+    	facet_wrap(~age.cell) + 
+    	geom_line()+
+    	geom_point()
+
+
+# Compare the overall age distributions against TRS
+  # Average across yos for each age group calculated in the spirit of simple average 2 
+  # The average distribution is very similar to the TRS distribution. 
+  # Better to include GATRS
+
+df_salary_large %>%
+	# filter(!plan %in% c("CALSTRS", "GATRS")) %>% 
+	# filter(!plan %in% c("GATRS")) %>% # looks better to include GATRS
+	group_by(plan, age.cell) %>% 
+	summarise(salary = sum(salary * nactives) / sum(nactives),
+						nactives = sum(nactives)) %>% 
+	mutate( sal.avg = sum(nactives * salary) / sum(nactives),
+					sal.scale = salary/sal.avg) %>% 
+	group_by(age.cell) %>% 
+	summarize(sal.scale = mean(sal.scale, na.rm = TRUE)) %>% 
+	mutate(plan = "Average") %>% 
+	bind_rows(df_sal_NYCTRS %>% select(plan, age.cell, sal.scale)) %>% 
+	ggplot(aes(x = age.cell, y = sal.scale, color = plan)) + theme_bw() + 
+	geom_point() + 
+	geom_line() 
+
+
+
+#*********************************************************************************************************
+#           # 4. Summary and next steps   ####
+#*********************************************************************************************************
+
+# Outputs
+scale_nactives
+scale_salary
+
+
+
+#1.Distributions of actives
+  # Two averaging approaches:
+    # 1. Weighted: sum up the number of actives of all plans in each age-yos cell, 
+    #    then calculate the share of each cell.
+    # 2. Simple average: Calcuate the share of each age-yos cell for every plan, 
+    #    then for each cell calcuate the simple average across all plans. 
+  
+  # Examining the results
+    # Plot and compare the scales by age group: very similar
+    # Compare the overal age distributions against TRS
+      # TRS has a younger age distribution than the estimated distributions
+      # Possible implications on the distributions of YOS by age?               **** 
+
+
+#2.Salary distribution
+  # Three averaing approaches
+    # 1. Weighted: For each age-yos, pool the members of all plans and calculate the average salaries, 
+    #    then calculate the ratio of the salary in each cell to overall average salary 
+    # 2. Simple average 1: For each plan, calculate the ratio of the salary in each cell to the overall salary,
+    #    then for each cell calculate the simple average across all plans. 
+    # 2' Simple average 2: For each plan, calculate the ratio of the salary in each cell to the average salary of the age group,
+    #     then for each cell calculate the simple average across all plans. 
+
+
+  # Examining the results 
+  	# Plot and compare the scales by age group: very similar 
+    # Compare the overall age distributions against TRS
+      # Average across yos for each age group calculated in the spirit of simple average 2 
+      # The average distribution is very similar to the TRS distribution. 
+      # Better to include GATRS
+
 
 
 
