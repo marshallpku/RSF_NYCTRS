@@ -71,7 +71,7 @@ df_ndisbRet_ord <-
 	read_excel(file_path, sheet = "Sheet9", range = "A12:F26") %>% 
 	select(age_grp = 1, ndisbRet_ord_male = 2, benefit_male = 3, ndisbRet_ord_female = 5, benefit_female = 6) %>% 
 	separate(age_grp, c("age_lb", "age_ub")) %>%
-	mutate_at(vars(age_lb, age_ub), funs(as.numeric(.))) 
+	mutate_at(vars(age_lb, age_ub, benefit_male, benefit_female), funs(na2zero(as.numeric(.)))) 
 
 
 df_ndisbRet_ord[1, c("age_lb", "age_ub") ] <- c(25,29)
@@ -83,7 +83,7 @@ df_ndisbRet_acc <-
 	read_excel(file_path, sheet = "Sheet9", range = "A36:F50") %>% 
 	select(age_grp = 1, ndisbRet_acc_male = 2, benefit_male = 3, ndisbRet_acc_female = 5, benefit_female = 6) %>% 
 	separate(age_grp, c("age_lb", "age_ub")) %>%
-	mutate_at(vars(age_lb, age_ub), funs(as.numeric(.))) 
+	mutate_at(vars(age_lb, age_ub, benefit_male, benefit_female), funs(na2zero(as.numeric(.)))) 
 
 
 df_ndisbRet_acc[1, c("age_lb", "age_ub") ] <- c(25,29)
@@ -95,7 +95,7 @@ df_ndisbRet_acc
 
 df_nsurvivors <- 
 	read_excel(file_path, sheet = "Sheet10", range = "A7:F21") %>% 
-	select(age_grp = 1, nsurvivors_male = 2, benefit_male = 3, nsurvivors = 5, benefit_female = 6) %>% 
+	select(age_grp = 1, nsurvivors_male = 2, benefit_male = 3, nsurvivors_female = 5, benefit_female = 6) %>% 
 	separate(age_grp, c("age_lb", "age_ub")) %>%
 	mutate_at(vars(age_lb, age_ub), funs(as.numeric(.))) 
 
@@ -125,7 +125,6 @@ df_TDAwithdrawal
 ## Review and save results ####
 
 df_nactives
-df_ndisbRet
 df_ndisbRet_acc
 df_ndisbRet_ord
 df_nsurvivors
@@ -133,7 +132,6 @@ df_TierShares
 df_TDAwithdrawal
 
 save(df_nactives,
-		 df_ndisbRet,
 		 df_ndisbRet_acc,
 		 df_ndisbRet_ord,
 		 df_nsurvivors,

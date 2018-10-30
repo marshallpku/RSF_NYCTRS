@@ -236,6 +236,34 @@ fillin.retirees <- function(list_data) {
 	return(rdf.fillin)
 }
 
+# data structure of the input list of fillin.actives.spreadyos.splineag
+  # list name: ldata
+  # $agecuts:
+  #   - age.cell
+  #   - agelb
+  #   - ageub
+  # $yoscuts:
+  #   - yos.cell
+  #   - yoslb
+  #   - yosub
+  # $data
+  #   - age.cell
+  #   - age
+  #   - planname
+  #   - N
+  #   - V
+  # $varNames
+  #   - name_N
+  #   - name_V  
+
+planName <- "NYCTRS_CAFR17"
+
+get_agecuts <- function(df){
+	df %>% 
+		mutate(age.cell = (age_lb + age_ub)/ 2) %>% 
+		select(age.cell, agelb = age_lb, ageub = age_ub) 
+}
+
 
 #*********************************************************************************************************
 #                    1.  Initial actives   ####
@@ -281,7 +309,7 @@ actives_fillin <-
 
 
 # Combining results:
-init_actives_all <- bind_rows(actives_fillin, actives_grouped)
+init_actives_all <- actives_fillin  # bind_rows(actives_fillin, actives_grouped)
 init_actives_all
 
 # Examine results
@@ -300,14 +328,153 @@ actives_fillin %>%
 
 
 #*********************************************************************************************************
-#                    2.  Initial actives   ####
+#                    2.  Initial Retirees   ####
 #*********************************************************************************************************
 
+ldata_servRet <- list(
+	data =
+		df_nservRet %>%
+		mutate(
+			nservRet = nservRet_male + nservRet_female,
+			benefit  = (nservRet_male * benefit_male + nservRet_male * benefit_male) / nservRet,
+			age.cell = (age_lb + age_ub) / 2,
+			planname = planName
+		) %>%
+		mutate_all(funs(ifelse(is.nan(.), 0, . ))) %>% 
+		select(age.cell, N = nservRet, V = benefit, planname) %>% 
+		mutate(age = age.cell) %>% 
+		as.data.frame(), # otherwise, would lead to error in function splong
+	
+	agecuts = get_agecuts(df_nservRet) %>% as.data.frame(),
+	
+	varNames =
+		tibble(name_N = "nservRet", name_V = "benefit_servRet")
+)
+
+
+init_servRet <- fillin.retirees(ldata_servRet) %>% mutate_all(funs(ifelse(is.nan(.), 0, . ))) 
+init_servRet
+	
+
+
+#*********************************************************************************************************
+#                    3.  Initial survivors   ####
+#*********************************************************************************************************
+
+df_nsurvivors
+
+ldata_survivors <- list(
+	data =
+		df_nsurvivors %>%
+		mutate(
+			nsurvivors = nsurvivors_male + nsurvivors_female,
+			benefit  = (nsurvivors_male * benefit_male + nsurvivors_male * benefit_male) / nsurvivors,
+			age.cell = (age_lb + age_ub) / 2,
+			planname = planName
+		) %>%
+		mutate_all(funs(ifelse(is.nan(.), 0, . ))) %>% 
+		select(age.cell, N = nsurvivors, V = benefit, planname) %>% 
+		mutate(age = age.cell) %>% 
+		as.data.frame(), # otherwise, would lead to error in function splong
+	
+	agecuts = get_agecuts(df_nsurvivors) %>% as.data.frame(),
+	
+	varNames =
+		tibble(name_N = "nsurvivors", name_V = "benefit_survivors")
+)
+ldata_survivors
+
+
+init_survivors <- fillin.retirees(ldata_survivors) %>% mutate_all(funs(ifelse(is.nan(.), 0, . ))) 
+init_survivors
 
 
 
+#*********************************************************************************************************
+#                    4.  Initial disability retirees   ####
+#*********************************************************************************************************
+
+# adding accidental and ordinary disability retirees 
+
+df_ndisbRet <- left_join(
+	df_ndisbRet_acc %>% 
+		mutate(
+			ndisbRet_acc = ndisbRet_acc_male + ndisbRet_acc_female,
+			benefit_acc  = (ndisbRet_acc_male * benefit_male + ndisbRet_acc_female * benefit_female) / ndisbRet_acc) %>% 
+		select(age_lb, age_ub, ndisbRet_acc, benefit_acc),
+		
+	df_ndisbRet_ord %>% 
+		mutate(
+			ndisbRet_ord = ndisbRet_ord_male + ndisbRet_ord_female,
+			benefit_ord  = (ndisbRet_ord_male * benefit_male + ndisbRet_ord_female * benefit_female) / ndisbRet_ord) %>% 
+		select(age_lb, age_ub, ndisbRet_ord, benefit_ord)
+)
+
+df_ndisbRet %<>% 
+	mutate(ndisbRet   = ndisbRet_acc + ndisbRet_ord,
+				 benefit = (ndisbRet_acc * benefit_acc + ndisbRet_ord * benefit_ord) / ndisbRet
+				 ) %>% 
+	mutate_all(funs(ifelse(is.nan(.), 0, .))) %>% 
+	select(age_lb, age_ub, ndisbRet, benefit)
+df_ndisbRet
 
 
 
+ldata_disbRet <- list(
+	data =
+		df_ndisbRet %>%
+		mutate(
+			age.cell = (age_lb + age_ub) / 2,
+			planname = planName
+		) %>%
+		mutate_all(funs(ifelse(is.nan(.), 0, . ))) %>% 
+		select(age.cell, N = ndisbRet, V = benefit, planname) %>% 
+		mutate(age = age.cell) %>% 
+		as.data.frame(), # otherwise, would lead to error in function splong
+	
+	agecuts = get_agecuts(df_ndisbRet) %>% as.data.frame(),
+	
+	varNames =
+		tibble(name_N = "ndisbRet", name_V = "benefit_disbRet")
+)
+ldata_disbRet
+
+
+init_disbRet <- fillin.retirees(ldata_disbRet) %>% mutate_all(funs(ifelse(is.nan(.), 0, . ))) 
+init_disbRet
+
+
+#*********************************************************************************************************
+#                    5.  save results   ####
+#*********************************************************************************************************
+
+init_actives_all
+init_servRet
+init_survivors
+init_disbRet
+
+#*********************************************************************************************************
+#                    6.  examination   ####
+#*********************************************************************************************************
+
+df_TierShares
+
+ntot <- init_actives_all$nactives %>% sum  # 118201
+nyos2 <- filter(init_actives_all, yos <=2)$nactives %>% sum
+nyos3 <- filter(init_actives_all, yos <=3)$nactives %>% sum
+nyos4 <- filter(init_actives_all, yos <=4)$nactives %>% sum
+
+nyos2/ntot # 19.6%
+nyos3/ntot # 25.9%, 
+nyos4/ntot # 32.1%
+
+# share of Tier 6 CAFR2017 ep163
+# (FY or calendar year? year start or year end? should FY end. 
+#  Would match better if it is FY start, but does not make sense for 2012)
+ # 2015: 17.4%
+ # 2016: 17.9%
+ # 2017: 27.6%
+
+# if use yos <= 3 as the cutting point, would assign too many people to Tier 6 (25.9% vs 17.9%)
 
 
