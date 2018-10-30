@@ -413,7 +413,7 @@ scale_salary <-
 				sal.scale.plan = salary / sal.avgPlan
 			) %>%
 			group_by(age.cell, yos.cell) %>%
-			summarize(sal.scale.s1 = mean(sal.scale.plan, na.rm = TRUE)) %>%
+			summarize(sal.scale_s1 = mean(sal.scale.plan, na.rm = TRUE)) %>%
 			ungroup) %>% 
 
 	left_join(
@@ -424,7 +424,7 @@ scale_salary <-
 				sal.scale.planAge = salary / sal.avgPlanAge
 			) %>%
 			group_by(age.cell, yos.cell) %>%
-			summarize(sal.scale.s2 = mean(sal.scale.planAge, na.rm = TRUE)) %>%
+			summarize(sal.scale_s2 = mean(sal.scale.planAge, na.rm = TRUE)) %>%
 			ungroup
 	)
 
@@ -468,8 +468,11 @@ df_salary_large %>%
 #*********************************************************************************************************
 
 # Outputs
-scale_nactives
-scale_salary
+(scale_nactives_largePlans <- scale_nactives)
+(scale_salary_largePlans   <- scale_salary)
+
+save(scale_nactives_largePlans, scale_salary_largePlans, 
+		 file = paste0(dir_data, "../Scales_largePlans.RData"))
 
 
 
@@ -513,7 +516,7 @@ scale_salary
 
 
 #*********************************************************************************************************
-#  5. Imputation    ####
+#  5. Preliminary Imputation    ####
 #*********************************************************************************************************
 
 df_NYCTRS <- 
@@ -531,7 +534,7 @@ df_NYCTRS
 
 
 scale_largePlans <- left_join(scale_nactives, scale_salary) %>% 
-	select(age.cell, yos.cell, scale_nact = nactives_share_s, scale_sal = sal.scale.s2)
+	select(age.cell, yos.cell, scale_nact = nactives_share_s, scale_sal = sal.scale_s2)
 
 
 df_NYCTRS_impt <- 
