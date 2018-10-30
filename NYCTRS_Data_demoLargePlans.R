@@ -323,7 +323,20 @@ df_salary_large %>%
 
 df_large <- df_salary_large
 
+# index tables for age cells and yos cells
+agecuts <- df_large %>% select(age.cell, agegrp) 
+agecuts <- agecuts[!duplicated(agecuts), ]
+agecuts %<>% 
+	separate(agegrp, into = c("agelb", "ageub")) %>% 
+  mutate_all(funs(as.numeric))
 
+yoscuts <- df_large %>% select(yos.cell, yosgrp)
+yoscuts <- yoscuts[!duplicated(yoscuts), ]
+yoscuts %<>% 
+	separate(yosgrp, into = c("yoslb", "yosub")) %>% 
+  mutate_all(funs(as.numeric))
+
+	
 
 # 3.1 Distribution of actives ####
   
@@ -471,7 +484,7 @@ df_salary_large %>%
 (scale_nactives_largePlans <- scale_nactives)
 (scale_salary_largePlans   <- scale_salary)
 
-save(scale_nactives_largePlans, scale_salary_largePlans, 
+save(scale_nactives_largePlans, scale_salary_largePlans, agecuts, yoscuts, 
 		 file = paste0(dir_data, "../Scales_largePlans.RData"))
 
 
@@ -518,45 +531,45 @@ save(scale_nactives_largePlans, scale_salary_largePlans,
 #*********************************************************************************************************
 #  5. Preliminary Imputation    ####
 #*********************************************************************************************************
-
-df_NYCTRS <- 
-	df_nactives %>% 
-	mutate(plan = "NYCTRS",
-				 age.cell = age_lb + 2,
-				 nactives = nactives_male + nactives_female,
-				 salary  = (nactives_male * salary_male + nactives_female * salary_female) / (nactives_male + nactives_female),
-				 sal.avg = sum((nactives_male + nactives_female) * salary) / sum(nactives_male + nactives_female),
-				 sal.scale = salary/sal.avg
-	) %>% 
-	select(plan, age.cell, nactives, salary, sal.avg)
-
-df_NYCTRS
-
-
-scale_largePlans <- left_join(scale_nactives, scale_salary) %>% 
-	select(age.cell, yos.cell, scale_nact = nactives_share_s, scale_sal = sal.scale_s2)
-
-
-df_NYCTRS_impt <- 
-scale_largePlans %>% 
-	left_join(df_NYCTRS) %>% 
-	group_by(age.cell) %>% 
-	mutate(nactives_impt = nactives * scale_nact / sum(scale_nact, na.rm = TRUE),
-				 salary_impt   = scale_sal * salary * sum(nactives_impt) / sum(scale_sal * nactives_impt)
-				 )
-
-df_NYCTRS_impt
-	
-
-# Double check
-df_NYCTRS_impt %>% # average salary by group
-	group_by(age.cell) %>% 
-	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt),
-						sal.TRS = unique(salary))
-
-df_NYCTRS_impt %>% ungroup %>% # Overall average Target: 78038.98
-	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt))
-
+# 
+# df_NYCTRS <- 
+# 	df_nactives %>% 
+# 	mutate(plan = "NYCTRS",
+# 				 age.cell = age_lb + 2,
+# 				 nactives = nactives_male + nactives_female,
+# 				 salary  = (nactives_male * salary_male + nactives_female * salary_female) / (nactives_male + nactives_female),
+# 				 sal.avg = sum((nactives_male + nactives_female) * salary) / sum(nactives_male + nactives_female),
+# 				 sal.scale = salary/sal.avg
+# 	) %>% 
+# 	select(plan, age.cell, nactives, salary, sal.avg)
+# 
+# df_NYCTRS
+# 
+# 
+# scale_largePlans <- left_join(scale_nactives, scale_salary) %>% 
+# 	select(age.cell, yos.cell, scale_nact = nactives_share_s, scale_sal = sal.scale_s2)
+# 
+# 
+# df_NYCTRS_impt <- 
+# scale_largePlans %>% 
+# 	left_join(df_NYCTRS) %>% 
+# 	group_by(age.cell) %>% 
+# 	mutate(nactives_impt = nactives * scale_nact / sum(scale_nact, na.rm = TRUE),
+# 				 salary_impt   = scale_sal * salary * sum(nactives_impt) / sum(scale_sal * nactives_impt)
+# 				 )
+# 
+# df_NYCTRS_impt
+# 	
+# 
+# # Double check
+# df_NYCTRS_impt %>% # average salary by group
+# 	group_by(age.cell) %>% 
+# 	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt),
+# 						sal.TRS = unique(salary))
+# 
+# df_NYCTRS_impt %>% ungroup %>% # Overall average Target: 78038.98
+# 	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt))
+# 
 
 
 
