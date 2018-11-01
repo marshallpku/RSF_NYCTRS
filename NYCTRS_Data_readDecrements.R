@@ -92,8 +92,8 @@ df_qxm_disbRet
 # - Use 4-year period experience
 # - Data: Male in Sheet17, female in Sheet18
 # - Output variables:
-#      - qxm_act_male
-#      - qxm_act_female
+#      - qxm_actives_male
+#      - qxm_actives_female
 
 # Issue:
 # - Assumed rates for age 70-74 are 0, but the expected death are actually calculated using rates at age 69. 
@@ -118,17 +118,17 @@ get_mort2 <- function(data_sheet, data_range, rateName, calc_rate = TRUE, indexV
 } 
 
 
-df_qxm_act <-
-	left_join(get_mort2("Sheet17", "A10:J65", "qxm_act_male",   calc_rate = FALSE),
-						get_mort2("Sheet18", "A10:J65", "qxm_act_female", calc_rate = FALSE)
+df_qxm_actives <-
+	left_join(get_mort2("Sheet17", "A10:J65", "qxm_actives_male",   calc_rate = FALSE),
+						get_mort2("Sheet18", "A10:J65", "qxm_actives_female", calc_rate = FALSE)
 	)
 
 # Adjust rates for 70-74
-df_qxm_act %<>% 
-	mutate(qxm_act_male   = ifelse(age < 70, qxm_act_male,   qxm_act_male[age == 69]),
-				 qxm_act_female = ifelse(age < 70, qxm_act_female, qxm_act_female[age == 69]))
+df_qxm_actives %<>% 
+	mutate(qxm_actives_male   = ifelse(age < 70, qxm_actives_male,   qxm_actives_male[age == 69]),
+				 qxm_actives_female = ifelse(age < 70, qxm_actives_female, qxm_actives_female[age == 69]))
 
-df_qxm_act
+df_qxm_actives
 
 
 
@@ -358,7 +358,7 @@ df_salScale %>%
 
 df_qxm_servRet
 df_qxm_disbRet
-df_qxm_act
+df_qxm_actives
 
 df_qxr_y1
 df_qxr_y2
@@ -371,7 +371,7 @@ df_salScale
 
 save(df_qxm_servRet,
 		 df_qxm_disbRet,
-		 df_qxm_act,
+		 df_qxm_actives,
 		 
 		 df_qxr_y1,
 		 df_qxr_y2,

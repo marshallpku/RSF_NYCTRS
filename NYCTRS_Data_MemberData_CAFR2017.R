@@ -469,7 +469,7 @@ init_genderRatios <-
 				mutate(pct_male = num_male / (num_male + num_female), 
 							 pct_female = 1 - pct_male,
 							 planname = planName,
-							 type = "serRet"),
+							 type = "servRet"),
 			
 			
 			df_nsurvivors %>% # why share share of female so high for survivors?

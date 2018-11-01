@@ -16,17 +16,24 @@
 
 # Notes
   # Treatment of inividual decrement tables
-  #  Mortality for active members 
-  #  Mortality for service retirees
-  #  Mortality for disability retirees
-  #  Retirement rate: 1st year
-  #  Retirement rate: 2nd year
-  #  Retirement rate: afte 2nd year
-  #  Retirement rate: early retirement
-  #  Withdrawl rate for actives
-  #  Ordinary disability rates
-  #  Accidental disability rates
+  #  - Mortality for active members 
+  #  - Mortality for service retirees
+  #  - Mortality for disability retirees
 
+  # Retirement rates: use combined rates for elected and mandated members for model version 1
+  #  Note the original tables assume all members would retire by age 70. 
+  #   - Retirement rate: 1st year
+  #   - Retirement rate: 2nd year
+  #   - Retirement rate: afte 2nd year
+  #   - Retirement rate: early retirement
+  
+  # Disability rates
+  #  Compute total disability rates, and for now treat all disabilities as ordinary disabilities 
+  #  Need to compare the value of accidental and ordinary disability benefits. 
+  #   - Ordinary disability rates
+  #   - Accidental disability rates
+
+  #  Withdrawl rate for actives
 
 
 
@@ -43,30 +50,226 @@
 # assign_parmsList(.Global_paramlist, envir = environment())
 # assign_parmsList(.paramlist,        envir = environment())
 
+
+
+#*************************************************************************************************************
+#                                Global settings                       #####                  
+#*************************************************************************************************************
+
 # parameters needed for function
-  max_age <- 110 
+  max_age <- 101 
   min_age <- 20
   min_ea  <- 20
-  max_ea  <- 74 
+  max_ea  <- 68
 
+range_age <- min_age:max_age
+range_ea  <- min_ea:max_ea
 
+dir_data <- "Inputs_data/"
   
 #*************************************************************************************************************
 #                                Loading data                       #####                  
 #*************************************************************************************************************
-dir_data <- "Inputs_data/"
+
 
 load(paste0(dir_data, "Data_ES2015.RData"))
 load(paste0(dir_data, "Data_initGenderRatios.RData"))
   
+
+gratio <- init_genderRatios %>% as.data.frame()
+rownames(gratio) <- gratio$type
+gratio
+gratio["actives", "pct_male"]
   
 #*************************************************************************************************************
 #                                Prepare mortality tables                       #####                  
 #*************************************************************************************************************
- df_qxm_act
- df_qxm_disbRet
- df_qxm_servRet
+
+df_qxm_actives
+df_qxm_disbRet
+df_qxm_servRet
+
+
+mortality_model <- tibble(age = range_age) %>% 
+  left_join(df_qxm_actives) %>% 
+  left_join(df_qxm_servRet) %>% 
+  left_join(df_qxm_disbRet) 
   
+# Fill mortality for service retirees and disability retirees to min age.
+  # We need to do this because there may be young retirees/beneficiaries in the demograhic data, and also for safety of the modeling process.
+  # We may want to move this part to the data loading procedure later. 
+  # For service retirees, fill age 20-54 with mortality of active members
+  # For disabilty retirees, fill age 20-40 with mortality of active members
+mortality_model %<>% 
+  mutate(qxm_servRet_male   = ifelse(age <= 54, qxm_actives_male,   qxm_servRet_male),
+         qxm_servRet_female = ifelse(age <= 54, qxm_actives_female, qxm_servRet_female),
+         
+         qxm_disbRet_male   = ifelse(age <= 54, qxm_actives_male,   qxm_disbRet_male),
+         qxm_disbRet_female = ifelse(age <= 54, qxm_actives_female, qxm_disbRet_female))
+
+# Calculate weighted averages of mortality rates
+# and set the mortality rates for retirees to 1 at max age. 
+mortality_model %<>% 
+  mutate(qxm_actives = qxm_actives_male * gratio["actives", "pct_male"] + qxm_actives_female * gratio["actives", "pct_female"],
+         qxm_servRet = qxm_servRet_male * gratio["servRet", "pct_male"] + qxm_servRet_female * gratio["servRet", "pct_female"],
+         qxm_disbRet = qxm_disbRet_male * gratio["disbRet", "pct_male"] + qxm_disbRet_female * gratio["disbRet", "pct_female"],
+         
+         qxm_servRet =  ifelse(age == max(age), 1, qxm_servRet),
+         qxm_disbRet =  ifelse(age == max(age), 1, qxm_disbRet)
+         ) %>% 
+  mutate_all(funs(na2zero(.)))
+  
+mortality_model %<>% select(age, qxm_actives, qxm_servRet, qxm_disbRet)
+
+mortality_model 
+
+
+
+
+#*************************************************************************************************************
+#                                Prepare Retirement rate                       #####                  
+#*************************************************************************************************************
+
+df_qxr_y1_EM
+df_qxr_y2_EM
+df_qxr_y2post_EM
+df_qxr_early
+
+# Calculate weighted average rates
+# fill lower and higher ages with 0. 
+
+# Mandated and elected combined
+retRates_model_EM <- data.frame(age = range_age) %>% 
+  left_join(df_qxr_y1_EM) %>% 
+  left_join(df_qxr_y2_EM) %>% 
+  left_join(df_qxr_y2post_EM) %>%
+  left_join(df_qxr_early) %>% 
+  mutate(qxr_y1_EM     = qxr_y1_male_EM * gratio["actives", "pct_male"]     + qxr_y1_female_EM * gratio["actives", "pct_female"],
+         qxr_y2_EM     = qxr_y2_male_EM * gratio["actives", "pct_male"]     + qxr_y2_female_EM * gratio["actives", "pct_female"],
+         qxr_y2post_EM = qxr_y2post_male_EM * gratio["actives", "pct_male"] + qxr_y2post_female_EM * gratio["actives", "pct_female"],
+         qxr_early     = qxr_early_male * gratio["actives", "pct_male"]     + qxr_early_female * gratio["actives", "pct_female"]) %>% 
+  select(age,
+         qxr_y1_EM,
+         qxr_y2_EM,
+         qxr_y2post_EM,
+         qxr_early) %>% 
+  mutate_at(vars(-age), funs(ifelse(age %in% 40:71, ., 0)))
+retRates_model_EM
+
+# Elected
+retRates_model_E <- data.frame(age = range_age) %>% 
+  left_join(df_qxr_y1_E) %>% 
+  left_join(df_qxr_y2_E) %>% 
+  left_join(df_qxr_y2post_E) %>%
+  left_join(df_qxr_early) %>% 
+  mutate(qxr_y1_E     = qxr_y1_male_E * gratio["actives", "pct_male"]     + qxr_y1_female_E * gratio["actives", "pct_female"],
+         qxr_y2_E     = qxr_y2_male_E * gratio["actives", "pct_male"]     + qxr_y2_female_E * gratio["actives", "pct_female"],
+         qxr_y2post_E = qxr_y2post_male_E * gratio["actives", "pct_male"] + qxr_y2post_female_E * gratio["actives", "pct_female"],
+         qxr_early     = qxr_early_male * gratio["actives", "pct_male"]     + qxr_early_female * gratio["actives", "pct_female"]) %>% 
+  select(age,
+         qxr_y1_E,
+         qxr_y2_E,
+         qxr_y2post_E,
+         qxr_early) %>% 
+  mutate_at(vars(-age), funs(ifelse(age %in% 40:71, ., 0)))
+retRates_model_E
+
+# Mandated
+retRates_model_M <- data.frame(age = range_age) %>% 
+  left_join(df_qxr_y1_M) %>% 
+  left_join(df_qxr_y2_M) %>% 
+  left_join(df_qxr_y2post_M) %>%
+  left_join(df_qxr_early) %>% 
+  mutate(qxr_y1_M     = qxr_y1_male_M * gratio["actives", "pct_male"]     + qxr_y1_female_M * gratio["actives", "pct_female"],
+         qxr_y2_M     = qxr_y2_male_M * gratio["actives", "pct_male"]     + qxr_y2_female_M * gratio["actives", "pct_female"],
+         qxr_y2post_M = qxr_y2post_male_M * gratio["actives", "pct_male"] + qxr_y2post_female_M * gratio["actives", "pct_female"],
+         qxr_early     = qxr_early_male * gratio["actives", "pct_male"]     + qxr_early_female * gratio["actives", "pct_female"]) %>% 
+  select(age,
+         qxr_y1_M,
+         qxr_y2_M,
+         qxr_y2post_M,
+         qxr_early) %>% 
+  mutate_at(vars(-age), funs(ifelse(age %in% 40:71, ., 0)))
+retRates_model_M
+
+
+# retRates_model_EM
+# retRates_model_E
+# retRates_model_M
+
+
+#*************************************************************************************************************
+#                                Prepare disability                      #####                  
+#*************************************************************************************************************
+
+# compare accidental and ordinary disability rates
+df_qxd %>% 
+  mutate(acc_ord_male   = qxd_acc_male   / qxd_ord_male,
+         acc_ord_female = qxd_acc_female / qxd_ord_female,
+         acc_pct_male   = qxd_acc_male   / (qxd_acc_male + qxd_ord_male), 
+         acc_pct_female = qxd_acc_female / (qxd_acc_female + qxd_ord_female)
+         )
+# The proportion of accidental disability in total disability is less than 20%
+
+
+# Add up ordinary and accidental disability rates and calculate gender-weighted average rates. 
+disbRates_model <- data.frame(age = range_age) %>% 
+  left_join(df_qxd) %>% 
+  mutate(qxd_male   = qxd_ord_male + qxd_acc_male, 
+         qxd_female = qxd_ord_male + qxd_acc_female, 
+         qxd = qxd_male * gratio["actives", "pct_male"] + qxd_female * gratio["actives", "pct_female"],
+         qxd = na2zero(qxd)
+         ) %>% 
+  select(age, qxd)
+  
+disbRates_model
+
+
+
+#*************************************************************************************************************
+#                                Prepare withdrawal rates                     #####                  
+#*************************************************************************************************************
+max(df_qxt$yos)
+
+termRates_model <- data.frame(yos = 0:(70 - min_age)) %>% 
+  left_join(df_qxt) %>% 
+  mutate(qxt = qxt_male * gratio["actives", "pct_male"] + qxt_female * gratio["actives", "pct_female"],
+         qxt = ifelse(yos > max(df_qxt$yos), qxt[yos == max(df_qxt$yos)], qxt)) %>% 
+  select(yos, qxt)
+
+termRates_model
+
+
+
+#*************************************************************************************************************
+#                      Putting together decrements  ####
+#*************************************************************************************************************
+
+# Create decrement table and calculate probability of survival
+decrement_model <- expand.grid(age = range_age, ea = range_ea) %>% 
+  mutate(yos = age - ea) %>% 
+  filter(age >= ea) %>% 
+  left_join(mortality_model)   %>%                # mortality 
+  left_join(termRates_model)   %>%                # termination
+  left_join(disbRates_model)   %>%                # disability
+  left_join(retRates_model_EM) %>%                # retirement: elected and mandated
+  left_join(retRates_model_E %>% select(-qxr_early))  %>%                # retirement: elected
+  left_join(retRates_model_M %>% select(-qxr_early))  %>%                # retirement: mandated
+  select(ea, age, everything())%>%          
+  arrange(ea, age)  %>%
+  colwise(na2zero)(.) %>% 
+  group_by(ea) 
+
+decrement_model
+
+
+
+
+#*************************************************************************************************************
+#                      3. Adjustments to decrement tables  ####
+#*************************************************************************************************************
+
+
 
 
 #*************************************************************************************************************
