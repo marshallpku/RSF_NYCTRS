@@ -309,8 +309,8 @@ actives_fillin <-
 
 
 # Combining results:
-init_actives_all <- actives_fillin  # bind_rows(actives_fillin, actives_grouped)
-init_actives_all
+init_actives <- actives_fillin  # bind_rows(actives_fillin, actives_grouped)
+init_actives
 
 # Examine results
 actives_fillin_spread <-
@@ -444,25 +444,94 @@ init_disbRet <- fillin.retirees(ldata_disbRet) %>% mutate_all(funs(ifelse(is.nan
 init_disbRet
 
 
+
 #*********************************************************************************************************
-#                    5.  save results   ####
+#                    5.  Gender ratio   ####
+#*********************************************************************************************************
+# This will be used for constructing decrement tables
+
+
+init_genderRatios <- 
+	bind_rows(
+			
+		   df_nactives %>% 
+				summarise(num_male = sum(nactives_male),
+									num_female = sum(nactives_female)) %>% 
+				mutate(pct_male = num_male / (num_male + num_female), 
+							 pct_female = 1 - pct_male,
+							 planname = planName,
+							 type = "actives"),
+			
+			
+			df_nservRet %>% 
+				summarise(num_male = sum(nservRet_male),
+									num_female = sum(nservRet_female)) %>% 
+				mutate(pct_male = num_male / (num_male + num_female), 
+							 pct_female = 1 - pct_male,
+							 planname = planName,
+							 type = "serRet"),
+			
+			
+			df_nsurvivors %>% # why share share of female so high for survivors?
+				summarise(num_male = sum(nsurvivors_male),
+									num_female = sum(nsurvivors_female)) %>% 
+				mutate(pct_male = num_male / (num_male + num_female), 
+							 pct_female = 1 - pct_male,
+							 planname = planName,
+							 type = "survivors"),
+			
+			
+			bind_cols(
+				select(df_ndisbRet_acc, ndisbRet_acc_male, ndisbRet_acc_female),
+				select(df_ndisbRet_ord, ndisbRet_ord_male, ndisbRet_ord_female)
+				) %>% 
+				mutate(ndisbRet_male   = ndisbRet_acc_male, ndisbRet_ord_male,
+							 ndisbRet_female = ndisbRet_acc_female, ndisbRet_ord_female) %>% 
+				summarise(num_male = sum(ndisbRet_male),
+									num_female = sum(ndisbRet_female)) %>% 
+				mutate(pct_male = num_male / (num_male + num_female), 
+							 pct_female = 1 - pct_male,
+							 planname = planName,
+							 type = "disbRet")
+	) %>% 
+	select(planname, type, everything())
+
+init_genderRatios
+
+
+
+
+#*********************************************************************************************************
+#                    6.  save results   ####
 #*********************************************************************************************************
 
-init_actives_all
+init_actives
 init_servRet
 init_survivors
 init_disbRet
 
+save(
+	init_actives,
+	init_servRet,
+	init_survivors,
+	init_disbRet,
+	file = paste0(dir_data, "Data_initDemographics_CAFR17.RData")
+)
+
+save(init_genderRatios, 
+		 file = paste0(dir_data, "Data_initGenderRatios.RData")
+)
+
 #*********************************************************************************************************
-#                    6.  examination   ####
+#                    7.  examination   ####
 #*********************************************************************************************************
 
 df_TierShares
 
-ntot <- init_actives_all$nactives %>% sum  # 118201
-nyos2 <- filter(init_actives_all, yos <=2)$nactives %>% sum
-nyos3 <- filter(init_actives_all, yos <=3)$nactives %>% sum
-nyos4 <- filter(init_actives_all, yos <=4)$nactives %>% sum
+ntot <- init_actives$nactives %>% sum  # 118201
+nyos2 <- filter(init_actives, yos <=2)$nactives %>% sum
+nyos3 <- filter(init_actives, yos <=3)$nactives %>% sum
+nyos4 <- filter(init_actives, yos <=4)$nactives %>% sum
 
 nyos2/ntot # 19.6%
 nyos3/ntot # 25.9%, 

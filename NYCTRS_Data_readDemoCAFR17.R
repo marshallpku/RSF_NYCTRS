@@ -125,6 +125,7 @@ df_TDAwithdrawal
 ## Review and save results ####
 
 df_nactives
+df_nservRet
 df_ndisbRet_acc
 df_ndisbRet_ord
 df_nsurvivors
@@ -132,6 +133,7 @@ df_TierShares
 df_TDAwithdrawal
 
 save(df_nactives,
+		 df_nservRet,
 		 df_ndisbRet_acc,
 		 df_ndisbRet_ord,
 		 df_nsurvivors,
