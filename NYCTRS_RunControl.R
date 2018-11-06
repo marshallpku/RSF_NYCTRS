@@ -27,3 +27,18 @@ options(dplyr.print_min = 60) # default is 10
 
 source("Functions.R")
 
+
+# Temporary: model parameters
+
+max_retAge <- 70
+
+
+max_age <- 101 
+min_age <- 20
+min_ea  <- 20
+max_ea  <- 68
+
+age_vben <- 62
+
+range_age <- min_age:max_age
+range_ea  <- min_ea:max_ea
