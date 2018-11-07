@@ -505,6 +505,15 @@ init_genderRatios
 #                    6.  save results   ####
 #*********************************************************************************************************
 
+
+# Placeholder for terminated workers
+init_terms <- 
+	init_disbRet %>% 
+	filter(age < 62) %>% 
+	mutate(nterms = 0) %>% 
+	select(planname, age.cell, age, nterms)
+
+
 init_actives
 init_servRet
 init_survivors
@@ -515,6 +524,7 @@ save(
 	init_servRet,
 	init_survivors,
 	init_disbRet,
+	init_terms,
 	file = paste0(dir_data, "Data_initDemographics_CAFR17.RData")
 )
 

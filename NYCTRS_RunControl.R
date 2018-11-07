@@ -49,7 +49,5 @@ Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
 Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)
 
 
-df_salScale
-
 
 

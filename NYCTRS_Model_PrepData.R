@@ -11,7 +11,9 @@
   # get_salary_proc: Top level function that runs the four functions above
   
 # 2. Benefit for initial retirees 
-  # get_benefit
+  # get_benefit_servRet
+  # get_benefit_disbRet
+  # get_benefit_survivors
 
 # 3. Initial population
   # get_initPop 
@@ -51,9 +53,8 @@ dir_data <- "Inputs_data/"
 #*************************************************************************************************************
 #                                Loading data                       #####                  
 #*************************************************************************************************************
-load(paste0(dir_data, "Data_ES2015.RData"))
 load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
-
+load(paste0(dir_data, "Data_ES2015.RData"))
 
 
 #*************************************************************************************************************
@@ -72,8 +73,8 @@ get_salgrowth <- function() {
     select(yos, salgrowth)
 }
 
-salgrowth <- get_salgrowth()
-salgrowth
+# salgrowth <- get_salgrowth()
+# salgrowth
 
 #*************************************************************************************************************
 #                         Salary 2.  Create complete salary scale                                    #####                  
@@ -129,7 +130,7 @@ get_scale <- function(
   return(SS.all)
 }
 
-SS.all <- get_scale()
+# SS.all <- get_scale()
 
 #*************************************************************************************************************
 #                         Salary 3. Supplement the inital salary table with all starting salary        #####                  
@@ -167,7 +168,7 @@ fill_startSal <- function(actives_,         # = tailored_demoData$actives,
 
 # get_tierData(init_actives_all, "t6") %>%  fill_startSal %>% ungroup %>% arrange(ea, age)
 
-init_sal <- fill_startSal(init_actives)
+# init_sal <- fill_startSal(init_actives)
 
 
 #*************************************************************************************************************
@@ -181,10 +182,10 @@ get_salary <- function(SS.all_   = SS.all,
                        ){
   
   # Run the section below when developing new features.
-    SS.all_   = SS.all
-    init_sal_ =  init_sal
-    paramlist_= paramlist
-    Global_paramlist_  = Global_paramlist
+    # SS.all_   = SS.all
+    # init_sal_ =  init_sal
+    # paramlist_= paramlist
+    # Global_paramlist_  = Global_paramlist
   
    assign_parmsList(Global_paramlist_, envir = environment()) # environment() returns the local environment of the function.
    assign_parmsList(paramlist_,        envir = environment())  
@@ -200,7 +201,7 @@ get_salary <- function(SS.all_   = SS.all,
   return(salary)
 }
 
-salary <- get_salary() 
+# salary <- get_salary() 
 # salary %>% filter(start.year < 2015) %>% arrange(start.year, ea, age)
 
 
@@ -231,7 +232,7 @@ salary.fn <- get_salary(SS.all.fn, init_sal.fn) %>%
 return(salary.fn)
 }
 
-salary <- get_salary_proc()
+# salary <- get_salary_proc()
 
 # x <-  get_salary_proc("tCD") %>% arrange(start.year, ea, age)
 
@@ -284,11 +285,36 @@ get_benefit_disbRet <- function(
   return(benefit)
 }
 
-benefit_servRet <- get_benefit_servRet(init_servRet)
-benefit_disbRet <- get_benefit_disbRet(init_disbRet)
 
-benefit_servRet
-benefit_disbRet
+get_benefit_survivors <- function(
+  survivors_, 
+  paramlist_ = paramlist,
+  Global_paramlist_  = Global_paramlist
+){
+  
+  assign_parmsList(Global_paramlist_, envir = environment())
+  assign_parmsList(paramlist_,        envir = environment())  
+  
+  benefit <-
+    survivors_ %>% 
+    select(age, benefit_survivors) %>%  
+    mutate(year       = init_year,
+           ea         = min_age,
+           # age_disb   = age,
+           start_year = year - (age - ea)) %>% 
+    select(start_year, ea, age, benefit_survivors)
+  
+  return(benefit)
+}
+
+
+# benefit_servRet <- get_benefit_servRet(init_servRet)
+# benefit_disbRet <- get_benefit_disbRet(init_disbRet)
+# benefit_survivors <- get_benefit_survivors(init_survivors)
+# 
+# benefit_servRet
+# benefit_disbRet
+# benefit_survivors
 
 # get_tierData(init_retirees_all, "tCD") %>% get_benefit()
 # get_tierData(init_disb_all, "tCD") %>% get_benefit.disb()
@@ -299,10 +325,14 @@ benefit_disbRet
 #                               Generating inital population                                             #####                  
 #*************************************************************************************************************
 
-get_initPop <- function (actives_,       
-                         retirees_,   
-                         terminated_, 
-                         disb_,
+
+
+
+get_initPop <- function (init_actives_ = init_actives,       
+                         init_servRet_ = init_servRet,
+                         init_disbRet_ = init_disbRet,
+                         init_survivors_ = init_survivors,
+                         init_terms_   = init_terms,
                          paramlist_        = paramlist,
                          Global_paramlist_ = Global_paramlist,
                          trim = TRUE
@@ -310,14 +340,16 @@ get_initPop <- function (actives_,
   # Import and standardize the total number of actives and retirees.  
   
   # Run the section below when developing new features.
-  init_actives_    = init_actives       #get_tierData(init_actives_all, Tier_select_)
-  init_servRet_    = init_servRet       #get_tierData(init_retirees_all, Tier_select_)
-  init_disbRet_    = init_disbRet  
-  # terminated_ =        #get_tierData(init_terms_all, Tier_select_) 
+  # init_actives_    = init_actives       #get_tierData(init_actives_all, Tier_select_)
+  # init_servRet_    = init_servRet       #get_tierData(init_retirees_all, Tier_select_)
+  # init_disbRet_    = init_disbRet  
+  # init_survivors_  = init_survivors
+  # init_terms_      = init_terms
+  # trim = TRUE
+  # paramlist_        = paramlist
+  # Global_paramlist_ = Global_paramlist
   
-  trim = TRUE
-  paramlist_        = paramlist
-  Global_paramlist_ = Global_paramlist
+  
   
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
@@ -337,21 +369,36 @@ get_initPop <- function (actives_,
   init_servRet_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_servRet_) %>% 
     spread(age, nservRet, fill = 0) %>% select(-ea) %>% as.matrix
   
+  # Initial survivors
+  init_survivors_ <- init_survivors_ %>% select(age, nsurvivors) %>% mutate(ea = min_age) 
+  init_survivors_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_survivors_) %>% 
+    spread(age, nsurvivors, fill = 0) %>% select(-ea) %>% as.matrix
+  
+  # Intitial vested terminated workers 
+  init_terms_ <- init_terms_ %>% select(age, nterms) %>% mutate(ea = min_age) 
+  init_terms_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_terms_) %>% 
+    spread(age, nterms, fill = 0) %>% select(-ea) %>% as.matrix
+  
   # Initial disability retirees
   init_disbRet_ <- init_disbRet_ %>% select(age, ndisbRet) %>% mutate(ea = min_age) 
   init_disbRet_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_disbRet_) %>% 
     spread(age, ndisbRet, fill = 0) %>% select(-ea) %>% as.matrix
   
-  # Initial terminated vested 
-  init_terms <- .terminated %>% select(ea, age, nterms)
-  init_terms <-  expand.grid(ea = range_ea, age = range_age) %>% left_join(init_terms) %>% 
-    #mutate(nactives = n_init_actives * nactives/sum(nactives, na.rm = TRUE)) %>%
-    spread(age, nterms, fill = 0) %>% select(-ea) %>% as.matrix 
+  # # Initial terminated vested 
+  # init_terms <- .terminated %>% select(ea, age, nterms)
+  # init_terms <-  expand.grid(ea = range_ea, age = range_age) %>% left_join(init_terms) %>% 
+  #   #mutate(nactives = n_init_actives * nactives/sum(nactives, na.rm = TRUE)) %>%
+  #   spread(age, nterms, fill = 0) %>% select(-ea) %>% as.matrix 
   
-  return(list(actives = init_actives, servRet = init_servRet, terms = init_terms, disbRet = init_disbRet))
+  return(list(actives = init_actives_, 
+              servRet = init_servRet_, 
+              disbRet = init_disbRet_,
+              survivors = init_survivors_,
+              terms = init_terms_
+              ))
 }
 
-
+# initPop <- get_initPop()
 # x <- get_initPop(get_tierData(init_actives_all, Tier_select),
 #             get_tierData(init_retirees.la_all, Tier_select),
 #             get_tierData(init_terms_all, Tier_select),
@@ -367,26 +414,23 @@ get_initPop <- function (actives_,
 #*************************************************************************************************************
 
 
-get_entrantsDist <- function(.actives,          #= tailored_demoData$actives,
-                             #.planname,         #= paramlist$planname_actives,
-                             #.range_ea = range_ea,         #= paramlist$range_ea,
-                             .paramlist        = paramlist,
-                             .Global_paramlist = Global_paramlist,
+get_entrantsDist <- function(actives_,          
+                             paramlist_        = paramlist,
+                             Global_paramlist_ = Global_paramlist,
                              simple = FALSE){
-  # Simple imputation rule is applied under the following two circumstances:
+  # Simple imputation rule is applied under the following circumstances:
   # 1. parameter "simple" is set to TRUE
   # 2. negative weights are generated by the regular rule. 
   
-     # .actives          = get_tierData(init_actives_all, Tier_select)
-     # .range_ea = range_ea
-     #  simple = F
-     #  .paramlist        = paramlist
-     #  .Global_paramlist = Global_paramlist
+     # actives_          = init_actives # get_tierData(init_actives_all, Tier_select)
+     # simple = F
+     # paramlist_        = paramlist
+     # Global_paramlist_ = Global_paramlist
   
-  assign_parmsList(.Global_paramlist, envir = environment())
-  assign_parmsList(.paramlist,        envir = environment())   
+  assign_parmsList(Global_paramlist_, envir = environment())
+  assign_parmsList(paramlist_,        envir = environment())   
   
-  nact <- .actives %>% select(age, ea, nactives)
+  nact <- actives_ %>% select(age, ea, nactives)
   #nact %>% spread(age, nactives)
   
   # ## Distributon by simple rule
@@ -397,20 +441,19 @@ get_entrantsDist <- function(.actives,          #= tailored_demoData$actives,
   #     nact1 %<>% mutate(avg_ent = ifelse(is.na(avg_ent), lead(avg_ent) , avg_ent))
   #   N <- N + 1
   #   }
-    
-
+  
+  # For safty, do interpolation for potential missing cells.   
   nact <- splong(nact, "ea", range_ea) %>% splong("age", range_ea) %>% filter(age >= ea)
-  #nact <- splong(nact, "ea", range_ea) %>% filter(age >= ea)
   nact %>% spread(age, nactives)
   
-  
+  # Estimate entrant distribution with low yos members
   ent <- nact %>% filter(age - ea <= 4) %>% group_by(ea) %>% summarise(avg_ent = mean(nactives))
   
   neg_ea <- ent[which(ent$avg_ent < 0), "ea"]
   
-  if(any(ent$avg_ent < 0)){warning("Negative inferred value(s) in the following entry age(s): " , as.character(neg_ea), "\n",
-                                   "  Simple imputation rule is applied")
-    ent <- nact1                          
+  if(any(ent$avg_ent < 0)){warning("Negative inferred value(s) in the following entry age(s): " , as.character(neg_ea), "\n")
+                                   #"  Simple imputation rule is applied")
+    #ent <- nact1                          
   }
   
   # ent %<>% mutate(avg_ent = ifelse(avg_ent < 0, 0, avg_ent))
@@ -423,9 +466,30 @@ get_entrantsDist <- function(.actives,          #= tailored_demoData$actives,
   return(dist)
 }
 
+
 # entrants_dist <- get_entrantsDist(init_actives)
 # entrants_dist
 
+
+
+
+
+salary <- get_salary_proc()
+
+benefit_servRet <- get_benefit_servRet(init_servRet)
+benefit_disbRet <- get_benefit_disbRet(init_disbRet)
+benefit_survivors <- get_benefit_survivors(init_survivors)
+
+initPop <- get_initPop()
+
+entrants_dist <- get_entrantsDist(init_actives)
+
+# salary
+# benefit_servRet
+# benefit_disbRet
+# benefit_survivors
+# initPop
+# entrants_dist
 
 
 # #*************************************************************************************************************
