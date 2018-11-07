@@ -44,17 +44,17 @@
 
 
 
-# get_decrements <- function(Tier_select,
-#                            .Global_paramlist = Global_paramlist,
-#                            .paramlist = paramlist){
+get_decrements <- function(Tier_select,
+                           Global_paramlist_ = Global_paramlist,
+                           paramlist_ = paramlist){
 
   
-# Tier_select <- "tCD"
-# .Global_paramlist = Global_paramlist
-# .paramlist = paramlist
+# Tier_select <- paramlist$tier_select
+# Global_paramlist_ = Global_paramlist
+# paramlist_ = paramlist
 
-# assign_parmsList(.Global_paramlist, envir = environment())
-# assign_parmsList(.paramlist,        envir = environment())
+assign_parmsList(Global_paramlist_, envir = environment())
+assign_parmsList(paramlist_,        envir = environment())
 
 
 
@@ -63,8 +63,6 @@
 #*************************************************************************************************************
 
 # parameters needed for function
-Tier_select <- "t4a"
-
 dir_data <- "Inputs_data/"
   
 #*************************************************************************************************************
@@ -74,8 +72,8 @@ dir_data <- "Inputs_data/"
 
 load(paste0(dir_data, "Data_ES2015.RData"))
 load(paste0(dir_data, "Data_initGenderRatios.RData"))
-  
 
+  
 gratio <- init_genderRatios %>% as.data.frame()
 rownames(gratio) <- gratio$type
 gratio
@@ -504,7 +502,7 @@ decrement_model %<>%
 #                 selecting variables  ####
 #*************************************************************************************************************
 
-decrement_model %>% names
+# decrement_model %>% names
 
 decrement_model %<>% 
 	select(ea, age, yos,
@@ -523,11 +521,10 @@ decrement_model %<>%
 				 pxm_servRet,
 				 px_r.vben_m)
 
-decrement_model
 
+return(decrement_model)
 
-
-
+}
 
 
 
