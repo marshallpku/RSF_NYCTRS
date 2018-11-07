@@ -31,6 +31,8 @@ source("Functions.R")
 # Temporary: model parameters
 
 Global_paramlist <- list(
+
+	
 	max_retAge = 70,
 	
 	max_age = 101,
@@ -43,7 +45,8 @@ Global_paramlist <- list(
 )
 
 paramlist <- list(age_vben = 62,
-									startingSalgrowth = 0.03)
+									startingSalgrowth = 0.03,
+									tier_select = "t4a")
 
 Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
 Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)

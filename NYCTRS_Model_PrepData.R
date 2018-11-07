@@ -474,15 +474,15 @@ get_entrantsDist <- function(actives_,
 
 
 
-salary <- get_salary_proc()
-
-benefit_servRet <- get_benefit_servRet(init_servRet)
-benefit_disbRet <- get_benefit_disbRet(init_disbRet)
-benefit_survivors <- get_benefit_survivors(init_survivors)
-
-initPop <- get_initPop()
-
-entrants_dist <- get_entrantsDist(init_actives)
+# salary <- get_salary_proc()
+# 
+# benefit_servRet <- get_benefit_servRet(init_servRet)
+# benefit_disbRet <- get_benefit_disbRet(init_disbRet)
+# benefit_survivors <- get_benefit_survivors(init_survivors)
+# 
+# initPop <- get_initPop()
+# 
+# entrants_dist <- get_entrantsDist(init_actives)
 
 # salary
 # benefit_servRet
