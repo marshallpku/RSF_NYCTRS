@@ -46,7 +46,13 @@ Global_paramlist <- list(
 
 paramlist <- list(age_vben = 62,
 									startingSalgrowth = 0.03,
-									tier_select = "t4a")
+									tier_select = "t4a",
+									
+									cola = 0.015)
+
+
+
+
 
 Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
 Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)
