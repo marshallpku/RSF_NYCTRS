@@ -30,15 +30,26 @@ source("Functions.R")
 
 # Temporary: model parameters
 
-max_retAge <- 70
+Global_paramlist <- list(
+	max_retAge = 70,
+	
+	max_age = 101,
+	min_age = 20,
+	min_ea  = 20,
+	max_ea  = 68,
+	
+	init_year = 2015,
+	nyear     = 10
+)
+
+paramlist <- list(age_vben = 62,
+									startingSalgrowth = 0.03)
+
+Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
+Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)
 
 
-max_age <- 101 
-min_age <- 20
-min_ea  <- 20
-max_ea  <- 68
+df_salScale
 
-age_vben <- 62
 
-range_age <- min_age:max_age
-range_ea  <- min_ea:max_ea
+
