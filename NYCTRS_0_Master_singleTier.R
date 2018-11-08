@@ -8,21 +8,21 @@ Tier_select <- paramlist$tier
 # 1.1 Load data ####
 #*********************************************************************************************************
 
-# Load demographics data in CAFR 2017
-source("NYCTRS_Data_readDemoCAFR17.R")
-
-# Load decrement tables and salary scales in Experience Study 2015
-source("NYCTRS_Data_readDecrements.R")
-
-# Load Large plans data for estimation of yos distributions
-source("NYCTRS_Data_demoLargePlans.R")
-
-
-# Imputation of yos distributions for CAFR 2017 active members data
-source("NYCTRS_Data_ImputationActives.R")
-
-# Construct member data 
-source("NYCTRS_Data_memberData_CAFR2017.R")
+# # Load demographics data in CAFR 2017
+# source("NYCTRS_Data_readDemoCAFR17.R")
+# 
+# # Load decrement tables and salary scales in Experience Study 2015
+# source("NYCTRS_Data_readDecrements.R")
+# 
+# # Load Large plans data for estimation of yos distributions
+# source("NYCTRS_Data_demoLargePlans.R")
+# 
+# 
+# # Imputation of yos distributions for CAFR 2017 active members data
+# source("NYCTRS_Data_ImputationActives.R")
+# 
+# # Construct member data 
+# source("NYCTRS_Data_memberData_CAFR2017.R")
 
 
 # init_beneficiaries_all %<>% filter(age >= 25) 
@@ -158,18 +158,20 @@ entrants_dist <- get_entrantsDist(init_actives)
 # 
 # 
 # 
-# #*********************************************************************************************************
-# # 4. Individual actuarial liabilities, normal costs and benenfits ####
-# #*********************************************************************************************************
-# source("PSERS_Model_IndivLiab.R")
+
+#*********************************************************************************************************
+# 4. Individual actuarial liabilities, normal costs and benenfits ####
+#*********************************************************************************************************
+
+# source("NYCTRS_Model_IndivLiab.R")
 # gc()
 # 
 # liab <- get_indivLab(Tier_select)
-# 
-# 
-# 
-# 
-# 
+
+
+
+
+
 # #*********************************************************************************************************
 # # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
 # #*********************************************************************************************************

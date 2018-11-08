@@ -30,6 +30,8 @@ get_tla <- function(px, i, scale = rep(1, length(px))){
   return(tla)
 }
 
+get_tlaFixedEnd <- get_tla
+
 # microbenchmark(
 # get_tla(rep(0.98, 55), 0.08) # test the function
 # )
@@ -66,6 +68,8 @@ get_tla2 = function(px, i, sx = rep(1, length(px))){
   } 
   return(tla) 
 }
+
+get_tlaFixedStart <- get_tla2
 
 # 1.2a A simpler implementation of 1.2
 get_tla2a <- function(px, i, sx = rep(1, length(px))){

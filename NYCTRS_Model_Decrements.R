@@ -115,9 +115,13 @@ mortality_model %<>%
          qxm_servRet =  ifelse(age == max(age), 1, qxm_servRet),
          qxm_disbRet =  ifelse(age == max(age), 1, qxm_disbRet)
          ) %>% 
-  mutate_all(funs(na2zero(.)))
+  mutate_all(funs(na2zero(.))) %>% 
+
+# Mortality for vested terminated workers: actives mortality before retirement age, and service retirees mortality thereafter.
+	mutate(qxm_terms = ifelse(age < age_vben, qxm_actives, qxm_servRet))
+	
   
-mortality_model %<>% select(age, qxm_actives, qxm_servRet, qxm_disbRet)
+mortality_model %<>% select(age, qxm_actives, qxm_servRet, qxm_disbRet, qxm_terms)
 
 mortality_model 
 
@@ -483,14 +487,17 @@ decrement_model %<>%
 		      pxm_actives = 1 - qxm_actives,
 					pxm_disbRet = 1 - qxm_disbRet,
 					pxm_servRet = 1 - qxm_servRet,
+					pxm_terms   = 1 - qxm_terms,
+					
+					pxT     = 1 - qxt - qxd - qxm_actives - qxr, 
 					
 					# prob of surviving up to age_vben, the age vested terminated members can start claiming benefits.
 					# Note that mortality for active members is applied to vested terminated members. 
-					px_r.vben_m = order_by(-age, cumprod(ifelse(age >= age_vben, 1, pxm_actives))),  
+					px_r.vben_m = order_by(-age, cumprod(ifelse(age >= age_vben, 1, pxm_terms)))  
 					
 					# The following are legacy codes from model version that only allow for a single retirement age.
 					# pxRm        = order_by(-age, cumprod(ifelse(age >= r.max, 1, pxm.pre))), # prob of surviving up to r.max, mortality only
-					# pxT     = 1 - qxt - qxd - qxm.pre - qxr,         
+					        
 					# px65T = order_by(-age, cumprod(ifelse(age >= r.max, 1, pxT))), # prob of surviving up to r.max, composite rate
 					# p65xm = cumprod(ifelse(age <= r.max, 1, lag(pxm))))            # prob of surviving to x from r.max, mortality only
 	) %>% 
@@ -509,6 +516,7 @@ decrement_model %<>%
 				 qxm_actives,
 				 qxm_servRet,
 				 qxm_disbRet,
+				 qxm_terms,
 				 qxt,
 				 qxd,
 				 qxr,
@@ -519,6 +527,8 @@ decrement_model %<>%
 				 pxm_actives,
 				 pxm_disbRet,
 				 pxm_servRet,
+				 pxm_terms,
+				 pxT,
 				 px_r.vben_m)
 
 

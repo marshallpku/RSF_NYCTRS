@@ -43,12 +43,15 @@ get_indivLab <- function(Tier_select_,
   decrement_model_ = decrement_model
   salary_          = salary
   benefit_servRet_ = benefit_servRet
-  # benefit_disbRet_ = benefit_disbRet
+
   init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
   tier_select_     = paramlist$tier_select
+  
+  # benefit_disbRet_ = benefit_disbRet
   #mortality.post.model_ = mortality.post.model
   #liab.ca_         = liab.ca
   #liab.disb.ca_ = liab.disb.ca
+  
   paramlist_       =  paramlist
   Global_paramlist_ =  Global_paramlist
    
@@ -87,18 +90,18 @@ get_indivLab <- function(Tier_select_,
 #*************************************************************************************************************
 
 # Specify the earliest year needed
- 
- # min_year <- min(init_year - (max_age - (r_max - 1)), 
- #                 init_year - (r_max - 1 - min_ea)) 
- #                # min(init.year - (benefit_$age - (r.min - 1))))
-
 # Ealiest year required for actives：the year a (max_retAge - 1) year old active in year 1 enter the workforce at age min_ea 
- min_year_actives <- init_year - ( (max_retAge - 1) -  min_ea)
- min_year <- min_year_actives
+
+min_year_actives <- init_year - ( (max_retAge - 1) -  min_ea)
+min_year <- min_year_actives
     
 # the year a 120-year-old retiree in year 1 entered the workforce at age r.max - 1 (remeber ea = r.max - 1 is assigned to all inital retirees)
 ## Track down to the year that is the smaller one of the two below:
 
+ # min_year <- min(init_year - (max_age - (r_max - 1)), 
+ #                 init_year - (r_max - 1 - min_ea)) 
+ #                # min(init.year - (benefit_$age - (r.min - 1))))
+ 
 
 liab_active <- 
   expand.grid(start_year = min_year:(init_year + nyear - 1) , 
@@ -112,47 +115,64 @@ liab_active <-
   left_join(salary_) %>%
   left_join(decrement_model_) %>% 
   # left_join(mortality.post.model_ %>% filter(age == age.r) %>% ungroup %>% select(year, age, ax.r.W)) %>%
-  left_join(liab.ca_      %>% filter(age == age.r)    %>% ungroup %>% select(year, age, liab.ca.sum.1)) %>% 
-  left_join(liab.disb.ca_ %>% filter(age == age.disb) %>% ungroup %>% select(year, age, liab.disb.ca.sum.1 = liab.ca.sum.1)) %>% 
-  group_by(start.year, ea) %>%
+  # left_join(liab.ca_      %>% filter(age == age.r)    %>% ungroup %>% select(year, age, liab.ca.sum.1)) %>% 
+  # left_join(liab.disb.ca_ %>% filter(age == age.disb) %>% ungroup %>% select(year, age, liab.disb.ca.sum.1 = liab.ca.sum.1)) %>% 
+	
+	mutate(tier_select = tier_select_,
+				yos          = age - ea) %>% 
+  group_by(start_year, ea) %>%
   
   
   # Calculate salary and benefits
   mutate(
-    yos= age - ea,
     
-    # years of service
-    Sx = ifelse(age == min(age), 0, lag(cumsum(sx))),  # Cumulative salary
-
-    n  = pmin(yos, fasyears),                          # years used to compute fas
+    # Calculate Final Average Salary
+    Sx = ifelse(age == min(age), 0, lag(cumsum(sx))),              # Cumulative salary
+    n  = pmin(yos, fasyears),                                      # years used to compute fas
     fas= ifelse(yos < fasyears, Sx/n, (Sx - lag(Sx, fasyears))/n), # final average salary
     fas= ifelse(age == min(age), 0, fas),
+    
+    # COLA
     COLA.scale = (1 + cola)^(age - min(age)),     # later we can specify other kinds of COLA scale. Note that these are NOT COLA factors. They are used to derive COLA factors for different retirement ages.
-    Bx = na2zero(bfactor * yos * fas),            # accrued benefits, note that only Bx for ages above r.min are necessary under EAN.
-    bx = lead(Bx) - Bx,                           # benefit accrual at age x
+    
+    # Accrued service retirement benefits for tier III/IV
+    Bx = case_when(                                  # na2zero(bfactor * yos * fas), # accrued benefits, note that only Bx for ages above min retirement age are necessary under EAN.
+    	yos < 20       ~ na2zero(5/300 * yos * fas),
+    	yos %in% 20:29 ~ na2zero(0.02  * yos * fas),
+    	yos > 30	     ~ na2zero( (0.6 + (yos - 30) * 0.015) * fas),
+    	TRUE           ~ 0),                        
+    bx = lead(Bx) - Bx,                              # benefit accrual at age x
 
-    # actuarial present value of future benefit, for $1's benefit in the initial year. 
-    # ax.deathBen = get_tla(pxm.deathBen, i, COLA.scale),    # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
-    ax.disb.la  = get_tla(pxm.d,    i, COLA.scale),     
-    ax.vben     = get_tla(pxm.term, i, COLA.scale),   
+    # ax.XXX: actuarial present value of future benefit, for $1's benefit in the initial year. 
+      # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
+    
+    ax.servRet   = get_tla(pxm_servRet, i, COLA.scale),      # Service retirement benefit (will be replaced when contingent retirement beneift is added) ax.r
+    ax.terms    = get_tla(pxm_terms,   i, COLA.scale),       # deferred retirement benefit (actually we only need the value at age_vben)
+    # ax.disbRet  = get_tla(pxm_disbRet, i, COLA.scale),     # disability retirement benefit
     # ax.r.W.ret is already in mortality.post.model_
+    # ax.deathBen = get_tla(pxm.deathBen, i, COLA.scale),
     
-    # ax.r = get_tla(pxm.r, i, COLA.scale),       # ax calculated with mortality table for retirees. 
     
-    axR = c(get_tla(pxT[age < r.max], i), rep(0, max.age - r.max + 1)),                        # aT..{x:r.max-x-|} discount value of r.max at age x, using composite decrement       
-    axRs= c(get_tla(pxT[age < r.max], i,  sx[age < r.max]), rep(0, max.age - r.max + 1)),       # ^s_aT..{x:r.max-x-|}
+    # Temporary annuity values from age x to retirment age (fixed end)
+     
+     # for service retirement
+    axR = c(get_tla(pxT[age < max_retAge], i), rep(0, max_age - max_retAge + 1)),                          # aT..{x:max_retAge-x-|} discount value of max_retAge at age x, using composite decrement       
+    axRs= c(get_tla(pxT[age < max_retAge], i,  sx[age < max_retAge]), rep(0, max_age - max_retAge + 1)),   # ^s_aT..{x:max_retAge-x-|}
+     
+     #for deferred retirement 
+    axr = ifelse(ea >= age_vben, 0, c(get_tla(pxT[age < age_vben], i), rep(0, max_age - unique(age_vben) + 1))),                      # Similar to axR, but based  on age_superFirst. For calculation of term benefits when costs are spread up to age_superFirst. (vary across groups)       
+    axrs= ifelse(ea >= age_vben, 0, c(get_tla(pxT[age < age_vben], i,  sx[age < age_vben]), rep(0, max_age - unique(age_vben) + 1))),  # Similar to axRs, but based on age_superFirst. For calculation of term benefits when costs are spread up to age_superFirst. (vary across groups)
     
-    #   axr = ifelse(ea >= r.min, 0, c(get_tla(pxT[age < r.min], i), rep(0, max.age - r.min + 1))),                 # Similar to axR, but based on r.min.  For calculation of term benefits when costs are spread up to r.min.        
-    #   axrs= ifelse(ea >= r.min, 0, c(get_tla(pxT[age < r.min], i, sx[age<r.min]), rep(0, max.age - r.min + 1))),  # Similar to axRs, but based on r.min. For calculation of term benefits when costs are spread up to r.min.
     
-    # axr = ifelse(ea >= r.vben, 0, c(get_tla(pxT[age < r.vben], i), rep(0, max.age - r.vben + 1))),                   # Similar to axR, but based on r.vben.  For calculation of term benefits when costs are spread up to r.vben.        
-    # axrs= ifelse(ea >= r.vben, 0, c(get_tla(pxT[age < r.vben], i,  sx[age<r.vben]), rep(0, max.age - r.vben + 1))),  # Similar to axRs, but based on r.vben. For calculation of term benefits when costs are spread up to r.vben.
-
-    axr = ifelse(ea >= age_retFullFirst, 0, c(get_tla(pxT[age < age_retFullFirst], i), rep(0, max.age - unique(age_retFullFirst) + 1))),                             # Similar to axR, but based  on age_superFirst. For calculation of term benefits when costs are spread up to age_superFirst. (vary across groups)       
-    axrs= ifelse(ea >= age_retFullFirst, 0, c(get_tla(pxT[age < age_retFullFirst], i,  sx[age < age_retFullFirst]), rep(0, max.age - unique(age_retFullFirst) + 1))),  # Similar to axRs, but based on age_superFirst. For calculation of term benefits when costs are spread up to age_superFirst. (vary across groups)
+    # temporary annuity values from a fixed entry age y to x (fixed start)
+    ayx = c(get_tla2(pxT[age <= max_retAge], i), rep(0, max_age - max_retAge)),                     # need to make up the length of the vector up to age max.age
+    ayxs= c(get_tla2(pxT[age <= max_retAge], i,  sx[age <= max_retAge]), rep(0, max_age - max_retAge))   # need to make up the length of the vector up to age max.age
     
-    ayx = c(get_tla2(pxT[age <= r.max], i), rep(0, max.age - r.max)),                     # need to make up the length of the vector up to age max.age
-    ayxs= c(get_tla2(pxT[age <= r.max], i,  sx[age <= r.max]), rep(0, max.age - r.max))   # need to make up the length of the vector up to age max.age
+    
+    # axr = ifelse(ea >= r.min, 0, c(get_tla(pxT[age < r.min], i), rep(0, max.age - r.min + 1))),                 # Similar to axR, but based on r.min.  For calculation of term benefits when costs are spread up to r.min.        
+    # axrs= ifelse(ea >= r.min, 0, c(get_tla(pxT[age < r.min], i, sx[age<r.min]), rep(0, max.age - r.min + 1))),  # Similar to axRs, but based on r.min. For calculation of term benefits when costs are spread up to r.min.
+    
+   
   )
 
 

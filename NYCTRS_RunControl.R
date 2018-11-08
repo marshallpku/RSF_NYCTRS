@@ -44,14 +44,20 @@ Global_paramlist <- list(
 	nyear     = 10
 )
 
-paramlist <- list(age_vben = 62,
+paramlist <- list(
+	
+	                tier_select = "t4a",
 									startingSalgrowth = 0.03,
-									tier_select = "t4a",
 									
-									cola = 0.015)
-
-
-
+									# Economic assumptions
+									i = 0.07,
+									infl = 0.03,
+									
+									# benefit parameters
+									fasyears = 3,
+									cola = 0.015,
+									
+									age_vben = 62) ##TIER
 
 
 Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
