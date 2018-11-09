@@ -255,9 +255,9 @@ get_benefit_servRet <- function(
     select(age, benefit_servRet) %>% 
     mutate(year       = init_year,
            ea         = min_age,
-           age_ret    = age,
-           start.year = year - (age - ea)) %>% 
-    select(start.year, ea, age, age_ret, benefit_servRet)
+           age_servRet= age,
+           start_year = year - (age - ea)) %>% 
+    select(start_year, ea, age, age_servRet, benefit_servRet)
   # benefit %>% select(-year) %>% spread(age, benefit)
   
   return(benefit)
@@ -278,9 +278,9 @@ get_benefit_disbRet <- function(
     select(age, benefit_disbRet) %>%  
     mutate(year       = init_year,
            ea         = min_age,
-           age_disb   = age,
+           age_disbRet= age,
            start_year = year - (age - ea)) %>% 
-    select(start_year, ea, age, age_disb, benefit_disbRet)
+    select(start_year, ea, age, age_disbRet, benefit_disbRet)
 
   return(benefit)
 }

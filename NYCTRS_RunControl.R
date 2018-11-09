@@ -30,10 +30,13 @@ source("Functions.R")
 
 # Temporary: model parameters
 
+tier_select = "t4a"
+
 Global_paramlist <- list(
 
 	
 	max_retAge = 70,
+	min_retAge = 55, 
 	
 	max_age = 101,
 	min_age = 20,
@@ -45,19 +48,28 @@ Global_paramlist <- list(
 )
 
 paramlist <- list(
-	
-	                tier_select = "t4a",
-									startingSalgrowth = 0.03,
-									
-									# Economic assumptions
-									i = 0.07,
-									infl = 0.03,
+	                # tier_select = "t4a",
 									
 									# benefit parameters
 									fasyears = 3,
 									cola = 0.015,
 									
-									age_vben = 62) ##TIER
+									age_vben = 62,
+									
+									# Economic assumptions
+									i = 0.07,
+									v = 1/(1 + 0.7),
+									infl = 0.03,
+									
+									# Actuarial methods and assumptions
+									actuarial_method = "EAN.CP",
+									startingSalgrowth = 0.03,
+									
+									# Model assumptions
+									no_entrants = FALSE,
+									wf_growth = 0
+  									
+									) ##TIER
 
 
 Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)

@@ -2,7 +2,7 @@
 
 gc()
 
-Tier_select <- paramlist$tier
+# tier_select <- paramlist$tier
 
 #*********************************************************************************************************
 # 1.1 Load data ####
@@ -58,7 +58,7 @@ Tier_select <- paramlist$tier
 # Decrement tables
 source("NYCTRS_Model_Decrements.R")
 
-decrement_model <- get_decrements(paramlist$tier_select)
+decrement_model <- get_decrements(tier_select)
 
 # list.decrements      <- get_decrements(Tier_select)
 # decrement.model      <- list.decrements$decrement.model
@@ -109,7 +109,7 @@ benefit_servRet <- get_benefit_servRet(init_servRet)
 benefit_disbRet <- get_benefit_disbRet(init_disbRet)
 benefit_survivors <- get_benefit_survivors(init_survivors)
 
-initPop <- get_initPop()
+init_pop <- get_initPop()
 
 entrants_dist <- get_entrantsDist(init_actives)
 
@@ -128,15 +128,16 @@ entrants_dist <- get_entrantsDist(init_actives)
 # entrants_dist <- get_entrantsDist_tier(Tier_select)
 
 
-# #*********************************************************************************************************
-# # 2. Demographics ####
-# #*********************************************************************************************************
-# source("PSERS_Model_Demographics.R")
-# gc()
-# pop <- get_Population()
-# 
-# # pop$la %>% filter(year == 2015, year.r == 2015, number.la !=0)
-# 
+#*********************************************************************************************************
+# 2. Demographics ####
+#*********************************************************************************************************
+source("NYCTRS_Model_Demographics_singleTier.R")
+gc()
+pop <- get_Population()
+
+
+
+ 
 # #*********************************************************************************************************
 # # 3. Actuarial liabilities and benefits for contingent annuitants and survivors ####
 # #*********************************************************************************************************
@@ -163,10 +164,10 @@ entrants_dist <- get_entrantsDist(init_actives)
 # 4. Individual actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
 
-# source("NYCTRS_Model_IndivLiab.R")
-# gc()
-# 
-# liab <- get_indivLab(Tier_select)
+source("NYCTRS_Model_IndivLiab.R")
+gc()
+
+liab <- get_indivLab(tier_select)
 
 
 
@@ -175,7 +176,7 @@ entrants_dist <- get_entrantsDist(init_actives)
 # #*********************************************************************************************************
 # # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
 # #*********************************************************************************************************
-# source("PSERS_Model_AggLiab.R")
+# source("NYCTRS_Model_AggLiab.R")
 # gc()
 # 
 # AggLiab <- get_AggLiab(Tier_select,
