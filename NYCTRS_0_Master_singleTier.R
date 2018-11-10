@@ -93,7 +93,6 @@ decrement_model <- get_decrements(tier_select)
 source("NYCTRS_Model_InvReturns.R")
 i.r <- gen_returns()
 
-
 #i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
 
 

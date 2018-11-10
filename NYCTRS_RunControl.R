@@ -71,6 +71,11 @@ paramlist <- list(
 									actuarial_method = "EAN.CP",
 									startingSalgrowth = 0.03,
 									
+									# Funding policy
+							    s.year = 5,
+									
+									
+									
 									# Model assumptions
 									no_entrants = FALSE,
 									wf_growth = 0
