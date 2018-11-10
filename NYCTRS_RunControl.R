@@ -33,7 +33,7 @@ source("Functions.R")
 tier_select = "t4a"
 
 Global_paramlist <- list(
-
+  nsim = 10,
 	
 	max_retAge = 70,
 	min_retAge = 55, 
@@ -48,6 +48,7 @@ Global_paramlist <- list(
 )
 
 paramlist <- list(
+	                runname = "t4a",
 	                # tier_select = "t4a",
 									
 									# benefit parameters
@@ -55,6 +56,11 @@ paramlist <- list(
 									cola = 0.015,
 									
 									age_vben = 62,
+									
+									# Return assumptions
+									return_type = "simple",
+									ir.mean = 0.0772,
+								  ir.sd   = 0.12,
 									
 									# Economic assumptions
 									i = 0.07,

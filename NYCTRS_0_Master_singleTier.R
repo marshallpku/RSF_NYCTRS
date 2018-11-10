@@ -87,15 +87,17 @@ decrement_model <- get_decrements(tier_select)
 
 
 
-# #*********************************************************************************************************
-# # 1.3  Actual investment return, for all tiers ####
-# #*********************************************************************************************************
-# source("PSERS_Model_InvReturns.R")
-# i.r <- gen_returns()
-# #i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
-# 
-# 
-# 
+#*********************************************************************************************************
+# 1.3  Actual investment return, for all tiers ####
+#*********************************************************************************************************
+source("NYCTRS_Model_InvReturns.R")
+i.r <- gen_returns()
+
+
+#i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
+
+
+
 
 #*********************************************************************************************************
 # 1.2 Create plan data ####
@@ -176,14 +178,14 @@ liab <- get_indivLab(tier_select)
 # #*********************************************************************************************************
 # # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
 # #*********************************************************************************************************
-# source("NYCTRS_Model_AggLiab.R")
-# gc()
-# 
-# AggLiab <- get_AggLiab(Tier_select,
-#                        liab,
-#                        liab.ca,
-#                        liab.disb.ca,
-#                        pop) 
+source("NYCTRS_Model_AggLiab.R")
+gc()
+
+AggLiab <- get_AggLiab(tier_select,
+                       liab,
+                       #liab.ca,
+                       #liab.disb.ca,
+                       pop)
 # 
 # 
 # #*********************************************************************************************************
