@@ -192,17 +192,17 @@ AggLiab <- get_AggLiab(tier_select,
                        #liab.ca,
                        #liab.disb.ca,
                        pop)
-# 
-# 
-# #*********************************************************************************************************
-# # 6.  Simulation ####
-# #*********************************************************************************************************
-# source("PSERS_Model_Sim.R")
-# penSim_results <- run_sim(Tier_select, AggLiab)
-# 
-# 
-# 
-# 
+
+
+#*********************************************************************************************************
+# 6.  Simulation ####
+#*********************************************************************************************************
+source("NYCTRS_Model_Sim.R")
+penSim_results <- run_sim(tier_select, AggLiab)
+
+
+
+
 # #*********************************************************************************************************
 # # 7.  Saving results ####
 # #*********************************************************************************************************
@@ -218,32 +218,33 @@ AggLiab <- get_AggLiab(tier_select,
 # #*********************************************************************************************************
 # 
 # 
-# var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL", 
-#                   "AL.act", "AL.disb.la", "AL.act.disb", "AL.act.death", "AL.act.v", "AL.la", "AL.ca", "AL.term", "PVFB", "B",
-#                   # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
-#                   #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB", 
-#                   # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca", 
-#                   "PR", "NC_PR", "NC","ERC")
-# 
-# var_display2 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL", "EEC","ERC","ERC_PR","B", "B.v", "SC", "C", 
-#                   "nactives", "nretirees", "nla", "n.ca.R1", "n.ca.R0S1", "nterms", 
-#                   "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
-# 
-# 
-# var_display.cali <- c("runname", "sim", "year", "FR","FR_MA", "MA", "AA", "AL", 
+var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL",
+                  "AL.act", "AL.act.v", "AL.la", "AL.term", "PVFB", "B",
+                  # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
+                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
+                  # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
+                  "PR", "NC_PR", "NC","ERC")
+
+var_display2 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL", "EEC","ERC","ERC_PR","B", "B.v", "SC", "C",
+                  "nactives", "nla")
+                  # "n.ca.R1", "n.ca.R0S1", "nterms",
+                  # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
+
+
+# var_display.cali <- c("runname", "sim", "year", "FR","FR_MA", "MA", "AA", "AL",
 #                       "AL.act", "AL.disb.la", "AL.term",
-#                       "PVFB", 
-#                       "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca", 
-#                       # "C",   
+#                       "PVFB",
+#                       "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca",
+#                       # "C",
 #                       "NC","SC", "ERC", "EEC",
 #                       "PR", "nactives", "nla",
 #                       "NC_PR", "SC_PR", # "ERC_PR",
 #                       "UAAL")
-# 
-# 
-# 
-# penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
-# penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
+
+
+
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 # 
 # 
 # 

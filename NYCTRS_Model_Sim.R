@@ -13,15 +13,15 @@ run_sim <- function(tier_select_,
                     Global_paramlist_ = Global_paramlist){
 
   # Run the section below when developing new features.
-      tier_select_ =  "t4a" #  Tier_select
-      i.r_ = i.r
-      #i.r_geoReturn_ = i.r_geoReturn
-      AggLiab_        = AggLiab
-      #PR.Tiers_ = PR.Tiers
-      init_amort_raw_ = init_amort_raw
-      init_unrecReturns.unadj_ = init_unrecReturns.unadj
-      paramlist_      = paramlist
-      Global_paramlist_ = Global_paramlist
+      # tier_select_ =  "t4a" #  Tier_select
+      # i.r_ = i.r
+      # #i.r_geoReturn_ = i.r_geoReturn
+      # AggLiab_        = AggLiab
+      # #PR.Tiers_ = PR.Tiers
+      # init_amort_raw_ = init_amort_raw
+      # init_unrecReturns.unadj_ = init_unrecReturns.unadj
+      # paramlist_      = paramlist
+      # Global_paramlist_ = Global_paramlist
   
      # Tier_select_ =  "sumTiers" #  Tier_select
      # i.r_ = i.r
@@ -570,8 +570,6 @@ run_sim <- function(tier_select_,
   stopCluster(cl)
   
   
-  
-  
   #*************************************************************************************************************
   #                                  Combining results into a data frame.   ####
   #*************************************************************************************************************
@@ -580,11 +578,7 @@ run_sim <- function(tier_select_,
   penSim_results <- bind_rows(penSim_results) %>% 
     mutate(sim     = rep(-1:nsim, each = nyear),
            runname = runname,
-           returnScn = returnScn,
-           policy.SR = policy.SR,
-           policy.EL = policy.EL,
-           poli.rcyeform = DC_reform,
-           Tier    = Tier_select_,
+           Tier    = tier_select_,
            FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),
            UAAL_PR = 100 * UAAL / PR,
@@ -593,7 +587,7 @@ run_sim <- function(tier_select_,
            AL_PR   = 100 * AL / PR,
            AL.act_PR    = 100 * AL.act / PR,
            AL.la_PR    = 100 * AL.la / PR, 
-           AL.ca_PR    = 100 * AL.ca / PR, 
+           # AL.ca_PR    = 100 * AL.ca / PR, 
            AL.term_PR   = 100 * AL.term / PR, 
            #AL._PR    = 100 * AL.Ben / PR,
            ADC_PR  = 100 * ADC / PR,
@@ -602,21 +596,13 @@ run_sim <- function(tier_select_,
            NC.v_PR   = 100 * NC.v / PR,
            SC_PR   = 100 * SC / PR, 
            ERC_PR  = 100 * ERC / PR,
-           ERC.final_PR = 100 * ERC.final / PR,
            EEC_PR  = 100 * EEC / PR, 
            C_PR    = 100 * C / PR,
            B_PR    = 100 * B / PR,
            ExF     = C - B,
            ExF_PR  = 100 * ExF / PR,
            ExF_MA  = 100 * ExF / MA, 
-           PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA),
-           
-           DC_EEC = DC_EEC_tCD + DC_EEC_tE + DC_EEC_tF,
-           DC_ERC = DC_ERC_tCD + DC_ERC_tE + DC_ERC_tF,
-           
-           DC_ERC_PR.tEF = 100 * DC_ERC / (PR_tE + PR_tF),
-           DC_ERC_PR     = 100 * DC_ERC / PR
-           
+           PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA)
            ) %>%
     select(runname, sim, year, everything())
   
