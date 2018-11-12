@@ -358,7 +358,7 @@ get_initPop <- function (init_actives_ = init_actives,
   # Initial actives
   init_actives_ %<>% select(ea, age, nactives)
     
-  if(trim) init_actives %<>% filter(ea %in% range_ea, age %in% min_age:(max_retAge - 1))
+  if(trim) init_actives_ %<>% filter(ea %in% range_ea, age %in% min_age:(max_retAge - 1))
   
   init_actives_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_actives_) 
   init_actives_ %<>% spread(age, nactives, fill = 0) %>% select(-ea) %>% as.matrix 

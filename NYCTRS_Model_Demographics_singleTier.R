@@ -153,8 +153,6 @@ p_active2servRet <- make_dmat("qxr")
 p_active2la      <- make_dmat("qxr")
 # p_active2deathBen<- make_dmat("qxm_actives") # * pct.QSS
 
-(p_active2term * init_pop_$actives) %>% sum
-
 
 # Where do the terminated go
 p_term2dead    <- make_dmat("qxm_terms") 
