@@ -8,6 +8,9 @@ gc()
 # 1.1 Load data ####
 #*********************************************************************************************************
 
+# # Load plan information
+# source("NYCTRS_Data_readPlanInfo17.R")
+#
 # # Load demographics data in CAFR 2017
 # source("NYCTRS_Data_readDemoCAFR17.R")
 # 
@@ -25,6 +28,10 @@ gc()
 # source("NYCTRS_Data_memberData_CAFR2017.R")
 
 
+load("Inputs_data/Data_planInfo17.RData")
+
+
+# Creat data for contingent retirement beneficiaries. 
 # init_beneficiaries_all %<>% filter(age >= 25) 
 
 # pct.init.ret.la <-  0.75

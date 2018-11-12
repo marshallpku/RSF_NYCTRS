@@ -18,8 +18,8 @@ run_sim <- function(tier_select_,
       #i.r_geoReturn_ = i.r_geoReturn
       AggLiab_        = AggLiab
       #PR.Tiers_ = PR.Tiers
-      #init_amort_raw_ = init_amort_raw
-      #init_unrecReturns.unadj_ = init_unrecReturns.unadj
+      init_amort_raw_ = init_amort_raw
+      init_unrecReturns.unadj_ = init_unrecReturns.unadj
       paramlist_      = paramlist
       Global_paramlist_ = Global_paramlist
   
@@ -34,7 +34,6 @@ run_sim <- function(tier_select_,
      # Global_paramlist_ = Global_paramlist
   
 
-  
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
   
@@ -279,39 +278,49 @@ run_sim <- function(tier_select_,
   penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
   
   
+  penSim0 %>% as.data.frame
+  
   #*************************************************************************************************************
   #                                  Setting up initial amortization payments ####
   #*************************************************************************************************************  
   
-  # matrix representation of amortization: better visualization but larger size
-  m.max <- max(init_amort_raw_$year.remaining, m)
+  # Matrix representation of amortization of amort payment schedule: better visualization but larger size
+   # Rows:    schedule of amortization payments for losses/gains occurred in a certain year. 
+   # Columns: each column contains all the amortization payments that need to be paid in a simulation year. 
+   #          Column i corresponds to year i. 
+   #          Column sums give the total amortization payments. 
+    
+  m.max <- max(init_amort_raw_$year.remaining, m)       # max number of rows and columns needed
   SC_amort0 <- matrix(0, nyear + m.max, nyear + m.max)
   # SC_amort0
   
-  # data frame representation of amortization: much smaller size, can be used in real model later.
-  # SC_amort <- expand.grid(year = 1:(nyear + m), start = 1:(nyear + m))
   
-  # Amortization payment amounts for all prior years. 
-   SC_amort.init <- matrix(0, nrow(init_amort_raw_), nyear + m.max)
+  # Amortization payment amounts for losses/gains occured piror to year 1 (from plan docs). Set up the matrix. 
+  SC_amort.init <- matrix(0, nrow(init_amort_raw_), nyear + m.max)
  
-  # Adjustment factor for initial amortization payments (PSERS specific)
-      # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2015.
+   
+  # Adjustment factor for initial amortization payments 
+      # Factor is defined as the initial model UAAL as a proportion of UAAL in AV.
       # WARNING: Does not work with "method 2" for AA.
 
-   MA.year1 <- switch(init_MA, 
-   									 MA = MA_0,                         # Use preset value
-   									 AL = penSim0$AL[1],                # Assume inital fund equals inital liability.
-   									 AL_pct = penSim0$AL[1] * MA_0_pct) # Inital MA is a proportion of inital AL
+   MA.year1.model <- switch(init_MA_type, 
+   									    MA = MA_0,                         # Use preset value
+   									    AL = penSim0$AL[1],                # Assume inital fund equals inital liability.
+   									    AL_pct = penSim0$AL[1] * MA_0_pct) # Inital MA is a proportion of inital AL
    
-   AA.year1  <- ifelse(init_AA == "AL_pct",         penSim0$AL[1] * AA_0_pct, # Initial AA as a % of initial AL
-   										ifelse(init_AA == "AA0", AA_0,                     # preset value of AA
-   													 with(penSim0, MA.year1))  # # Assume inital AA equals inital liability.
+   AA.year1.model  <-
+   	ifelse(init_AA_type == "AL_pct",
+   				 penSim0$AL[1] * AA_0_pct,         # Initial AA as a % of initial AL
+   				 ifelse(init_AA_type == "AA0", AA_0,    # preset value of AA
+   				 			 with(penSim0, MA.year1))    # Assume inital AA equals inital liability.
    )
    
-   AL.year1 <- penSim0$AL[1]
-   UAAL.year1 <- AL.year1 - AA.year1
+   AL.year1.model   <- penSim0$AL[1]
    
-   factor.initAmort <- UAAL.year1/ 7170962559 # AV2016 page n3
+   UAAL.year1.model <- AL.year1.model - AA.year1.model
+   
+   factor.initAmort <- UAAL.year1.model/ 20000000000 # AV2016 page n3
+   # Notes: Theoretically, the AV UAAL should be equal to the sum of outstanding amortization balance. Need to check the document
    
    if(useAVamort){
    	SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance * factor.initAmort , m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
@@ -322,12 +331,18 @@ run_sim <- function(tier_select_,
    	}
    }
    
+   SC_amort.init
    
    
   nrow.initAmort <- nrow(SC_amort.init)
 
   SC_amort0 <- rbind(SC_amort.init, SC_amort0)
-  # # The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
+  # Notes:
+  #   The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
+  #   This creates the issue for year 1 that whether we should use the amortization from the document or that calculated from the model
+  #   Need to think this through. 
+  #   For sim -1, which is for check model consistency, all amort payments for past gains/losses are set to 0. 
+  
   # # save(SC_amort0, file = "SC_amort0.RData")  
   
   #*************************************************************************************************************
@@ -347,7 +362,7 @@ run_sim <- function(tier_select_,
     if(k == -1) SC_amort[,] <- 0
     
     penSim[["i.r"]] <- i.r_[, as.character(k)]
-    penSim[["i.r_geoReturn"]] <- i.r_geoReturn_[, as.character(k)]
+    # penSim[["i.r_geoReturn"]] <- i.r_geoReturn_[, as.character(k)]
     
     
     source("Functions.R")
@@ -356,94 +371,106 @@ run_sim <- function(tier_select_,
         
         # j <- 1
         # j <- 2
-
-      # MA(j) and EAA(j) 
-      if(j == 1) {penSim$MA[j]  <- ifelse(k == -1, penSim$AL[j],                   # k = -1 is for testing model consistency
-                                          switch(init_MA, 
-                                                 MA0 = MA_0,                        # Use preset value
-                                                 AL  = penSim$AL[j],                # Assume inital fund equals inital liability.
+      
+    	#***********************************
+      #   1. MA(j), AA(j) and UAAL(j)   **
+      #***********************************
+    	
+    	# Year 1
+    	if(j == 1) {penSim$MA[j]  <- ifelse(k == -1, penSim$AL[j],                   # k = -1 is for testing model consistency
+                                          switch(init_MA_type, 
+                                                 MA0 = MA_0,                       # Use preset value
+                                                 AL  = penSim$AL[j],               # Assume inital fund equals inital liability.
                                                  AL_pct = penSim$AL[j] * MA_0_pct) # Inital MA is a proportion of inital AL
-                                          ) 
-                 penSim$EAA[j] <- switch(init_EAA,
-                                         AL = EAA_0,                       # Use preset value 
-                                         MA = penSim$MA[j])                # Assume inital EAA equals inital market value.
-                 
-                 penSim$AA[j]  <- ifelse(init_AA == "AL_pct" & k != -1, penSim$AL[j] * AA_0_pct, 
-                                             ifelse(init_AA == "AA0" & k != -1, AA_0,
+                                          )
+    	
+                 penSim$AA[j]  <- ifelse(init_AA_type == "AL_pct" & k != -1, penSim$AL[j] * AA_0_pct,  # Inital MA is a proportion of inital AL;  
+                                             ifelse(init_AA_type == "AA0" & k != -1, AA_0,             # Use preset value 
                                                     switch(smooth_method,
-                                                           method1 =  with(penSim, MA[j]),   # we may want to allow for a preset initial AA.
+                                                           method1 =  with(penSim, MA[j]),             # AA = MA  (always true for if k == -1 regardless of the value of init_AA_type)
                                                            method2 =  with(penSim, (1 - w) * EAA[j] + w * MA[j])
                                                     ) 
-                                          )
-      )
+                                             )
+                                  )
+                 
+                 # May not need this anymore
+                 # penSim$EAA[j] <- switch(init_EAA,
+                 # 												AL = EAA_0,                       # Use preset value 
+                 # 												MA = penSim$MA[j])                # Assume inital EAA equals inital market value.
+      
+      # Year 2 and after                      
       } else {
         penSim$MA[j]  <- with(penSim, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1])
         penSim$EAA[j] <- with(penSim, AA[j - 1] + I.e[j - 1] + C[j - 1] - B[j - 1])
         penSim$AA[j]  <- switch(smooth_method,
-                                method1 = with(penSim, MA[j] - sum(s.vector[max(s.year + 2 - j, 1):s.year] * I.dif[(j-min(j, s.year + 1)+1):(j-1)])),
+                                method1 = with(penSim, MA[j] - sum(s.vector[max(s.year + 2 - j, 1):s.year] * I.dif[(j-min(j, s.year + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
                                 method2 = with(penSim, (1 - w) * EAA[j] + w * MA[j]) 
         )
       }
       
       
-      ## Initial unrecognized returns
-      if((init_AA %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 & Tier_select_ == "sumTiers"){
-
-        # Adjusting initila unrecognized returns
+      ## Incorporating initial unrecognized returns
+       # - The unrecognized returns/losses, which are the differences between initial MA and AA, 
+    	 #   will be recognized over time. 
+    	 # - The schedule is constructed based on info in plan document and the asset smoothing policy
+    	 # - The schedule from the plan document is adjusted for the MA-AA difference in the model, which may not be always equal to the document value. 
+    	
+    	if((init_AA_type %in% c("AL_pct", "AA0")) & useAVunrecReturn & k != -1 ){  #    & Tier_select_ == "sumTiers"
+       
+        # Adjusting initila unrecognized returns for the MA-AA difference in the model
         init_unrecReturns.adj <-  mutate(init_unrecReturns.unadj_, DeferredReturn = DeferredReturn * (penSim$MA[1] - penSim$AA[1])/sum(DeferredReturn),
                                                                    DeferredReturn.annualTot = sum(DeferredReturn) - cumsum(DeferredReturn) # Initial unrecognized return to be subtracted from AA in each year
                                          )
 
         # Adjust AA for inital unrecognized returns
-        #mm <- j - 1
         if((j - 1 + init_year) %in% init_unrecReturns.adj$year) penSim$AA[j] <- penSim$AA[j] - with(init_unrecReturns.adj, DeferredReturn.annualTot[year == (j - 1 + init_year)])
-            
-           # init_unrecReturns.adj[init_unrecReturns.adj$year - init_year + 1 == j, "DeferredReturn"] #  )
-
       }
         
       
-      ## Apply corridor for MA, MA must not deviate from AA by more than 40%. 
-      
+    	
+      ## Apply corridor for MA, MA must not deviate from AA by more than 40%.
       penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
       penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
     
 
       # UAAL(j)
       penSim$UAAL[j]    <- with(penSim, AL[j] - AA[j])
-      # penSim$UAAL.MA[j] <- with(penSim, AL[j] - MA[j])
+  
+      
+      
+      #******************************************
+      #   2. Losses/gains and amoritization    **
+      #******************************************
+      
+      # Notes on useAVamort
+      # if useAVamort is FALSE: It is assumed that the entire UAAL in year 1 is the loss/gain that occurs in year 0
+      #                         It is then amortized using the amortization policy. 
+      #
+      # if useAVamort is TRUE:  Use the schedule of losses/gains and amortization payments from the plan documeht. 
       
       
       # LG(j)
       # Note that what is amortized at time t is the sum of 1) actuarial loss/gain(LG) during t -1, and 2) shortfall in paying ADC(C_ADC) at (t-1)
       if (j == 1){
-        penSim$EUAAL[j] <- 0
-        penSim$LG[j] <- with(penSim,  UAAL[j])  # This is the intial underfunding, rather than actuarial loss/gain if the plan is established at period 1. 
-        penSim$Amort_basis[j] <- with(penSim, LG[j])  # This will not be used for LAFPP since the amortization scheme for year 1 is provided by SC_amort.(from AV2016)
+        penSim$EUAAL[j]       <- 0
+        penSim$LG[j]          <- with(penSim, UAAL[j])  # This is the intial underfunding, rather than actuarial loss/gain if the plan is established at period 1. 
+        penSim$Amort_basis[j] <- with(penSim, LG[j])    
         
       } else {
-        penSim$EUAAL[j] <- with(penSim, (UAAL[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])
-        
-        # if(j %in% (B.adj$year - init_year + 1 + 1)) penSim$EUAAL[j] <- penSim$EUAAL[j] + (B.adj[B.adj$year == j + init_year - 1 - 1,]$B.extra) * (1 + i) # For LAFPP. adjustment for initial DROP benefit balance is not used in the calculation of losses/gains.
-        
-        penSim$LG[j]    <- with(penSim,  UAAL[j] - EUAAL[j])
-        penSim$Amort_basis[j]    <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
-      
-        # penSim$EUAAL.MA[j] <- with(penSim, (UAAL.MA[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])
-        # penSim$LG[j]    <- with(penSim,  UAAL.MA[j] - EUAAL.MA[j])
-        # penSim$Amort_basis[j]    <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
-        
+        penSim$EUAAL[j]       <- with(penSim, (UAAL[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])
+        penSim$LG[j]          <- with(penSim,  UAAL[j] - EUAAL[j])
+        penSim$Amort_basis[j] <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
       }   
       
       
       # # Amortize LG(j)
     
-      if(j > 1){
+      #if(j > 1){
       if(j > ifelse(useAVamort, 1, 0)){
-        # if useAVamort is TRUE, AV amort will be used for j = 1, not the one calcuated from the model. This may cause inconsistency in the model results
+        # if useAVamort is TRUE, AV amort will be used for j = 1, not the one calcuated from the model. This may cause inconsistency in the model results(?)
         if(amort_type == "closed") SC_amort[nrow.initAmort + j - 1, j:(j + m - 1)] <- amort_LG(penSim$Amort_basis[j], i, m, salgrowth_amort, end = FALSE, method = amort_method)
         }
-      }
+      #}
       
       # Supplemental cost in j
       penSim$SC[j] <- switch(amort_type,
@@ -453,8 +480,15 @@ run_sim <- function(tier_select_,
       
       
       
-      #**************************************************************************************************************
       
+      #******************************************
+      #   3. ADC, ERC, and total contribution  **
+      #******************************************
+      # Notes on nonNegC and EEC_fixed
+      
+      
+      # EEC(j)
+      penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
       
       
       # ADC(j)
@@ -503,20 +537,27 @@ run_sim <- function(tier_select_,
       # C(j) - ADC(j)
       penSim$C_ADC[j] <- with(penSim, C[j] - ADC[j])
       
-      # Ia(j), Ib(j), Ic(j)
+      
+      
+      
+      #******************************************
+      #   4. Investment income                 **
+      #******************************************
+      
+      # Ia(j), Ib(j), Ic(j) Components of expected investment income
       penSim$Ia[j] <- with(penSim,  MA[j] * i[j])
       penSim$Ib[j] <- with(penSim,  B[j] * i[j])
       penSim$Ic[j] <- with(penSim,  C[j] * i[j])
       
       
-      # I.e(j)
-      # penSim$I.e[j] <- with(penSim, Ia[j] + Ic[j] - Ib[j])
+      # I.e(j) Expected investment income
       penSim$I.e[j] <- with(penSim, i[j] *(MA[j] + C[j] - B[j]))
       
-      # I.r(j)
-      penSim$I.r[j] <- with(penSim, i.r[j] *( MA[j] + C[j] - B[j])) # C[j] should be multiplied by i.r if assuming contribution is made at year end. 
       
-      # I.dif(j) = I.r(j) - I.e(j):  used in asset smoothing 
+      # I.r(j) Actual investment income
+      penSim$I.r[j] <- with(penSim, i.r[j] *( MA[j] + C[j] - B[j]))   # C[j] should be multiplied by i.r if assuming contribution is made at year end. 
+      
+      # I.dif(j) = I.r(j) - I.e(j): Difference between expected and actual investment incomes (for asset smoothing)
       penSim$I.dif[j] <- with(penSim, I.r[j] - I.e[j])
       
     }
@@ -524,6 +565,7 @@ run_sim <- function(tier_select_,
     # penSim_results[[k]] <- penSim
     as.data.frame(penSim)
   }
+  
   
   stopCluster(cl)
   
@@ -582,17 +624,5 @@ run_sim <- function(tier_select_,
   
 }
 
-
-# 
- # start_time_loop <- proc.time()
- # 
- # penSim_results <- run_sim()
- # 
- # end_time_loop <- proc.time()
- # Time_loop <- end_time_loop - start_time_loop 
- # Time_loop
- # 
- # 
- # 
 
 

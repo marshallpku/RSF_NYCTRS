@@ -33,6 +33,7 @@ source("Functions.R")
 tier_select = "t4a"
 
 Global_paramlist <- list(
+	ncore = 4,
   nsim = 10,
 	
 	max_retAge = 70,
@@ -74,6 +75,9 @@ paramlist <- list(
 									
 									# Funding policy
 							    s.year = 5,
+									s.upper = 999, 
+									s.lower = -999,
+									smooth_method = "method1",
 									
 									amort_method = "cd",
 									amort_type   = "closed",
@@ -84,10 +88,12 @@ paramlist <- list(
 									nonNegC   = FALSE,
 									EEC_fixed = FALSE,
 									
+									EEC_rate = 0.04,
+									
 									
 								  ## Initial Funding:
-									init_MA_type = "AL_pct", 
-									init_AA_type = "AL_pct",
+									init_MA_type = "AL_pct",  # need to make values more straightforward
+									init_AA_type = "AL_pct",  # need to make values more straightforward
 									MA_0_pct = 0.65,
 									AA_0_pct = 0.65,
 									MA_0 = 0,
@@ -100,7 +106,7 @@ paramlist <- list(
 									wf_growth = 0,
 									
 									useAVamort = TRUE,
-									useAVunrecReturn = TRUE,
+									useAVunrecReturn = TRUE
 									
   									
 									) ##TIER
