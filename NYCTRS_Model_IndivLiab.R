@@ -503,7 +503,11 @@ liab_term <- expand.grid(# start.year   = (init.year - (r.vben - 1 - min.age)):(
          age >= ea, 
   			 age_term >= ea,
          age >= age_term) %>% 
-	mutate(B.v = 0, ALx.v = 0)
+	mutate(year      = start_year + age - ea,
+				 year_term = start_year + age_term - ea,
+		     B.v = 0,
+				 ALx.v = 0) %>% 
+	filter(year %in% seq(init_year, len = nyear))
 
 # #*************************************************************************************************************
 # #                        4.1  ALs and NCs of benefit for death before retirement, for actives                  #####                  

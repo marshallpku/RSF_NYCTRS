@@ -149,8 +149,8 @@ get_AggLiab <- function( tier_select_,
       as.matrix # extracting elements from matrices is much faster than from data.frame
   
   
-  #active.agg %>% as.data.frame()
-   
+  # active.agg %>% as.data.frame()
+
    
   #*************************************************************************************************************
   #                                     ## Liabilities and benefits for retirees (life annuitants)   ####
@@ -163,18 +163,19 @@ get_AggLiab <- function( tier_select_,
   
   
   liab_$la %<>% 
-    mutate(ALx.la.cellsum      = ALx.la * number.la,
-           B.la.cellsum        = B.la   * number.la,
+    mutate(ALx.la.cellsum  = ALx.la * number.la,
+           B.la.cellsum    = B.la   * number.la,
            runname         = runname)
   
   la.agg <- liab_$la %>% 
     group_by(year) %>% 
     summarise(ALx.la.yearsum      = sum(ALx.la.cellsum, na.rm = TRUE),
               B.la.yearsum        = sum(B.la.cellsum  , na.rm = TRUE),
-              nla             = sum(number.la , na.rm = TRUE)) %>% 
+              nla                 = sum(number.la , na.rm = TRUE)) %>% 
     # mutate(runname = runname) %>% 
     as.matrix
   
+  # la.agg %>% as.data.frame
   
   # 
   # liab_   = liab.tCD
@@ -275,39 +276,25 @@ get_AggLiab <- function( tier_select_,
   #*************************************************************************************************************
 
   # Save 10 seconds by using data.table to merge. Update 2/2016: the latest version of left_join looks fast enough.
-  #liab_$term <- left_join(pop_$term, liab_$term)
-  # .liab$term  <- data.table(.liab$term, key = "ea,age,year,year.term")
-  # .pop$term   <- data.table(.pop$term,  key = "ea,age,year,year.term")
-  # .liab$term  <- merge(.pop$term, .liab$term, by = c("ea", "age","year", "year.term"), all.x = TRUE)
-  # .liab$term  <- as.data.frame(.liab$term)
+  liab_ <- liab
   
-  #.liab$term %>% filter(year == 2015, year.term == 2014, age == 40)
+  liab_$term <- left_join(pop_$term, liab_$term, by = c("year", "year_term", "ea", "age"))
   
+
+  liab_$term %<>%
+    mutate(ALx.v.cellsum = ALx.v * number.v,
+           B.v.cellsum   = B.v  * number.v,
+           runname = runname)
   
-  # 
-  # liab_$term %<>% 
-  #   mutate(ALx.v.cellsum = ALx.v * number.v,
-  #          B.v.cellsum   = B.v  * number.v,
-  #          runname = runname)
-  
-  # term.agg <- liab_$term %>% 
-  #   group_by(year) %>% 
-  #   summarise(ALx.v.yearsum   = sum(ALx.v.cellsum, na.rm = TRUE),
-  #             B.v.yearsum     = sum(B.v.cellsum  , na.rm = TRUE),
-  #             nterms          = sum(number.v , na.rm = TRUE)) %>% 
-  #   # mutate(runname = runname) %>% 
-  #   as.matrix
- 
-  term.agg <- 
-    data.frame(year = init_year:(init_year + nyear - 1),
-               ALx.v.yearsum = 0,
-               B.v.yearsum = 0,
-               nterms = 0
-               ) %>% 
+  term.agg <- liab_$term %>%
+    group_by(year) %>%
+    summarise(ALx.v.yearsum   = sum(ALx.v.cellsum, na.rm = TRUE),
+              B.v.yearsum     = sum(B.v.cellsum  , na.rm = TRUE),
+              nterms          = sum(number.v , na.rm = TRUE)) %>%
+    # mutate(runname = runname) %>%
     as.matrix
-  
-  
-  #term.agg
+ 
+  term.agg
 
   # liab_$term %>% filter(year.term == 2029, year == 2029, number.v !=0)
   # 

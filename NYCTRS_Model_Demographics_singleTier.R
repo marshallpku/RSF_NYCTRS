@@ -153,6 +153,8 @@ p_active2servRet <- make_dmat("qxr")
 p_active2la      <- make_dmat("qxr")
 # p_active2deathBen<- make_dmat("qxm_actives") # * pct.QSS
 
+(p_active2term * init_pop_$actives) %>% sum
+
 
 # Where do the terminated go
 p_term2dead    <- make_dmat("qxm_terms") 
@@ -254,7 +256,7 @@ calc_entrants <- function(wf0, wf1, delta, dist, no.entrants = FALSE){
  # i runs from 2 to nyear. 
 
 for (j in 1:(nyear - 1)){
-  # j <- 4  
+  # j <- 1  
   # compute the inflow to and outflow
   active2term    <- wf_active[, , j] * p_active2term     # This will join wf_term[, , j + 1, j + 1], note that workers who terminate in year j won't join the terminated group until j+1. 
   active2servRet <- wf_active[, , j] * p_active2servRet  # This will be used to calculate the number of actives leaving the workforce
@@ -324,6 +326,7 @@ for (j in 1:(nyear - 1)){
   newDisb.act[j] <- sum(active2disbRet)
   
 }
+
 
 
 
@@ -456,9 +459,5 @@ pop <- get_Population()
 # 
 # wf_active %>% head
 # 
-
-
-
-
 
 
