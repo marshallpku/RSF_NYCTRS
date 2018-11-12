@@ -59,6 +59,7 @@ paramlist <- list(
 									
 									# Return assumptions
 									return_type = "simple",
+									return_scenario = NULL, 
 									ir.mean = 0.0772,
 								  ir.sd   = 0.12,
 									
@@ -74,11 +75,33 @@ paramlist <- list(
 									# Funding policy
 							    s.year = 5,
 									
+									amort_method = "cd",
+									amort_type   = "closed",
+									m = 15,
+									salgrowth_amort = 0.03,
+									
+									ConPolicy = "ADC",
+									nonNegC   = FALSE,
+									EEC_fixed = FALSE,
+									
+									
+								  ## Initial Funding:
+									init_MA_type = "AL_pct", 
+									init_AA_type = "AL_pct",
+									MA_0_pct = 0.65,
+									AA_0_pct = 0.65,
+									MA_0 = 0,
+									AA_0 = 0,
+									
 									
 									
 									# Model assumptions
 									no_entrants = FALSE,
-									wf_growth = 0
+									wf_growth = 0,
+									
+									useAVamort = TRUE,
+									useAVunrecReturn = TRUE,
+									
   									
 									) ##TIER
 

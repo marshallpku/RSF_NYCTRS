@@ -18,8 +18,8 @@ run_sim <- function(tier_select_,
       #i.r_geoReturn_ = i.r_geoReturn
       AggLiab_        = AggLiab
       #PR.Tiers_ = PR.Tiers
-      init_amort_raw_ = init_amort_raw
-      init_unrecReturns.unadj_ = init_unrecReturns.unadj
+      #init_amort_raw_ = init_amort_raw
+      #init_unrecReturns.unadj_ = init_unrecReturns.unadj
       paramlist_      = paramlist
       Global_paramlist_ = Global_paramlist
   
@@ -221,43 +221,43 @@ run_sim <- function(tier_select_,
   # AL(j)
   penSim0$AL.act.laca <- AggLiab_$active[, "ALx.laca.yearsum"]
   penSim0$AL.act.v    <- AggLiab_$active[, "ALx.v.yearsum"]
-  penSim0$AL.act.death<- AggLiab_$active[, "ALx.death.yearsum"]
-  penSim0$AL.act.disb <- AggLiab_$active[, "ALx.disb.yearsum"]
-  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.death + penSim0$AL.act.disb)
+  #penSim0$AL.act.death<- AggLiab_$active[, "ALx.death.yearsum"]
+  #penSim0$AL.act.disb <- AggLiab_$active[, "ALx.disb.yearsum"]
+  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v) # + penSim0$AL.act.death + penSim0$AL.act.disb)
   
   penSim0$AL.la    <- AggLiab_$la[,   "ALx.la.yearsum"]
-  penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.yearsum"]
+  #penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.yearsum"]
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.yearsum"]
-  penSim0$AL.death <- AggLiab_$death[,"ALx.death.yearsum"]
-  penSim0$AL.disb.la  <- AggLiab_$disb.la[, "ALx.disb.la.yearsum"]
-  penSim0$AL.disb.ca  <- AggLiab_$disb.ca[, "ALx.disb.ca.yearsum"]
+  #penSim0$AL.death <- AggLiab_$death[,"ALx.death.yearsum"]
+  #penSim0$AL.disb.la  <- AggLiab_$disb.la[, "ALx.disb.la.yearsum"]
+  #penSim0$AL.disb.ca  <- AggLiab_$disb.ca[, "ALx.disb.ca.yearsum"]
   
-  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.ca +  AL.term + AL.death + AL.disb.la + AL.disb.ca)
+  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term)  # + AL.ca + AL.death + AL.disb.la + AL.disb.ca)
   
   
   # NC(j)
   penSim0$NC.laca <- AggLiab_$active[, "NCx.laca.yearsum"]
   penSim0$NC.v    <- AggLiab_$active[, "NCx.v.yearsum"]
-  penSim0$NC.death<- AggLiab_$active[, "NCx.death.yearsum"]
-  penSim0$NC.disb <- AggLiab_$active[, "NCx.disb.yearsum"] 
-  penSim0$NC      <-  with(penSim0, NC.laca + NC.v + NC.death + NC.disb)
+  #penSim0$NC.death<- AggLiab_$active[, "NCx.death.yearsum"]
+  #penSim0$NC.disb <- AggLiab_$active[, "NCx.disb.yearsum"] 
+  penSim0$NC      <-  with(penSim0, NC.laca + NC.v) # + NC.death + NC.disb)
   
   
   # PVFB(j)
   penSim0$PVFB.laca <- AggLiab_$active[, "PVFBx.laca.yearsum"]
   penSim0$PVFB.v    <- AggLiab_$active[, "PVFBx.v.yearsum"]
-  penSim0$PVFB.death<- AggLiab_$active[, "PVFBx.death.yearsum"]
-  penSim0$PVFB.disb <- AggLiab_$active[, "PVFBx.disb.yearsum"] 
-  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.death + PVFB.disb) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
+  #penSim0$PVFB.death<- AggLiab_$active[, "PVFBx.death.yearsum"]
+  #penSim0$PVFB.disb <- AggLiab_$active[, "PVFBx.disb.yearsum"] 
+  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v) # + PVFB.death + PVFB.disb) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
   
   # B(j)
   penSim0$B.la    <- AggLiab_$la[, "B.la.yearsum"]
-  penSim0$B.ca    <- AggLiab_$ca[, "B.ca.yearsum"]
+  # penSim0$B.ca    <- AggLiab_$ca[, "B.ca.yearsum"]
   penSim0$B.v     <- AggLiab_$term[, "B.v.yearsum"]
-  penSim0$B.death <- AggLiab_$death[, "B.death.yearsum"]
-  penSim0$B.disb.la  <- AggLiab_$disb.la[, "B.disb.la.yearsum"]
-  penSim0$B.disb.ca  <- AggLiab_$disb.ca[, "B.disb.ca.yearsum"]
-  penSim0$B       <- with(penSim0, B.la + B.ca + B.v + B.death + B.disb.la + B.disb.ca)
+  #penSim0$B.death <- AggLiab_$death[, "B.death.yearsum"]
+  #penSim0$B.disb.la  <- AggLiab_$disb.la[, "B.disb.la.yearsum"]
+  #penSim0$B.disb.ca  <- AggLiab_$disb.ca[, "B.disb.ca.yearsum"]
+  penSim0$B       <- with(penSim0, B.la + B.v) # + B.ca + B.death + B.disb.la + B.disb.ca)
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.yearsum"]
@@ -265,15 +265,15 @@ run_sim <- function(tier_select_,
 
   
   # nactives, nretirees, nterms
-  penSim0$nactives  <- AggLiab_$active[,  "nactives"]
+  penSim0$nactives  <- AggLiab_$active[, "nactives"]
   penSim0$nla       <- AggLiab_$la[, "nla"]
-  penSim0$n.ca.R1   <- AggLiab_$ca[, "n.R1"]
-  penSim0$n.ca.R0S1 <- AggLiab_$ca[, "n.R0S1"]
+  #penSim0$n.ca.R1   <- AggLiab_$ca[, "n.R1"]
+  #penSim0$n.ca.R0S1 <- AggLiab_$ca[, "n.R0S1"]
   penSim0$nterms    <- AggLiab_$term[, "nterms"]
-  penSim0$ndeathBen <- AggLiab_$death[, "ndeathBen"]
-  penSim0$ndisb.la  <- AggLiab_$disb.la[,  "ndisb.la"]
-  penSim0$ndisb.ca.R1   <- AggLiab_$disb.ca[,  "n.disb.R1"]
-  penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
+  #penSim0$ndeathBen <- AggLiab_$death[, "ndeathBen"]
+  #penSim0$ndisb.la  <- AggLiab_$disb.la[,  "ndisb.la"]
+  #penSim0$ndisb.ca.R1   <- AggLiab_$disb.ca[,  "n.disb.R1"]
+  #penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
 
   
   penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
@@ -296,25 +296,33 @@ run_sim <- function(tier_select_,
  
   # Adjustment factor for initial amortization payments (PSERS specific)
       # Factor is defined as the initial model UAAL as a proportion of UAAL in AV2015.
-      # WARNING: Does not work with "method 2" for AA. 
-   
+      # WARNING: Does not work with "method 2" for AA.
+
    MA.year1 <- switch(init_MA, 
-                        MA0 = MA_0,                         # Use preset value
-                        AL = penSim0$AL[1],                # Assume inital fund equals inital liability.
-                        AL_pct = penSim0$AL[1] * MA_0_pct) # Inital MA is a proportion of inital AL
+   									 MA = MA_0,                         # Use preset value
+   									 AL = penSim0$AL[1],                # Assume inital fund equals inital liability.
+   									 AL_pct = penSim0$AL[1] * MA_0_pct) # Inital MA is a proportion of inital AL
    
    AA.year1  <- ifelse(init_AA == "AL_pct",         penSim0$AL[1] * AA_0_pct, # Initial AA as a % of initial AL
-                           ifelse(init_AA == "AA0", AA_0,                     # preset value of AA
-                                                    with(penSim0, MA.year1))  # # Assume inital AA equals inital liability.
+   										ifelse(init_AA == "AA0", AA_0,                     # preset value of AA
+   													 with(penSim0, MA.year1))  # # Assume inital AA equals inital liability.
    )
-                                  
+   
    AL.year1 <- penSim0$AL[1]
    UAAL.year1 <- AL.year1 - AA.year1
    
-   factor.initAmort <- UAAL.year1/ 42723895000   # # AV2016 page17  AV2015 value: 37335764000 
-
-  # SC_amort.init
-
+   factor.initAmort <- UAAL.year1/ 7170962559 # AV2016 page n3
+   
+   if(useAVamort){
+   	SC_amort.init.list <- mapply(amort_LG, p = init_amort_raw_$balance * factor.initAmort , m = init_amort_raw_$year.remaining, method = init_amort_raw_$amort.method,
+   															 MoreArgs = list(i = i, g = salgrowth_amort, end = FALSE), SIMPLIFY = F)
+   	
+   	for(j in 1:nrow(SC_amort.init)){
+   		SC_amort.init[j, 1:init_amort_raw_$year.remaining[j]] <- SC_amort.init.list[[j]]
+   	}
+   }
+   
+   
    
   nrow.initAmort <- nrow(SC_amort.init)
 
@@ -486,43 +494,10 @@ run_sim <- function(tier_select_,
                               ADC_cap = with(penSim, min(ADC.ER[j], PR_pct_cap * PR[j])), # ADC with cap. Cap is a percent of payroll 
                               Fixed   = with(penSim, PR_pct_fixed * PR[j])                # Fixed percent of payroll
       ) 
-    
-
-      #**************************************************************************************************************
-      #                                        PSERS: ERC cap 
-      #**************************************************************************************************************
-      # For fiscal years ending on or after June 30, 2014, the pension contribution rate can be no more than 4.5% of the total conpensation of all active members, 
-      # greater than the prior year's final contribution rate. 
-      # 
-      
-      if(useERC_cap & k!= -1 ){
-        
-        if(j == 1){
-          #PSERS: Limit ERC rate at model year 2016 (FY 2016-2017) to 29.5%
-          
-          penSim$ERC.final[j] <- ifelse(penSim$ERC[j]/penSim$PR[j] >= 0.295,
-                                        0.295 * penSim$PR[j],
-                                        penSim$ERC[j])
-          
-        } else {
-          # Constraint 1: ERC.final as a % of payroll year in j+1 cannot be greater than the rate + 4.5% in year j
-          penSim$ERC.final[j] <- ifelse(penSim$ERC[j]/penSim$PR[j] >= (penSim$ERC.final[j - 1]/penSim$PR[j - 1] + 0.045),
-                                        (penSim$ERC.final[j - 1]/penSim$PR[j - 1] + 0.045) * penSim$PR[j],
-                                        penSim$ERC[j])
-          # Constraint 2: If contraint 1 is not triggered, then ERC.final should be at least as much as the employee NC rate (total NC - ERC).
-          if(useERC_floor) penSim$ERC.final[j] <- ifelse(penSim$ERC.final[j] == penSim$ERC[j],    
-                                                         max(penSim$ERC.final[j], penSim$NC[j] - penSim$EEC[j]),
-                                                         penSim$ERC.final[j])
-          }
-        
-      } else penSim$ERC.final[j] <- penSim$ERC[j]
-      
-      if(useERC_floor & k!= -1) penSim$ERC.final[j] <- max(penSim$ERC.final[j], penSim$NC[j] - penSim$EEC[j]  )
-  
-    
+   
       
       # C(j)
-      penSim$C[j] <- with(penSim, EEC[j] + ERC.final[j])
+      penSim$C[j] <- with(penSim, EEC[j] + ERC[j])
       
       
       # C(j) - ADC(j)
