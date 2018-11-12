@@ -86,6 +86,9 @@ get_AggLiab <- function( tier_select_,
   #                                     ## Liabilities and NCs for actives   ####
   #*************************************************************************************************************
   
+  liab_ <- liab
+  x <- liab_$active 
+   
   # Join population data frames and liability data frames. 
   liab_$active <- left_join(pop_$active, liab_$active, by = c("year", "ea", "age")) # %>% left_join(new_retirees)
   liab_$active[-(1:3)] <- colwise(na2zero)(liab_$active[-(1:3)]) # replace NAs with 0, so summation involing missing values will not produce NAs. 
@@ -110,9 +113,6 @@ get_AggLiab <- function( tier_select_,
            PVFBx.actAll.cellsum    = PVFBx.laca.cellsum + PVFBx.v.cellsum, # + PVFBx.death.cellsum + PVFBx.disb.cellsum,
            
            PR.cellsum  = sx * number.a,
-           
-           # DC_EEC.cellsum = DC_EEC * number.a,
-           # DC_ERC.cellsum = DC_ERC * number.a,
            
            runname = runname)
   
@@ -276,7 +276,6 @@ get_AggLiab <- function( tier_select_,
   #*************************************************************************************************************
 
   # Save 10 seconds by using data.table to merge. Update 2/2016: the latest version of left_join looks fast enough.
-  liab_ <- liab
   
   liab_$term <- left_join(pop_$term, liab_$term, by = c("year", "year_term", "ea", "age"))
   

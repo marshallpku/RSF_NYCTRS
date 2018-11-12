@@ -66,7 +66,7 @@ paramlist <- list(
 									
 									# Economic assumptions
 									i = 0.07,
-									v = 1/(1 + 0.7),
+									v = 1/(1 + 0.07),
 									infl = 0.03,
 									
 									# Actuarial methods and assumptions

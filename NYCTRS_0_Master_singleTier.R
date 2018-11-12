@@ -225,8 +225,8 @@ var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL",
                   # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
                   "PR", "NC_PR", "NC","ERC")
 
-var_display2 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL", "EEC","ERC","ERC_PR","B", "B.v", "SC", "C",
-                  "nactives", "nla")
+var_display2 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL", "EEC","ERC","ERC_PR","B", "B.v", "NC", "SC", "C", "ADC", "EEC", "ERC",
+                  "nactives", "nla", "nterms")
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
