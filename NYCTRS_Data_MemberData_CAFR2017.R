@@ -336,7 +336,7 @@ ldata_servRet <- list(
 		df_nservRet %>%
 		mutate(
 			nservRet = nservRet_male + nservRet_female,
-			benefit  = (nservRet_male * benefit_male + nservRet_male * benefit_male) / nservRet,
+			benefit  = (nservRet_male * benefit_male + nservRet_female * benefit_female) / nservRet,
 			age.cell = (age_lb + age_ub) / 2,
 			planname = planName
 		) %>%
@@ -353,7 +353,7 @@ ldata_servRet <- list(
 
 
 init_servRet <- fillin.retirees(ldata_servRet) %>% mutate_all(funs(ifelse(is.nan(.), 0, . ))) 
-init_servRet
+# (init_servRet$nservRet *init_servRet$benefit_servRet) %>% sum
 	
 
 
@@ -368,7 +368,7 @@ ldata_survivors <- list(
 		df_nsurvivors %>%
 		mutate(
 			nsurvivors = nsurvivors_male + nsurvivors_female,
-			benefit  = (nsurvivors_male * benefit_male + nsurvivors_male * benefit_male) / nsurvivors,
+			benefit  = (nsurvivors_male * benefit_male + nsurvivors_female * benefit_female) / nsurvivors,
 			age.cell = (age_lb + age_ub) / 2,
 			planname = planName
 		) %>%

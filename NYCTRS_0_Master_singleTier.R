@@ -28,6 +28,7 @@ gc()
 # source("NYCTRS_Data_memberData_CAFR2017.R")
 
 dir_data <- "Inputs_data/"
+
 load(paste0(dir_data, "Data_planInfo17.RData"))
 load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
 load(paste0(dir_data, "Data_ES2015.RData"))
@@ -126,7 +127,7 @@ init_pop <- get_initPop()
 entrants_dist <- get_entrantsDist(init_actives)
 
 # Detective work
-init_pop$actives <- 0
+#init_pop$actives <- 0
 #init_pop$servRet <- 0
 
 
@@ -250,7 +251,7 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v" ,"na
 
 
 
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 # 
 # 

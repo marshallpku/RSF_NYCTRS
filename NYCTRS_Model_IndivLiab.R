@@ -44,8 +44,8 @@ get_indivLab <- function(tier_select_,
   # salary_          = salary
   # benefit_servRet_ = benefit_servRet
   # 
-  # init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
-  # tier_select_     = paramlist$tier_select
+  # #init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
+  # tier_select_     = tier_select
   # 
   # #benefit_disbRet_ = benefit_disbRet
   # #mortality.post.model_ = mortality.post.model
@@ -89,7 +89,7 @@ get_indivLab <- function(tier_select_,
 #                               1. Preparation                        #####                  
 #*************************************************************************************************************
 cat("Preparation\n")
-# Specify the earliest year needed
+# Specify the earliest year needed for actives
 # Ealiest year required for actives：the year a (max_retAge - 1) year old active in year 1 enter the workforce at age min_ea 
 
 min_year_actives <- init_year - ( (max_retAge - 1) -  min_ea)
@@ -103,10 +103,29 @@ min_year <- min_year_actives
  #                # min(init.year - (benefit_$age - (r.min - 1))))
  
 
+
+
+# Possible combinations for actives need to be supplemented by combinations needed for 
+# all types of beneficiaries. 
+#   - Service Retirees: combinations can be obtained from benefit_servRet_
+
 liab_active <- 
+  bind_rows(
+  # for actives
   expand.grid(start_year = min_year:(init_year + nyear - 1) , 
               ea         = range_ea, 
-              age        = range_age) %>%
+              age        = range_age), 
+  # for service retirees
+  expand.grid(start_year = (benefit_servRet_ %>% filter(benefit_servRet != 0, 
+  																											start_year < min_year))$start_year,
+  						ea  = unique(benefit_servRet_$ea), # Should be just one value (assumed ea)
+  						age = range_age 
+  						)
+  )
+
+liab_active <- liab_active[!duplicated(select(liab_active, start_year, ea, age)), ] # Just for safety. 
+
+liab_active %<>%
   filter(start_year + max_age - ea >= init_year, # drop redundant combinations of start_year and ea. (delet those who never reach year 1.) 
                                                  # max_age can replaced by max_regAge - 1 if only consider actives
          age >= ea) %>%   

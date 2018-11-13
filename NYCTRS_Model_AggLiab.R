@@ -86,8 +86,8 @@ get_AggLiab <- function( tier_select_,
   #                                     ## Liabilities and NCs for actives   ####
   #*************************************************************************************************************
   
-  liab_ <- liab
-  x <- liab_$active 
+  # liab_ <- liab
+  # x <- liab_$active 
    
   # Join population data frames and liability data frames. 
   liab_$active <- left_join(pop_$active, liab_$active, by = c("year", "ea", "age")) # %>% left_join(new_retirees)
@@ -175,6 +175,12 @@ get_AggLiab <- function( tier_select_,
     # mutate(runname = runname) %>% 
     as.matrix
   
+  # x <- liab_$la %>% filter(number.la != 0, 
+  # 												 year_servRet == 2015,
+  # 												 start_year == 1966)
+  # x <- liab_$la %>% filter(number.la != 0, 
+  # 												 year_servRet == 2015,
+  # 												 year == 2015)
   # la.agg %>% as.data.frame
   
   # 

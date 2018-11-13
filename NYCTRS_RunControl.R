@@ -101,11 +101,11 @@ paramlist <- list(
 									
 									
 									# Model assumptions
-									no_entrants = TRUE,
+									no_entrants = FALSE,
 									wf_growth = 0,
 									
-									useAVamort = F,
-									useAVunrecReturn = F
+									useAVamort = T,
+									useAVunrecReturn = T
 									) ##TIER
 
 paramlist$v <- 1/(1 + paramlist$i)
