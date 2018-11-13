@@ -46,15 +46,15 @@
 #                                Global settings                       #####                  
 #*************************************************************************************************************
 # parameters needed for function
-Tier_select <- "t4a"
-dir_data <- "Inputs_data/"
+# Tier_select <- "t4a"
+# dir_data <- "Inputs_data/"
 
 
 #*************************************************************************************************************
 #                                Loading data                       #####                  
 #*************************************************************************************************************
-load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
-load(paste0(dir_data, "Data_ES2015.RData"))
+# load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
+# load(paste0(dir_data, "Data_ES2015.RData"))
 
 
 #*************************************************************************************************************

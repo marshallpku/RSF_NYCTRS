@@ -10,7 +10,7 @@ gc()
 
 # # Load plan information
 # source("NYCTRS_Data_readPlanInfo17.R")
-#
+# 
 # # Load demographics data in CAFR 2017
 # source("NYCTRS_Data_readDemoCAFR17.R")
 # 
@@ -24,11 +24,15 @@ gc()
 # # Imputation of yos distributions for CAFR 2017 active members data
 # source("NYCTRS_Data_ImputationActives.R")
 # 
-# # Construct member data 
+# # Construct member data
 # source("NYCTRS_Data_memberData_CAFR2017.R")
 
+dir_data <- "Inputs_data/"
+load(paste0(dir_data, "Data_planInfo17.RData"))
+load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
+load(paste0(dir_data, "Data_ES2015.RData"))
 
-load("Inputs_data/Data_planInfo17.RData")
+
 
 
 # Creat data for contingent retirement beneficiaries. 
@@ -121,13 +125,17 @@ init_pop <- get_initPop()
 
 entrants_dist <- get_entrantsDist(init_actives)
 
+# Detective work
+init_pop$actives <- 0
+#init_pop$servRet <- 0
+
+
 # salary
 # benefit_servRet
 # benefit_disbRet
 # benefit_survivors
 # initPop
 # entrants_dist
-
 
 # salary       <- get_salary_proc(Tier_select)
 # benefit      <- get_benefit_tier(Tier_select)
@@ -218,15 +226,14 @@ penSim_results <- run_sim(tier_select, AggLiab)
 # #*********************************************************************************************************
 # 
 # 
-var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL",
-                  "AL.act", "AL.act.v", "AL.la", "AL.term", "PVFB", "B",
-                  # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
-                  #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
-                  # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
-                  "PR", "NC_PR", "NC","ERC")
+var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
+                  "AL.act", "AL.la", "AL.term", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "PR")
+                  # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
+                  # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
+                  # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
+                  # "PR", "NC_PR", "NC","ERC")
 
-var_display2 <- c("Tier", "sim", "year", "FR_MA", "MA", "AL", "EEC","ERC","ERC_PR","B", "B.v", "NC", "SC", "C", "ADC", "EEC", "ERC",
-                  "nactives", "nla", "nterms")
+var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v" ,"nactives", "nla", "nterms")
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 

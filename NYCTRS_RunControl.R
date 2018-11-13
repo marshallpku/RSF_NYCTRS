@@ -45,7 +45,7 @@ Global_paramlist <- list(
 	max_ea  = 68,
 	
 	init_year = 2015,
-	nyear     = 10
+	nyear     = 30
 )
 
 paramlist <- list(
@@ -66,7 +66,6 @@ paramlist <- list(
 									
 									# Economic assumptions
 									i = 0.07,
-									v = 1/(1 + 0.07),
 									infl = 0.03,
 									
 									# Actuarial methods and assumptions
@@ -102,15 +101,14 @@ paramlist <- list(
 									
 									
 									# Model assumptions
-									no_entrants = FALSE,
+									no_entrants = TRUE,
 									wf_growth = 0,
 									
-									useAVamort = TRUE,
-									useAVunrecReturn = TRUE
-									
-  									
+									useAVamort = F,
+									useAVunrecReturn = F
 									) ##TIER
 
+paramlist$v <- 1/(1 + paramlist$i)
 
 Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
 Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)

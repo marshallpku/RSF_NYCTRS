@@ -174,13 +174,14 @@ p_disbRet2dead    <- make_dmat("qxm_disbRet")
 
 # N/A in TRS model V1 
 
-p_la2dead <- expand.grid(ea = range_ea, 
+p_la2dead <- expand.grid(ea  = range_ea, 
                          age = range_age, 
                          year = init_year:(init_year + nyear - 1), 
                          year_servRet = init_year:(init_year + nyear - 1)) %>%
-  #filter(age >= ea) %>% 
+  # filter(age >= ea) %>% 
   mutate(age_servRet = age - (year - year_servRet)) %>% 
   left_join(decrement_wf %>% select(ea, age, qxm_servRet)) %>% 
+	mutate(qxm_servRet = na2zero(qxm_servRet)) %>% 
   #left_join(mortality.post.model %>% select(age.r, age, qxm.post.W)) %>%
   # mutate(qxm.post.W = na2zero(qxm.post.W)) %>% 
   arrange(year, year_servRet, age, ea)
