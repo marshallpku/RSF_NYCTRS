@@ -93,8 +93,8 @@ paramlist <- list(
 								  ## Initial Funding:
 									init_MA_type = "AL_pct",  # need to make values more straightforward
 									init_AA_type = "AL_pct",  # need to make values more straightforward
-									MA_0_pct = 0.65,
-									AA_0_pct = 0.65,
+									MA_0_pct = 0.566,
+									AA_0_pct = 0.566,
 									MA_0 = 0,
 									AA_0 = 0,
 									

@@ -175,9 +175,12 @@ get_AggLiab <- function( tier_select_,
     # mutate(runname = runname) %>% 
     as.matrix
   
+  # Check the future development of a single cell of the initial retirees 
   # x <- liab_$la %>% filter(number.la != 0, 
   # 												 year_servRet == 2015,
   # 												 start_year == 1966)
+  
+  # check initial retires in year 1
   # x <- liab_$la %>% filter(number.la != 0, 
   # 												 year_servRet == 2015,
   # 												 year == 2015)
