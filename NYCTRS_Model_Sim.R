@@ -319,7 +319,7 @@ run_sim <- function(tier_select_,
    
    UAAL.year1.model <- AL.year1.model - AA.year1.model
    
-   factor.initAmort <- UAAL.year1.model/ 20000000000 # AV2016 page n3
+   factor.initAmort <- UAAL.year1.model/ 1983860720 # AV2016 page n3
    # Notes: Theoretically, the AV UAAL should be equal to the sum of outstanding amortization balance. Need to check the document
    
    if(useAVamort){
@@ -331,7 +331,7 @@ run_sim <- function(tier_select_,
    	}
    }
    
-   SC_amort.init
+  # SC_amort.init
    
    
   nrow.initAmort <- nrow(SC_amort.init)
@@ -354,7 +354,7 @@ run_sim <- function(tier_select_,
   
   
   penSim_results <- foreach(k = -1:nsim, .packages = c("dplyr", "tidyr")) %dopar% {
-    # k <- 1
+    #k <- 0
     # initialize
     penSim   <- penSim0
     SC_amort <- SC_amort0

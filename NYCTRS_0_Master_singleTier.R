@@ -251,11 +251,11 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v" ,"na
 
 
 
-penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
-# 
-# 
-# 
+penSim_results %>% filter(sim == 1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == 0) %>% select(one_of(var_display2)) %>% print
+
+
+
 # # Calibration
 # penSim_results %>% filter(sim == -1) %>% select(one_of(var_display.cali)) %>% print
 # penSim_results %>% filter(sim == 0)  %>% select(one_of(var_display.cali)) %>% print
