@@ -389,18 +389,18 @@ decrement_model
 
 
 #*************************************************************************************************************
-#                  Adjustments 2: Separation rates    ####
+#                  Adjustments 2: Termination rates    ####
 #*************************************************************************************************************
 
 # Adjustment to term rates:
- # Coerce termination rates to 0 when eligible for early retirement or full retirement. 
+ # Coerce termination rates to 0 when eligible for early retirement or full retirement, or age >= age_vben 
 
 decrement_model %<>% mutate(
-	qxt_t4a = ifelse(elig_early_t4a == 0 & elig_full_t4a == 0, qxt, 0),
-	qxt_t4b = ifelse(elig_early_t4b == 0 & elig_full_t4b == 0, qxt, 0),
-	qxt_t4c = ifelse(elig_early_t4c == 0 & elig_full_t4c == 0, qxt, 0),
-	qxt_t4d = ifelse(elig_early_t4d == 0 & elig_full_t4d == 0, qxt, 0),
-	qxt_t6  = ifelse(elig_early_t6  == 0 & elig_full_t6  == 0, qxt, 0),
+	qxt_t4a = ifelse((elig_early_t4a == 0 & elig_full_t4a == 0) | age < age_vben, qxt, 0),
+	qxt_t4b = ifelse((elig_early_t4b == 0 & elig_full_t4b == 0) | age < age_vben, qxt, 0),
+	qxt_t4c = ifelse((elig_early_t4c == 0 & elig_full_t4c == 0) | age < age_vben, qxt, 0),
+	qxt_t4d = ifelse((elig_early_t4d == 0 & elig_full_t4d == 0) | age < age_vben, qxt, 0),
+	qxt_t6  = ifelse((elig_early_t6  == 0 & elig_full_t6  == 0) | age < age_vben, qxt, 0),
 )
 
 

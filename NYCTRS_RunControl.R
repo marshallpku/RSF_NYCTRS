@@ -57,6 +57,7 @@ paramlist <- list(
 									cola = 0.015,
 									
 									age_vben = 62,
+									v.year   = 5,
 									
 									# Return assumptions
 									return_type = "simple",

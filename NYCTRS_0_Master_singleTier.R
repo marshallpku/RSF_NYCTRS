@@ -234,7 +234,7 @@ var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
                   # "PR", "NC_PR", "NC","ERC")
 
-var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v" ,"nactives", "nla", "nterms")
+var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v","nactives", "nla", "nterms")
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
@@ -251,8 +251,8 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v" ,"na
 
 
 
-penSim_results %>% filter(sim == 1) %>% select(one_of(var_display1)) %>% print
-penSim_results %>% filter(sim == 0) %>% select(one_of(var_display2)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 
 
 
