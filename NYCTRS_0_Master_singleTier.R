@@ -1,6 +1,6 @@
 
 
-gc()
+suppressMessages(gc())
 
 # tier_select <- paramlist$tier
 
@@ -149,7 +149,7 @@ entrants_dist <- get_entrantsDist(init_actives)
 # 2. Demographics ####
 #*********************************************************************************************************
 source("NYCTRS_Model_Demographics_singleTier.R")
-gc()
+suppressMessages(gc())
 pop <- get_Population()
 
 
@@ -182,7 +182,7 @@ pop <- get_Population()
 #*********************************************************************************************************
 
 source("NYCTRS_Model_IndivLiab.R")
-gc()
+suppressMessages(gc())
 
 liab <- get_indivLab(tier_select)
 
@@ -190,17 +190,78 @@ liab <- get_indivLab(tier_select)
 
 
 
-# #*********************************************************************************************************
-# # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
-# #*********************************************************************************************************
+#*********************************************************************************************************
+# 5. Aggregate actuarial liabilities, normal costs and benenfits ####
+#*********************************************************************************************************
 source("NYCTRS_Model_AggLiab.R")
-gc()
+suppressMessages(gc())
 
 AggLiab <- get_AggLiab(tier_select,
                        liab,
                        #liab.ca,
                        #liab.disb.ca,
                        pop)
+
+
+
+
+
+#***************************************************************
+## calibration: Initial vested who are not in pay status  
+#***************************************************************
+# Assume the PVFB for initial vestees are paid up through out the next 50 years. 
+# Based on method used in PSERS model. 
+
+if (paramlist$estInitTerm){
+AL.init.v <-  2000000000 # AV2016 pdf p17
+
+
+df_init.vested <- data.frame(
+	year = 1:51 + (Global_paramlist$init_year - 1),
+	B.init.v.yearsum = c(0, amort_cd(AL.init.v, paramlist$i, 50, TRUE))) %>% 
+	mutate(ALx.init.v.yearsum = ifelse(year == Global_paramlist$init_year, AL.init.v, 0))
+
+df_init.vested
+
+
+for(i_v in 2:nrow(df_init.vested)){
+	df_init.vested$ALx.init.v.yearsum[i_v] <- 
+		with(df_init.vested, (ALx.init.v.yearsum[i_v - 1] - B.init.v.yearsum[i_v - 1]) * (1 + paramlist$i))
+}
+
+
+AggLiab$term %<>% 
+   as.data.frame() %>%
+   left_join(df_init.vested, by = "year") %>%
+   mutate_all(funs(na2zero)) %>%
+   mutate(ALx.v.yearsum = ALx.v.yearsum + ALx.init.v.yearsum,
+          B.v.yearsum   = B.v.yearsum + B.init.v.yearsum) %>%
+   as.matrix
+}
+# 
+# if(!paramlist$SepNewHires){
+# 	
+# 	AggLiab.sumTiers$term %<>% 
+# 		as.data.frame() %>% 
+# 		left_join(df_init.vested) %>% 
+# 		mutate_each(funs(na2zero)) %>% 
+# 		mutate(ALx.v.sum = ALx.v.sum + ALx.init.v.sum,
+# 		       B.v.sum   = B.v.sum + B.init.v.sum) %>% 
+# 		as.matrix
+# 	
+# } else {
+# 	
+# 	AggLiab.sumTiers.xNew$term %<>% 
+# 		as.data.frame() %>% 
+# 		left_join(df_init.vested) %>% 
+# 		mutate_each(funs(na2zero)) %>% 
+# 		mutate(ALx.v.sum = ALx.v.sum + ALx.init.v.sum,
+# 		       B.v.sum   = B.v.sum + B.init.v.sum) %>% 
+# 		as.matrix
+# } 
+
+
+
 
 
 #*********************************************************************************************************

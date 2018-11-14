@@ -1,7 +1,7 @@
 
 
 rm(list = ls())
-gc()
+suppressMessages(gc())
 
 library(knitr)
 library(data.table)
@@ -106,7 +106,10 @@ paramlist <- list(
 									wf_growth = 0,
 									
 									useAVamort = T,
-									useAVunrecReturn = T
+									useAVunrecReturn = T,
+									
+									estInitTerm = TRUE
+									
 									) ##TIER
 
 paramlist$v <- 1/(1 + paramlist$i)
