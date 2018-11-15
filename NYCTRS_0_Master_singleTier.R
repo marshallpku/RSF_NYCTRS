@@ -267,7 +267,7 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 # 6.  Simulation ####
 #*********************************************************************************************************
-source("NYCTRS_Model_Sim.R")
+source("NYCTRS_Model_Sim_wTDA.R")
 penSim_results <- run_sim(tier_select, AggLiab)
 
 
@@ -299,6 +299,7 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v","nac
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
+var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual")
 
 # var_display.cali <- c("runname", "sim", "year", "FR","FR_MA", "MA", "AA", "AL",
 #                       "AL.act", "AL.disb.la", "AL.term",
@@ -315,7 +316,20 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v","nac
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 
+penSim_results %>% filter(sim == 1) %>% select(one_of(var_TDA)) %>% print
 
+
+#
+geoR <- 
+	penSim_results %>% 
+	group_by(sim) %>% 
+	summarise(geoR_noTDA = get_geoReturn(i.r),
+						geoR_TDA   = get_geoReturn(i.r.wTDA))
+
+# Volatility drag due to TDA
+geoR %>% 
+	summarise(geoR_noTDA = median(geoR_noTDA),
+						geoR_TDA   = median(geoR_TDA))
 
 # # Calibration
 # penSim_results %>% filter(sim == -1) %>% select(one_of(var_display.cali)) %>% print

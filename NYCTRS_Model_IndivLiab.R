@@ -24,8 +24,6 @@
 
 
 
-
-
 get_indivLab <- function(tier_select_,
                          decrement_model_ = decrement_model,
                          salary_          = salary,

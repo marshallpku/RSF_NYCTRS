@@ -100,7 +100,14 @@ paramlist <- list(
 									AA_0 = 0,
 									
 									
-									
+									## TDA
+									TDA_on = TRUE,
+									i.TDAfixed = 0.072,
+									init_MA_TDA_type   = "MA_pct", # "preset" 
+									init_MA_TDA_pct    = 0.4, # TDA asset as a % of QPP market value assets
+									init_MA_TDA_preset = 0,
+									s.year.TDA = 5,
+								
 									# Model assumptions
 									no_entrants = FALSE,
 									wf_growth = 0,
