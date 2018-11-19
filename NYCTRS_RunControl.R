@@ -33,8 +33,8 @@ source("Functions.R")
 tier_select = "t4a"
 
 Global_paramlist <- list(
-	ncore = 4,
-  nsim = 10,
+	ncore = 6,
+  nsim = 1000,
 	
 	max_retAge = 70,
 	min_retAge = 55, 

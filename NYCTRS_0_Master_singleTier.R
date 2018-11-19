@@ -319,12 +319,15 @@ penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == 1) %>% select(one_of(var_TDA)) %>% print
 
 
-#
+# Check geometric return
 geoR <- 
 	penSim_results %>% 
+	filter(sim >= 1) %>% 
 	group_by(sim) %>% 
 	summarise(geoR_noTDA = get_geoReturn(i.r),
 						geoR_TDA   = get_geoReturn(i.r.wTDA))
+
+geoR
 
 # Volatility drag due to TDA
 geoR %>% 
