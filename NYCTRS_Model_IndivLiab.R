@@ -653,9 +653,9 @@ cat("Disability Retirement - actives")
 
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
-liab_active %<>%
+liab_active %<>% 
   mutate( gx.disbRet  = yos >= v.year,
-          Bx.disbRet  = gx.disbRet * max(1/3 * fas, 1/60 * yos * fas),
+          Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas),
 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
   				TCx.disbRet = qxd * v * lead(Bx.disbRet) *  lead(ax.disbRet), 
@@ -686,6 +686,9 @@ liab_active %<>%
           PVFNC.EAN.CP.disbRet = NCx.EAN.CP.disbRet * axRs,
           ALx.EAN.CP.disbRet   = PVFBx.disbRet - PVFNC.EAN.CP.disbRet
   )
+
+# liab_active %>% filter(start_year == 2016, ea == 20) %>% 
+# 	select(start_year, ea, age, gx.disbRet, fas, Bx.disbRet)
 
 cat("......DONE\n")
 

@@ -253,7 +253,8 @@ get_AggLiab <- function( tier_select_,
     # mutate(runname = runname) %>%
     as.matrix
   
-   disbRet.agg
+  # disbRet.agg %>% as.data.frame()
+  
   # 
   # 
   # l1 <- liab_$disbRet.la %>% filter(year == 2016, year.disb == 2016, ea == 20) %>% 

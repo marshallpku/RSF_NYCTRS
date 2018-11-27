@@ -45,7 +45,7 @@ Global_paramlist <- list(
 	max_ea  = 68,
 	
 	init_year = 2015,
-	nyear     = 15
+	nyear     = 10
 )
 
 paramlist <- list(

@@ -262,7 +262,7 @@ run_sim <- function(tier_select_,
   penSim0$B.v     <- AggLiab_$term[, "B.v.yearsum"]
   #penSim0$B.death <- AggLiab_$death[, "B.death.yearsum"]
   penSim0$B.disbRet  <- AggLiab_$disbRet[, "B.disbRet.yearsum"]
-  penSim0$B       <- with(penSim0, B.la + B.v) # + B.ca + B.death + B.disb.la + B.disb.ca)
+  penSim0$B       <- with(penSim0, B.la + B.v + B.disbRet) # + B.ca + B.death + B.disb.la + B.disb.ca)
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.yearsum"]

@@ -129,7 +129,7 @@ entrants_dist <- get_entrantsDist(init_actives)
 # Detective work
 #init_pop$actives <- 0
 #init_pop$servRet <- 0
-
+# init_pop$disbRet <- 0
 
 # salary
 # benefit_servRet
@@ -290,13 +290,13 @@ penSim_results <- run_sim(tier_select, AggLiab)
 # 
 # 
 var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "PR")
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "PR")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
                   # "PR", "NC_PR", "NC","ERC")
 
-var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v","nactives", "nla", "nterms")
+var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v", "AL.act.disbRet", "nactives", "nla", "nterms", "ndisbRet")
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
