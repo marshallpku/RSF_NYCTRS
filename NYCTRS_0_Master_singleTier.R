@@ -118,8 +118,8 @@ source("NYCTRS_Model_PrepData.R")
 
 salary <- get_salary_proc()
 
-benefit_servRet <- get_benefit_servRet(init_servRet)
-benefit_disbRet <- get_benefit_disbRet(init_disbRet)
+benefit_servRet   <- get_benefit_servRet(init_servRet)
+benefit_disbRet   <- get_benefit_disbRet(init_disbRet)
 benefit_survivors <- get_benefit_survivors(init_survivors)
 
 init_pop <- get_initPop()
@@ -138,10 +138,10 @@ entrants_dist <- get_entrantsDist(init_actives)
 # initPop
 # entrants_dist
 
-# salary       <- get_salary_proc(Tier_select)
-# benefit      <- get_benefit_tier(Tier_select)
-# benefit.disb <- get_benefit.disb_tier(Tier_select)
-# init_pop     <- get_initPop_tier(Tier_select)
+# salary        <- get_salary_proc(Tier_select)
+# benefit       <- get_benefit_tier(Tier_select)
+# benefit.disb  <- get_benefit.disb_tier(Tier_select)
+# init_pop      <- get_initPop_tier(Tier_select)
 # entrants_dist <- get_entrantsDist_tier(Tier_select)
 
 
@@ -182,7 +182,7 @@ pop <- get_Population()
 #*********************************************************************************************************
 
 source("NYCTRS_Model_IndivLiab.R")
-suppressMessages(gc())
+invisible(gc())
 
 liab <- get_indivLab(tier_select)
 

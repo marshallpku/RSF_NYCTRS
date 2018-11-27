@@ -322,7 +322,7 @@ for (j in 1:(nyear - 1)){
 
   newDeath.act[j]  <- sum(active2dead)
   newDeath.ret[j]  <- sum(la2dead)
-  newDisb.act[j] <- sum(active2disbRet)
+  newDisb.act[j]   <- sum(active2disbRet)
   
 }
 
@@ -410,7 +410,7 @@ return(pop)
 }
 
 
-pop <- get_Population()
+# pop <- get_Population()
 
 
 
