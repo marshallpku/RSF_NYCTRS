@@ -535,117 +535,124 @@ cat("......DONE\n")
 # 				 ALx.v = 0) %>% 
 # 	filter(year %in% seq(init_year, len = nyear))
 
-# #*************************************************************************************************************
-# #                        4.1  ALs and NCs of benefit for death before retirement, for actives                  #####                  
-# #*************************************************************************************************************
-# # QSS: qualified Surviving Spouse
-# # pct.QSS <- pct.ca.F * pct.female + pct.ca.M * pct.male
-# # pct.QSS
-# 
-# 
-# 
-# # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages  
-# liab.active %<>%   
-#   mutate( gx.death  = 0,
-#           
-#           Bx.death  = gx.death * yos * bfactor * fas, # annuity that would have been effective if the member retired on the 
-#           
-#           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x. 
-#           # For PSERS: 1. Lump sum death benefit equal to PV of future benefit (Bx.death * ax.deathBen);
-#           #            2. Death benefit are assumed to be claimed 1 year after death      
-#           TCx.death = 0, #qxm.pre * v * lead(Bx.death) *  lead(ax.deathBen), # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
-# 
-#           # TCx.r = Bx.r * qxr.a * ax,
-#           PVFBx.death  = 0,#  c(get_PVFB(pxT[age <= r.max], v, TCx.death[age <= r.max]), rep(0, max.age - r.max)),
-#           
-#           ## NC and AL of UC
-#           # TCx.r1 = gx.r * qxe * ax,  # term cost of $1's benefit
-#           # NCx.UC = bx * c(get_NC.UC(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
-#           # ALx.UC = Bx * c(get_PVFB(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
-#           
-#           # # NC and AL of PUC
-#           # TCx.rPUC = ifelse(age == min(age), 0, (Bx / (age - min(age)) * gx.r * qxr.a * ax.r)), # Note that this is not really term cost 
-#           # NCx.PUC = c(get_NC.UC(pxT[age <= r.max], v, TCx.rPUC[age <= r.max]),  rep(0, max.age - r.max)),
-#           # ALx.PUC = c(get_AL.PUC(pxT[age <= r.max], v, TCx.rPUC[age <= r.max]), rep(0, max.age - r.max)),
-#           
-#           
-#           ## Under EAN methods, costs are spread up to r.max
-#           # NC and AL of EAN.CD
-#           NCx.EAN.CD.death = 0, #ifelse(age < r.max, PVFBx.death[age == min(age)]/ayx[age == r.max], 0),
-#           ALx.EAN.CD.death = 0, #PVFBx.death - NCx.EAN.CD.death * axR,
-#           
-#           # NC and AL of EAN.CP
-#           NCx.EAN.CP.death   = 0, #ifelse(age < r.max, sx * PVFBx.death[age == min(age)]/(sx[age == min(age)] * ayxs[age == r.max]), 0),
-#           PVFNC.EAN.CP.death = 0, #NCx.EAN.CP.death * axRs,
-#           ALx.EAN.CP.death   = 0 #PVFBx.death - PVFNC.EAN.CP.death
-#   ) 
-# 
-# 
-# 
-# #*************************************************************************************************************
-# #                       4.2   ALs and benefits for QSS for death benefit before retirement               #####                  
-# #*************************************************************************************************************
-# 
-# # No death benefit for NC TSERS
-# 
-# liab.death <- rbind(
-#   # grids for who die after year 1.
-#   expand.grid(ea           = range_ea[range_ea < r.max],
-#               age.death = min.age:r.max,
-#               start.year   = (init.year + 1 - (r.max - min(range_ea))):(init.year + nyear - 1),
-#               age          = range_age) %>%
-#     filter(age   >= ea,
-#            age.death >= ea,
-#            age   >= age.death,
-#            start.year + (age.death - ea) >= init.year + 1, # retire after year 2, LHS is the year of retirement
-#            start.year + age - ea >= init.year + 1) # not really necessary since we already have age >= age.r
-# )
-# 
-# 
-# # %>%
-# # data.table(key = "start.year,ea,age.death,age")
-# 
+#*************************************************************************************************************
+#         4.1  ALs and NCs of benefit for death before retirement, for actives  (Lump sum benefit)       #####
+#*************************************************************************************************************
+
+# TRS Death benefit 1: the greater of 
+  # 1 month's salary for each yos, up to max 3 years' salary, or 
+  # If eligible to unreduced retirement benefit, lump sum actuarially equivalent to retirement allowance. (PV of all future payments? )  
+
+
+cat("Death Benefits - actives")
+# Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
+liab_active %<>%
+  mutate( gx.death  = 1,
+           
+          Bx.death = sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
+          Bx.death = pmax(Bx.death, elig_full * Bx.laca * ax.servRet), 
+  				
+  				   
+          # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
+          # For TRS: 1. Lump sum death benefit equal to PV of future benefit (Bx.death * ax.deathBen);
+          #            2. Death benefit are assumed to be claimed 1 year after death
+          TCx.death = qxm_actives * v * lead(Bx.death) , # term cost of life annuity at the internal retirement age x (start to claim benefit at age x + 1)
+
+          # TCx.r = Bx.r * qxr.a * ax,
+          PVFBx.death  = c(get_PVFB(pxT[age <= max_retAge], v, TCx.death[age <= max_retAge]), rep(0, max_age - max_retAge)),
+
+          ## NC and AL of UC
+          # TCx.r1 = gx.r * qxe * ax,  # term cost of $1's benefit
+          # NCx.UC = bx * c(get_NC.UC(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
+          # ALx.UC = Bx * c(get_PVFB(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
+
+          # # NC and AL of PUC
+          # TCx.rPUC = ifelse(age == min(age), 0, (Bx / (age - min(age)) * gx.r * qxr.a * ax.r)), # Note that this is not really term cost
+          # NCx.PUC = c(get_NC.UC(pxT[age <= r.max], v, TCx.rPUC[age <= r.max]),  rep(0, max.age - r.max)),
+          # ALx.PUC = c(get_AL.PUC(pxT[age <= r.max], v, TCx.rPUC[age <= r.max]), rep(0, max.age - r.max)),
+
+
+          ## Under EAN methods, costs are spread up to r.max
+          # NC and AL of EAN.CD
+          NCx.EAN.CD.death = ifelse(age < max_retAge, PVFBx.death[age == min(age)]/ayx[age == max_retAge], 0),
+          ALx.EAN.CD.death = PVFBx.death - NCx.EAN.CD.death * axR,
+
+          # NC and AL of EAN.CP
+          NCx.EAN.CP.death   = ifelse(age < max_retAge, sx * PVFBx.death[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
+          PVFNC.EAN.CP.death = NCx.EAN.CP.death * axRs,
+          ALx.EAN.CP.death   = PVFBx.death - PVFNC.EAN.CP.death
+  )
+cat("......DONE")
+
+# liab_active %>% filter(start_year == 2016, ea == 30) %>% 
+# 	select(start_year, year, ea, age, yos, Bx.death, Bx.death1, elig_full, Bx.laca, ax.servRet)
+
+
+
+#*************************************************************************************************************
+#                       4.2   ALs and benefits for QSS for death benefit before retirement               #####
+#*************************************************************************************************************
+
+cat("Death Benefits - beneficiaries")
+
+liab_death <- rbind(
+  # grids for who die after year 1.
+  expand.grid(ea        = range_ea[range_ea < max_retAge],
+              age_death = min_age:max_retAge,
+              start_year   = (init_year + 1 - (max_retAge - min(range_ea))):(init_year + nyear - 1),
+              age          = min_age:max_retAge) %>% # ONLY good for lump sum benefit!
+    filter(age   >= ea,
+           age_death >= ea,
+           age   >= age_death,
+           start_year + (age_death - ea) >= init_year + 1, # retire after year 2, LHS is the year of retirement
+           start_year + age - ea >= init_year + 1) # not really necessary since we already have age >= age.r
+)
+
+
+# %>%
+# data.table(key = "start.year,ea,age.death,age")
+
 # liab.death %<>% mutate(B.death = 0, ALx.death = 0)
-# 
-# 
-# 
-# # liab.death <- merge(liab.death,
-# #                  select(liab.active, start.year, ea, age, Bx.death, COLA.scale, gx.death, ax.deathBen, pxm.deathBen) %>% data.table(key = "ea,age,start.year"),
-# #                  all.x = TRUE, 
-# #                  by = c("ea", "age","start.year")) %>%
-# #   arrange(start.year, ea, age.death) %>% 
-# #   as.data.frame 
-# #   #%>% 
-# #   # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
-# #   #left_join(benefit_)
-# 
-# 
-# # liab.death %<>% as.data.frame  %>% 
-# #   group_by(start.year, ea, age.death) %>%
-# #   mutate(
-# #     
-# #     # COLA.scale = (1 + cola)^(age - min(age)),         # COLA.scale in liab.active does not trace back long enough
-# #     ax.deathBen = get_tla(pxm.deathBen, i, COLA.scale), # COLA.scale in liab.active does not trace back long enough
-# #     
-# #     year       = start.year + age - ea,
-# #     year.death = start.year + age.death - ea, # year of death of the active
-# #     Bx.death   = ifelse(is.na(Bx.death), 0, Bx.death),  # just for safety
-# #     
-# #     # For PSERS: Lump sum death benefit equal to PV of future benefit. Benefit claim 1 year after death
-# #     B.death    = ifelse(age == age.death + 1, Bx.death * ax.deathBen, 0),   # Bx.death[age == age.death] * COLA.scale / COLA.scale[age == age.death],               # Benefits for retirees after year 1
-# #     ALx.death  = ifelse(age == age.death + 1, B.death, 0)                   # B.death * ax.deathBen                                                                # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
-# #     
-# #   ) %>% ungroup %>%
-# #   # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
-# #   filter(year %in% seq(init.year, len = nyear) ) %>%
-# #   select(year, ea, age, year.death, age.death, start.year, B.death, ALx.death) %>% 
-# #   arrange(age.death, start.year, ea, age)
-# # 
-# 
-# # liab.death %>% ungroup %>% arrange(start.year, ea, year.death, age) %>%  head(100)
-# 
-# 
-# 
+
+
+
+liab_death <- merge(liab_death,
+                 select(liab_active, start_year, ea, age, Bx.death, gx.death, ax.deathBen) %>% data.table(key = "ea,age,start_year"),
+                 all.x = TRUE,
+                 by = c("ea", "age","start_year")) %>%
+  # arrange(start_year, ea, age_death) %>%
+  as.data.frame
+  #%>%
+  # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore.
+  #left_join(benefit_)
+
+
+liab_death %<>% as.data.frame  %>%
+  group_by(start_year, ea, age_death) %>%
+  mutate(
+
+    # COLA.scale = (1 + cola)^(age - min(age)),         # COLA.scale in liab.active does not trace back long enough
+    # ax.deathBen = get_tla(pxm.deathBen, i, COLA.scale), # COLA.scale in liab.active does not trace back long enough
+
+    year       = start_year + age - ea,
+    year_death = start_year + age_death - ea, # year of death of the active
+    Bx.death   = ifelse(is.na(Bx.death), 0, Bx.death),  # just for safety
+
+    # For TRS: Lump sum death benefit 
+    B.death    = ifelse(age == age_death + 1, Bx.death, 0),   # Bx.death[age == age.death] * COLA.scale / COLA.scale[age == age.death],               # Benefits for retirees after year 1
+    ALx.death  = ifelse(age == age_death + 1, B.death, 0)                   # B.death * ax.deathBen                                                                # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
+
+  ) %>% ungroup %>%
+  # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
+  filter(year %in% seq(init_year, len = nyear) ) %>%
+  select(year, ea, age, year_death, age_death, start_year, B.death, ALx.death) %>%
+  arrange(age_death, start_year, ea, age)
+
+
+# liab.death %>% ungroup %>% arrange(start.year, ea, year.death, age) %>%  head(100)
+cat("......DONE")
+
+
 #*************************************************************************************************************
 #                        5.1  ALs and NCs of disability benefit, for actives                  #####
 #*************************************************************************************************************
@@ -788,11 +795,10 @@ ALx.laca.method     <- paste0("ALx.", actuarial_method, ".laca")
 NCx.laca.method     <- paste0("NCx.", actuarial_method, ".laca")
 PVFNC.laca.method   <- paste0("PVFNC.", actuarial_method, ".laca")
 
-# ALx.death.method   <- paste0("ALx.", actuarial_method, ".death")
-# NCx.death.method   <- paste0("NCx.", actuarial_method, ".death")
-# PVFNC.death.method <- paste0("PVFNC.", actuarial_method, ".death")
-# 
-# 
+ALx.death.method   <- paste0("ALx.", actuarial_method, ".death")
+NCx.death.method   <- paste0("NCx.", actuarial_method, ".death")
+PVFNC.death.method <- paste0("PVFNC.", actuarial_method, ".death")
+
 ALx.disbRet.method     <- paste0("ALx.", actuarial_method, ".disbRet")
 NCx.disbRet.method     <- paste0("NCx.", actuarial_method, ".disbRet")
 PVFNC.disbRet.method   <- paste0("PVFNC.", actuarial_method, ".disbRet")
@@ -804,10 +810,10 @@ PVFNC.v.method  <- paste0("PVFNC.", actuarial_method, ".v")
 
 var.names <- c("sx", ALx.laca.method,  NCx.laca.method,  PVFNC.laca.method,
                      ALx.v.method,     NCx.v.method,     PVFNC.v.method,
-                     #ALx.death.method, NCx.death.method, PVFNC.death.method,
+                     ALx.death.method, NCx.death.method, PVFNC.death.method,
                      ALx.disbRet.method,  NCx.disbRet.method,  PVFNC.disbRet.method,
                      "PVFBx.laca", "PVFBx.v", 
-							       #"PVFBx.death", 
+							       "PVFBx.death", 
 							       "PVFBx.disbRet", 
 							       #"Bx.laca", "Bx.disb", "Bx", 
 							       "PVFSx")
@@ -815,11 +821,21 @@ var.names <- c("sx", ALx.laca.method,  NCx.laca.method,  PVFNC.laca.method,
 liab_active %<>% 
   filter(year %in% seq(init_year, len = nyear)) %>%
   select(year, ea, age, one_of(var.names)) %>%
-  rename_("ALx.laca"   = ALx.laca.method,  "NCx.laca"   = NCx.laca.method,  "PVFNC.laca"   = PVFNC.laca.method, 
-          "ALx.v"      = ALx.v.method,     "NCx.v"      = NCx.v.method,     "PVFNC.v"      = PVFNC.v.method,
-          #"ALx.death"  = ALx.death.method, "NCx.death"  = NCx.death.method, "PVFNC.death"  = PVFNC.death.method,
-          "ALx.disbRet"   = ALx.disbRet.method,  "NCx.disbRet"   = NCx.disbRet.method,  "PVFNC.disbRet"   = PVFNC.disbRet.method
+  rename_("ALx.laca"   = ALx.laca.method,  
+  				"NCx.laca"   = NCx.laca.method,  
+  				"PVFNC.laca" = PVFNC.laca.method, 
           
+  				"ALx.v"      = ALx.v.method,     
+  				"NCx.v"      = NCx.v.method,     
+  				"PVFNC.v"    = PVFNC.v.method,
+          
+  				"ALx.death"  = ALx.death.method, 
+  				"NCx.death"  = NCx.death.method, 
+  				"PVFNC.death"= PVFNC.death.method,
+          
+  				"ALx.disbRet"   = ALx.disbRet.method,  
+  				"NCx.disbRet"   = NCx.disbRet.method,  
+  				"PVFNC.disbRet" = PVFNC.disbRet.method
            )   # Note that dplyr::rename_ is used. 
 
 
@@ -834,7 +850,7 @@ liab_active %<>%
 liab <- list(active = liab_active, 
              la = liab_la, 
              term = liab_term,
-             #death = liab.death, 
+             death = liab_death, 
              disbRet = liab_disbRet
 						 )
 

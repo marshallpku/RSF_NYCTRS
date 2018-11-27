@@ -151,7 +151,7 @@ p_active2disbRet <- make_dmat("qxd")
 p_active2dead    <- make_dmat("qxm_actives")
 p_active2servRet <- make_dmat("qxr")
 p_active2la      <- make_dmat("qxr")
-# p_active2deathBen<- make_dmat("qxm_actives") # * pct.QSS
+p_active2deathBen<- make_dmat("qxm_actives") # * pct.QSS
 
 
 # Where do the terminated go
@@ -163,7 +163,7 @@ p_disbRet2dead    <- make_dmat("qxm_disbRet")
 
 
 # Where do the death beneficiaries go
-# p_deathBen2dead <- make_dmat("qxm.deathBen") # Simplified: weighted average of male and female mortality
+p_deathBen2dead <- make_dmat("qxm_servRet") # Simplified: weighted average of male and female mortality
 
 
 
@@ -180,7 +180,7 @@ p_la2dead <- expand.grid(ea  = range_ea,
                          year_servRet = init_year:(init_year + nyear - 1)) %>%
   # filter(age >= ea) %>% 
   mutate(age_servRet = age - (year - year_servRet)) %>% 
-  left_join(decrement_wf %>% select(ea, age, qxm_servRet)) %>% 
+  left_join(decrement_wf %>% select(ea, age, qxm_servRet), by = c("ea", "age")) %>% 
 	mutate(qxm_servRet = na2zero(qxm_servRet)) %>% 
   #left_join(mortality.post.model %>% select(age.r, age, qxm.post.W)) %>%
   # mutate(qxm.post.W = na2zero(qxm.post.W)) %>% 
@@ -262,7 +262,7 @@ for (j in 1:(nyear - 1)){
   active2la      <- wf_active[, , j] * p_active2la
   active2disbRet <- wf_active[, , j] * p_active2disbRet
   active2dead    <- wf_active[, , j] * p_active2dead
-  # active2deathBen<- wf_active[, , j] * p_active2deathBen 
+  active2deathBen<- wf_active[, , j] * p_active2deathBen 
   
   # Where do the terminated_vested go
   term2dead  <- wf_term[, , j, ] * as.vector(p_term2dead)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
@@ -273,8 +273,8 @@ for (j in 1:(nyear - 1)){
   # Where do the disabled la go
   disbRet2dead      <- wf_disbRet[, , j, ] * as.vector(p_disbRet2dead)
   
-  # Where do the QSSs of death benefit go
-  # deathBen2dead  <- wf_deathBen[, , j, ] * as.vector(p_deathBen2dead)
+  # Where do the death beneficiaries go
+  deathBen2dead  <- wf_deathBen[, , j, ] * as.vector(p_deathBen2dead)
   
   
   # Total inflow and outflow for each status
@@ -290,8 +290,8 @@ for (j in 1:(nyear - 1)){
   out_la <- la2dead        # This is a 3D array (ea x age x year.retire)
   in_la  <- active2la     # This is a matrix
   
-  #out_deathBen <- deathBen2dead        # This is a 3D array (ea x age x year.retire)
-  #in_deathBen  <- active2deathBen     # This is a matrix
+  out_deathBen <- deathBen2dead        # This is a 3D array (ea x age x year.retire)
+  in_deathBen  <- active2deathBen     # This is a matrix
   
   in_dead <- active2dead +                                             
              apply(term2dead,    c(1,2), sum) +   # 
@@ -315,8 +315,8 @@ for (j in 1:(nyear - 1)){
   
   wf_dead[, ,   j + 1]    <- (wf_dead[, , j] + in_dead) %*% A
   
-  #wf_deathBen[, , j + 1, ]      <- apply((wf_deathBen[, , j, ] - out_deathBen), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
-  #wf_deathBen[, , j + 1, j + 1] <- in_deathBen %*% A
+  wf_deathBen[, , j + 1, ]      <- apply((wf_deathBen[, , j, ] - out_deathBen), 3, function(x) x %*% A) %>% array(wf_dim.deathBen[-3])
+  wf_deathBen[, , j + 1, j + 1] <- in_deathBen %*% A
   
  
 
@@ -366,11 +366,15 @@ wf_disbRet <- data.frame(expand.grid(ea   = range_ea,
                filter(age >= ea)
 
 
-# wf_deathBen <- data.frame(expand.grid(ea = range_ea, age = range_age, year = init_year:(init_year + nyear - 1), year.death = (init_year):(init_year + nyear - 1)),
-#                           number.deathBen = as.vector(wf_deathBen)) %>% 
-#   filter(age >= ea)
+wf_deathBen <- data.frame(expand.grid(ea = range_ea, 
+																			age = range_age, 
+																			year = init_year:(init_year + nyear - 1), 
+																			year_death = (init_year):(init_year + nyear - 1)),
+                          number.deathBen = as.vector(wf_deathBen)) %>%
+  filter(age >= ea)
 
 
+#wf_deathBen %>% filter(number.deathBen != 0) 
 
 # # summarize term across termination year. Resulting data frame will join .Liab$active as part of the output. 
 # term_reduced <- wf_term %>% group_by(year, age) %>% summarise(number.v = sum(number.v, na.rm = TRUE))
@@ -400,8 +404,8 @@ pop <-  list(active  = wf_active,
              term    = wf_term, 
              disbRet = wf_disbRet, 
              la = wf_la, 
-             dead = wf_dead
-             #deathBen = wf_deathBen, 
+             dead = wf_dead,
+             deathBen = wf_deathBen
              #new_ca = wf_new.ca
 )
 

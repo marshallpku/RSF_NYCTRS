@@ -300,6 +300,12 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v", "AL
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
+var_display3 <- c("Tier", "sim", "year", "FR_MA", "PVFB.act.laca", "PVFB.act.v", "PVFB.act.disbRet", "PVFB.act.death")
+# "n.ca.R1", "n.ca.R0S1", "nterms",
+# "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
+
+
+
 var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual")
 
 # var_display.cali <- c("runname", "sim", "year", "FR","FR_MA", "MA", "AA", "AL",
@@ -316,6 +322,7 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 
 penSim_results %>% filter(sim == 1) %>% select(one_of(var_TDA)) %>% print
 
