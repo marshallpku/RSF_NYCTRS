@@ -358,7 +358,7 @@ wf_term <- data.frame(expand.grid(ea   = range_ea,
          filter(age >= ea)
 
 
-wf_disb.la <- data.frame(expand.grid(ea   = range_ea, 
+wf_disbRet <- data.frame(expand.grid(ea   = range_ea, 
                                      age  = range_age, 
                                      year = init_year:(init_year + nyear - 1), 
                                      year_disbRet = (init_year):(init_year + nyear - 1)),

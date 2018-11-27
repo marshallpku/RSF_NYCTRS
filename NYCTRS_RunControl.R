@@ -34,7 +34,7 @@ tier_select = "t4a"
 
 Global_paramlist <- list(
 	ncore = 6,
-  nsim = 1000,
+  nsim = 10,
 	
 	max_retAge = 70,
 	min_retAge = 55, 
@@ -45,7 +45,7 @@ Global_paramlist <- list(
 	max_ea  = 68,
 	
 	init_year = 2015,
-	nyear     = 30
+	nyear     = 15
 )
 
 paramlist <- list(

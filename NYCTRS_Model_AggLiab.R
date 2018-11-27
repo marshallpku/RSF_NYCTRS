@@ -97,20 +97,20 @@ get_AggLiab <- function( tier_select_,
     mutate(ALx.laca.cellsum  = ALx.laca * number.a,
            ALx.v.cellsum     = ALx.v    * number.a,
            #ALx.death.cellsum = ALx.death * number.a,
-           #ALx.disb.cellsum  = ALx.disb * number.a,
-           ALx.actAll.cellsum    = ALx.laca.cellsum + ALx.v.cellsum, # + ALx.death.cellsum + ALx.disb.cellsum,
+           ALx.disbRet.cellsum  = ALx.disbRet * number.a,
+           ALx.actAll.cellsum    = ALx.laca.cellsum + ALx.v.cellsum + ALx.disbRet.cellsum, # + ALx.death.cellsum 
            
            NCx.laca.cellsum  = NCx.laca * number.a,
            NCx.v.cellsum     = NCx.v    * number.a,
            #NCx.death.cellsum = NCx.death * number.a,
-           #NCx.disb.cellsum  = NCx.disb * number.a,
-           NCx.actAll.cellsum    = NCx.laca.cellsum + NCx.v.cellsum, # + NCx.death.cellsum + NCx.disb.cellsum,
+           NCx.disbRet.cellsum  = NCx.disbRet * number.a,
+           NCx.actAll.cellsum    = NCx.laca.cellsum + NCx.v.cellsum + NCx.disbRet.cellsum, # + NCx.death.cellsum ,
            
            PVFBx.laca.cellsum  = PVFBx.laca * number.a,
            PVFBx.v.cellsum     = PVFBx.v    * number.a,
            #PVFBx.death.cellsum = PVFBx.death * number.a,
-           #PVFBx.disb.cellsum  = PVFBx.disb * number.a,
-           PVFBx.actAll.cellsum    = PVFBx.laca.cellsum + PVFBx.v.cellsum, # + PVFBx.death.cellsum + PVFBx.disb.cellsum,
+           PVFBx.disbRet.cellsum  = PVFBx.disbRet * number.a,
+           PVFBx.actAll.cellsum    = PVFBx.laca.cellsum + PVFBx.v.cellsum + PVFBx.disbRet.cellsum, # + PVFBx.death.cellsum + PVFBx.disbRet.cellsum,
            
            PR.cellsum  = sx * number.a,
            
@@ -122,29 +122,28 @@ get_AggLiab <- function( tier_select_,
       ALx.laca.yearsum = sum(ALx.laca.cellsum, na.rm = TRUE),
       ALx.v.yearsum    = sum(ALx.v.cellsum,    na.rm = TRUE),
       #ALx.death.yearsum= sum(ALx.death.cellsum,na.rm = TRUE),
-      #ALx.disb.yearsum = sum(ALx.disb.cellsum, na.rm = TRUE),
+      ALx.disbRet.yearsum = sum(ALx.disbRet.cellsum, na.rm = TRUE),
       ALx.actAll.yearsum   = sum(ALx.actAll.cellsum,   na.rm = TRUE), 
       
       NCx.laca.yearsum = sum(NCx.laca.cellsum, na.rm = TRUE),
       NCx.v.yearsum    = sum(NCx.v.cellsum,    na.rm = TRUE),
       #NCx.death.yearsum= sum(NCx.death.cellsum,na.rm = TRUE),
-      #NCx.disb.yearsum = sum(NCx.disb.cellsum, na.rm = TRUE),
+      NCx.disbRet.yearsum = sum(NCx.disbRet.cellsum, na.rm = TRUE),
       NCx.actAll.yearsum   = sum(NCx.actAll.cellsum,   na.rm = TRUE),
       
       PVFBx.laca.yearsum = sum(PVFBx.laca.cellsum, na.rm = TRUE),
       PVFBx.v.yearsum    = sum(PVFBx.v.cellsum,    na.rm = TRUE),
       #PVFBx.death.yearsum= sum(PVFBx.death.cellsum,na.rm = TRUE),
-      #PVFBx.disb.yearsum = sum(PVFBx.disb.cellsum, na.rm = TRUE),
+      PVFBx.disbRet.yearsum = sum(PVFBx.disbRet.cellsum, na.rm = TRUE),
       PVFBx.actAll.yearsum   = sum(PVFBx.actAll.cellsum,   na.rm = TRUE),
       
       PR.yearsum    = sum(PR.cellsum,  na.rm = TRUE),
       
       #DC_EEC.yearsum = sum(DC_EEC.cellsum, na.rm = TRUE),
-      #DC_ERC.yearsum = sum(DC_ERC.cellsum, na.rm = TRUE),
-      
+
       nactives  = sum(number.a,  na.rm = TRUE)) %>% 
-    # mutate(AL = ALx.laca.actAll + ALx.v.actAll + ALx.death.actAll + ALx.disb.actAll + ALx.av.actAll,
-    #        NC = NCx.laca.actAll + NCx.v.actAll + NCx.death.actAll + NCx.disb.actAll + NCx.av.actAll) %>% 
+    # mutate(AL = ALx.laca.actAll + ALx.v.actAll + ALx.death.actAll + ALx.disbRet.actAll + ALx.av.actAll,
+    #        NC = NCx.laca.actAll + NCx.v.actAll + NCx.death.actAll + NCx.disbRet.actAll + NCx.av.actAll) %>% 
     # select(year, NC, AL, nactives ) %>% 
       as.matrix # extracting elements from matrices is much faster than from data.frame
   
@@ -235,50 +234,50 @@ get_AggLiab <- function( tier_select_,
   #                                     ## Liabilities and benefits for disability benefit (life annuitants)   ####
   #*************************************************************************************************************
   
-  # liab_$disb.la  <- data.table(liab_$disb.la,    key = "ea,age,year,year.disb")
-  # pop_$disb.la   <- data.table(pop_$disb.la,  key = "ea,age,year,year.disb")
-  # liab_$disb.la  <- merge(pop_$disb.la, liab_$disb.la, by = c("ea", "age","year", "year.disb"), all.x = TRUE)
-  # liab_$disb.la  <- as.data.frame(liab_$disb.la)
-  # 
-  # 
-  # liab_$disb.la %<>% 
-  #   mutate(ALx.disb.la.tot = ALx.disb.la * number.disb.la,
-  #          B.disb.la.tot   = B.disb.la   * number.disb.la,
-  #          runname = runname)
-  # 
-  # disb.la.agg <- liab_$disb.la %>% 
-  #   group_by(year) %>% 
-  #   summarise(ALx.disb.la.sum   = sum(ALx.disb.la.tot, na.rm = TRUE),
-  #             B.disb.la.sum     = sum(B.disb.la.tot  , na.rm = TRUE),
-  #             ndisb.la          = sum(number.disb.la , na.rm = TRUE)) %>% 
-  #   # mutate(runname = runname) %>% 
-  #   as.matrix
+  liab_$disbRet  <- data.table(liab_$disbRet, key = "ea,age,year,year_disbRet")
+  pop_$disbRet   <- data.table(pop_$disbRet,  key = "ea,age,year,year_disbRet")
+  liab_$disbRet  <- merge(pop_$disbRet, liab_$disbRet, by = c("ea", "age","year", "year_disbRet"), all.x = TRUE)
+  liab_$disbRet  <- as.data.frame(liab_$disbRet)
+
+
+  liab_$disbRet %<>%
+    mutate(ALx.disbRet.cellsum = ALx.disbRet * number.disbRet,
+           B.disbRet.cellsum   = B.disbRet   * number.disbRet,
+           runname = runname)
+
+  disbRet.agg <- liab_$disbRet %>%
+    group_by(year) %>%
+    summarise(ALx.disbRet.yearsum   = sum(ALx.disbRet.cellsum, na.rm = TRUE),
+              B.disbRet.yearsum     = sum(B.disbRet.cellsum  , na.rm = TRUE),
+              ndisbRet              = sum(number.disbRet , na.rm = TRUE)) %>%
+    # mutate(runname = runname) %>%
+    as.matrix
   
-  # disb.la.agg
+   disbRet.agg
   # 
   # 
-  # l1 <- liab_$disb.la %>% filter(year == 2016, year.disb == 2016, ea == 20) %>% 
-  #   mutate(AL.next = ((ALx.disb.la.tot - B.disb.la.tot) * 1.0725),
+  # l1 <- liab_$disbRet.la %>% filter(year == 2016, year.disb == 2016, ea == 20) %>% 
+  #   mutate(AL.next = ((ALx.disbRet.la.tot - B.disbRet.la.tot) * 1.0725),
   #          age = age + 1) %>% 
   #   select(ea, age, year.disb, AL.next)
   #   
-  # l2 <- liab_$disb.la %>% filter(year == 2017, year.disb == 2016, ea == 20) %>% 
-  #   select(ea, age, year.disb, ALx.disb.la.tot)
+  # l2 <- liab_$disbRet.la %>% filter(year == 2017, year.disb == 2016, ea == 20) %>% 
+  #   select(ea, age, year.disb, ALx.disbRet.la.tot)
   # 
   # left_join(l1, l2) %>% 
-  #   mutate(diff = 100*AL.next / ALx.disb.la.tot)
+  #   mutate(diff = 100*AL.next / ALx.disbRet.la.tot)
   # 
   # l1 %>% summarise(sum(AL.next, na.rm = TRUE))
-  # l2 %>% summarise(sum(ALx.disb.la.tot, na.rm = TRUE))
+  # l2 %>% summarise(sum(ALx.disbRet.la.tot, na.rm = TRUE))
   # 
-  # liab_$disb.la %>% filter(year == 2016, year.disb == 2016, ea == 20) %>% summarise(AL = sum(ALx.disb.la.tot, na.rm = T),
-  #                                                                                   B  = sum(B.disb.la.tot, na.rm = T))
-  # liab_$disb.la %>% filter(year == 2017, year.disb == 2016, ea == 20) %>% summarise(AL = sum(ALx.disb.la.tot, na.rm = T))
+  # liab_$disbRet.la %>% filter(year == 2016, year.disb == 2016, ea == 20) %>% summarise(AL = sum(ALx.disbRet.la.tot, na.rm = T),
+  #                                                                                   B  = sum(B.disbRet.la.tot, na.rm = T))
+  # liab_$disbRet.la %>% filter(year == 2017, year.disb == 2016, ea == 20) %>% summarise(AL = sum(ALx.disbRet.la.tot, na.rm = T))
   # 
   # decrement.model.tCD
   # 
-  # liab_$disb.la %>% filter(year == 2016, year.disb == 2016, ea == 20)
-  # liab_$disb.la %>% filter(year == 2017, year.disb == 2016, ea == 20)
+  # liab_$disbRet.la %>% filter(year == 2016, year.disb == 2016, ea == 20)
+  # liab_$disbRet.la %>% filter(year == 2017, year.disb == 2016, ea == 20)
   # 
   #*************************************************************************************************************
   #                                 ## Liabilities and benefits for vested terms.   ####
@@ -501,10 +500,10 @@ get_AggLiab <- function( tier_select_,
   AggLiab <-  list(active = active.agg, 
                    la     = la.agg,
                    #ca     = ca.agg, 
-                   term   = term.agg
+                   term   = term.agg,
                    #death  = death.agg,
-                   #disb.la = disb.la.agg,
-                   #disb.ca = disb.ca.agg
+                   disbRet = disbRet.agg
+                   
                    )
               
               # ind_active  = if(paramlist$save.indiv) .liab$active  else "Not saved", 

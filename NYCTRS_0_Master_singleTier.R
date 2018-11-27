@@ -149,7 +149,7 @@ entrants_dist <- get_entrantsDist(init_actives)
 # 2. Demographics ####
 #*********************************************************************************************************
 source("NYCTRS_Model_Demographics_singleTier.R")
-suppressMessages(gc())
+invisible(gc())
 pop <- get_Population()
 
 
@@ -194,7 +194,7 @@ liab <- get_indivLab(tier_select)
 # 5. Aggregate actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
 source("NYCTRS_Model_AggLiab.R")
-suppressMessages(gc())
+invisible(gc())
 
 AggLiab <- get_AggLiab(tier_select,
                        liab,
@@ -209,6 +209,7 @@ AggLiab <- get_AggLiab(tier_select,
 #***************************************************************
 ## calibration: Initial vested who are not in pay status  
 #***************************************************************
+
 # Assume the PVFB for initial vestees are paid up through out the next 50 years. 
 # Based on method used in PSERS model. 
 

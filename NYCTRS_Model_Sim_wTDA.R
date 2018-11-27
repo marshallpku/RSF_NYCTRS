@@ -226,44 +226,42 @@ run_sim <- function(tier_select_,
   
   
   # AL(j)
-  penSim0$AL.act.laca <- AggLiab_$active[, "ALx.laca.yearsum"]
-  penSim0$AL.act.v    <- AggLiab_$active[, "ALx.v.yearsum"]
-  #penSim0$AL.act.death<- AggLiab_$active[, "ALx.death.yearsum"]
-  #penSim0$AL.act.disb <- AggLiab_$active[, "ALx.disb.yearsum"]
-  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v) # + penSim0$AL.act.death + penSim0$AL.act.disb)
+  penSim0$AL.act.laca   <- AggLiab_$active[, "ALx.laca.yearsum"]
+  penSim0$AL.act.v      <- AggLiab_$active[, "ALx.v.yearsum"]
+  #penSim0$AL.act.death <- AggLiab_$active[, "ALx.death.yearsum"]
+  penSim0$AL.act.disbRet <- AggLiab_$active[, "ALx.disbRet.yearsum"]
+  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.disbRet) # + penSim0$AL.act.death )
   
   penSim0$AL.la    <- AggLiab_$la[,   "ALx.la.yearsum"]
   #penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.yearsum"]
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.yearsum"]
   #penSim0$AL.death <- AggLiab_$death[,"ALx.death.yearsum"]
-  #penSim0$AL.disb.la  <- AggLiab_$disb.la[, "ALx.disb.la.yearsum"]
-  #penSim0$AL.disb.ca  <- AggLiab_$disb.ca[, "ALx.disb.ca.yearsum"]
+  penSim0$AL.disbRet  <- AggLiab_$disbRet[, "ALx.disbRet.yearsum"]
   
-  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term)  # + AL.ca + AL.death + AL.disb.la + AL.disb.ca)
+  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term + AL.disbRet)  # + AL.ca + AL.death  + AL.disb.ca)
   
   
   # NC(j)
   penSim0$NC.laca <- AggLiab_$active[, "NCx.laca.yearsum"]
   penSim0$NC.v    <- AggLiab_$active[, "NCx.v.yearsum"]
   #penSim0$NC.death<- AggLiab_$active[, "NCx.death.yearsum"]
-  #penSim0$NC.disb <- AggLiab_$active[, "NCx.disb.yearsum"] 
-  penSim0$NC      <-  with(penSim0, NC.laca + NC.v) # + NC.death + NC.disb)
+  penSim0$NC.disbRet <- AggLiab_$active[, "NCx.disbRet.yearsum"] 
+  penSim0$NC      <-  with(penSim0, NC.laca + NC.v + NC.disbRet) # + NC.death + NC.disb)
   
   
   # PVFB(j)
   penSim0$PVFB.laca <- AggLiab_$active[, "PVFBx.laca.yearsum"]
   penSim0$PVFB.v    <- AggLiab_$active[, "PVFBx.v.yearsum"]
   #penSim0$PVFB.death<- AggLiab_$active[, "PVFBx.death.yearsum"]
-  #penSim0$PVFB.disb <- AggLiab_$active[, "PVFBx.disb.yearsum"] 
-  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v) # + PVFB.death + PVFB.disb) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
+  penSim0$PVFB.disbRet <- AggLiab_$active[, "PVFBx.disbRet.yearsum"] 
+  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.disbRet) # + PVFB.death + PVFB.disb) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
   
   # B(j)
   penSim0$B.la    <- AggLiab_$la[, "B.la.yearsum"]
   # penSim0$B.ca    <- AggLiab_$ca[, "B.ca.yearsum"]
   penSim0$B.v     <- AggLiab_$term[, "B.v.yearsum"]
   #penSim0$B.death <- AggLiab_$death[, "B.death.yearsum"]
-  #penSim0$B.disb.la  <- AggLiab_$disb.la[, "B.disb.la.yearsum"]
-  #penSim0$B.disb.ca  <- AggLiab_$disb.ca[, "B.disb.ca.yearsum"]
+  penSim0$B.disbRet  <- AggLiab_$disbRet[, "B.disbRet.yearsum"]
   penSim0$B       <- with(penSim0, B.la + B.v) # + B.ca + B.death + B.disb.la + B.disb.ca)
   
   # PR(j)
@@ -278,8 +276,7 @@ run_sim <- function(tier_select_,
   #penSim0$n.ca.R0S1 <- AggLiab_$ca[, "n.R0S1"]
   penSim0$nterms    <- AggLiab_$term[, "nterms"]
   #penSim0$ndeathBen <- AggLiab_$death[, "ndeathBen"]
-  #penSim0$ndisb.la  <- AggLiab_$disb.la[,  "ndisb.la"]
-  #penSim0$ndisb.ca.R1   <- AggLiab_$disb.ca[,  "n.disb.R1"]
+  penSim0$ndisbRet   <- AggLiab_$disbRet[,  "ndisbRet"]
   #penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
 
   
