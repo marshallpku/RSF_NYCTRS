@@ -230,7 +230,7 @@ run_sim <- function(tier_select_,
   penSim0$AL.act.v      <- AggLiab_$active[, "ALx.v.yearsum"]
   penSim0$AL.act.death <- AggLiab_$active[, "ALx.death.yearsum"]
   penSim0$AL.act.disbRet <- AggLiab_$active[, "ALx.disbRet.yearsum"]
-  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.disbRet + penSim0$AL.act.death )
+  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.disbRet + penSim0$AL.act.death)
   
   penSim0$AL.la    <- AggLiab_$la[,   "ALx.la.yearsum"]
   #penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.yearsum"]

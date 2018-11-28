@@ -547,10 +547,10 @@ cat("......DONE\n")
 cat("Death Benefits - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>%
-  mutate( gx.death  = 0,
+  mutate( gx.death  = 1,
            
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
-          Bx.death = pmax(Bx.death, elig_full * Bx.laca * ax.servRet), 
+          Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
   				
   				   
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
@@ -639,8 +639,8 @@ liab_death %<>% as.data.frame  %>%
     Bx.death   = ifelse(is.na(Bx.death), 0, Bx.death),  # just for safety
 
     # For TRS: Lump sum death benefit 
-    B.death    = ifelse(age == age_death + 1, Bx.death, 0),   # Bx.death[age == age.death] * COLA.scale / COLA.scale[age == age.death],               # Benefits for retirees after year 1
-    ALx.death  = ifelse(age == age_death + 1, B.death, 0)                   # B.death * ax.deathBen                                                                # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
+    B.death    = ifelse(age == age_death, Bx.death, 0),   # Bx.death[age == age.death] * COLA.scale / COLA.scale[age == age.death],               # Benefits for retirees after year 1
+    ALx.death  = ifelse(age == age_death, B.death, 0)                   # B.death * ax.deathBen                                                                # Liability for remaining retirement benefits, PV of all future benefit adjusted with COLA
 
   ) %>% ungroup %>%
   # select(start.year, year, ea, age, year.retire, age.retire,  B.r, ALx.r)# , ax, Bx, COLA.scale, gx.r)
@@ -662,7 +662,7 @@ cat("Disability Retirement - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>% 
   mutate( gx.disbRet  = yos >= v.year,
-          Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas),
+          Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
   				TCx.disbRet = qxd * v * lead(Bx.disbRet) *  lead(ax.disbRet), 

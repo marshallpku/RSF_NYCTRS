@@ -290,7 +290,7 @@ penSim_results <- run_sim(tier_select, AggLiab)
 # 
 # 
 var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "PR")
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "PR")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
@@ -304,6 +304,9 @@ var_display3 <- c("Tier", "sim", "year", "FR_MA", "PVFB.act.laca", "PVFB.act.v",
 # "n.ca.R1", "n.ca.R0S1", "nterms",
 # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
+
+
+var_display3 <- c("Tier", "sim", "year", "FR_MA", "AL.act.death", "NC.death", "AL.death", "B.death")
 
 
 var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual")
