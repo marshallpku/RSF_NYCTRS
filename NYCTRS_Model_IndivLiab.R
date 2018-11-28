@@ -547,9 +547,9 @@ cat("......DONE\n")
 cat("Death Benefits - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>%
-  mutate( gx.death  = 1,
+  mutate( gx.death  = 0,
            
-          Bx.death = sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
+          Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = pmax(Bx.death, elig_full * Bx.laca * ax.servRet), 
   				
   				   
@@ -582,7 +582,7 @@ liab_active %<>%
           PVFNC.EAN.CP.death = NCx.EAN.CP.death * axRs,
           ALx.EAN.CP.death   = PVFBx.death - PVFNC.EAN.CP.death
   )
-cat("......DONE")
+cat("......DONE\n")
 
 # liab_active %>% filter(start_year == 2016, ea == 30) %>% 
 # 	select(start_year, year, ea, age, yos, Bx.death, Bx.death1, elig_full, Bx.laca, ax.servRet)
@@ -590,7 +590,7 @@ cat("......DONE")
 
 
 #*************************************************************************************************************
-#                       4.2   ALs and benefits for QSS for death benefit before retirement               #####
+#                       4.2   ALs and benefits for death benefit before retirement               #####
 #*************************************************************************************************************
 
 cat("Death Benefits - beneficiaries")
@@ -650,7 +650,7 @@ liab_death %<>% as.data.frame  %>%
 
 
 # liab.death %>% ungroup %>% arrange(start.year, ea, year.death, age) %>%  head(100)
-cat("......DONE")
+cat("......DONE\n")
 
 
 #*************************************************************************************************************
