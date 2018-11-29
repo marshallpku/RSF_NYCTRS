@@ -33,8 +33,46 @@ get_tla <- function(px, i, scale = rep(1, length(px))){
 get_tlaFixedEnd <- get_tla
 
 # microbenchmark(
-# get_tla(rep(0.98, 55), 0.08) # test the function
+# get_tla(rep(0.98, 5), 0.08) # test the function
 # )
+
+
+# 1.1 function calculating temporary annuity values from age x to retirment age (fixed end)
+#     for a customized cashflow
+
+get_tla_cashflow <- function(px, i, cashflow = rep(1, length(px))){
+	# suppose the age corresponding to px runs from a1 to aN, and f = aN + 1 (eg. age 30:64, f = 65)
+	# The function computes a..{x, f - x} and s_a..{x, f - x}, x runing from a1 to aN. 
+	# The length of px is f - a1 
+	# Note that the last element is redundant, just used as a place holder. 
+	
+	# inputs:
+	# px: an vector of composite survivial probs from age x to x + n - 1. Length = n
+	# i:  discount rate, scalar
+	# scale: how the annuity scale up over time. eg: 
+	#        1) salary scale. default is a n vector of 1, meaning no salary scale. used when calculating career based annuity
+	#        2) simple COLA scale: COLA increasing at a fixed percentage very year.  
+	# cashflow: The cashflow of the annuity can be specified by this argument. This is useful when calculating PV of benefits with COLA.
+	# output:
+	# tla: an n vector storing the value of temporary life annuities from age x to age x + n - 1.
+	tla <- numeric(length(px))
+	n <- length(tla)
+	
+	for(j in 1:n){
+		v   <- 1/(1 + i)^(0:(n - j)) # dicount vector
+		if(j < n) pxr <- cumprod(c(1, px[j:(n - 1)])) else pxr <-  1      # survival probability to retirment at age x. Note that participant always survives at the beginning of age x
+		SS  <- cashflow[j:n]                # scale
+		tla[j] <-  sum(SS * v * pxr)                # computing annuity value at j
+	} 
+	
+	tla <- as.numeric(tla)
+	return(tla)
+}
+
+get_tla_cashflow(rep(0.98, 5), 0.08, c(1:5)) # test the function
+
+
+
 
 
 # 1.2 function calculating temporary annuity values from a fixed entry age y to x (fixed start)

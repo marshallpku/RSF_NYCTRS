@@ -127,9 +127,9 @@ init_pop <- get_initPop()
 entrants_dist <- get_entrantsDist(init_actives)
 
 # Detective work
-#init_pop$actives <- 0
+#init_pop$actives  <- 0
 #init_pop$servRet <- 0
-# init_pop$disbRet <- 0
+#init_pop$disbRet <- 0
 
 # salary
 # benefit_servRet
@@ -182,10 +182,10 @@ pop <- get_Population()
 #*********************************************************************************************************
 
 source("NYCTRS_Model_IndivLiab.R")
+#source("NYCTRS_Model_IndivLiab_TRS_COLA.R")
 invisible(gc())
 
 liab <- get_indivLab(tier_select)
-
 
 
 
