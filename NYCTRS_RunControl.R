@@ -75,8 +75,8 @@ paramlist <- list(
 									
 									# Funding policy
 							    s.year = 5,
-									s.upper = 999, 
-									s.lower = -999,
+									s.upper = 1.2, 
+									s.lower = 0.8,
 									smooth_method = "method1",
 									
 									amort_method = "cd",
