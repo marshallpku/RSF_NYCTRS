@@ -201,8 +201,8 @@ cat("......DONE\n")
 #*************************************************************************************************************
 #                        2.1 AL and benefits for retirees         #####                  
 #*************************************************************************************************************
-
-# Calculating initial benefit payment 
+cat("Service Retirement - retirees")
+## Calculating initial benefit payment 
 liab_active %<>%   
 	mutate(
 		
@@ -221,29 +221,41 @@ liab_active %<>%
 		Bx.laca  = gx.laca * Bx
 		)
 
-# Set up grids for retirees
-  # 4 dimensions:
-  #  - age_servRet
-  #  - age
-  #  - ea,
-  #  - start_year
 
-liab_la <- rbind(
-	
-	# grids for initial retirees in year 1
-	# To simplified the calculation, it is assmed that all initial retirees entered the workforce at age r.min - 1 and 
-	# retiree right in year 1. This assumption will cause the retirement age and yos of some of the retirees not compatible with the eligiblility rules,
-	# but this is not an issue since the main goal is to generate the correct cashflow and liablity for the initial retirees/beneficiaries.
-	
+
+## Initial service retirees
+
+liab_la_init <- 
 	expand.grid(
+		# Set up grids for retirees
+		# 4 dimensions:
+		#  - age_servRet
+		#  - age
+		#  - ea,
+		#  - start_year
 		age_servRet= filter(benefit_servRet_, benefit_servRet != 0)$age, # This ensures that year of retirement is year 1.
 		age        = range_age[range_age >= min(filter(benefit_servRet_, benefit_servRet != 0)$age)]) %>%
-		mutate(ea         = min_age,  # min(benefit_$age) - 1,
-					 start_year = init_year - (age_servRet - ea)) %>% 
-		filter(# age >= ea, 
-			age >= age_servRet),
+	mutate(ea         = min_age,  # min(benefit_$age) - 1,
+				 start_year = init_year - (age_servRet - ea)) %>% 
+	filter(# age >= ea, 
+		     age >= age_servRet) %>% 
+	left_join(benefit_servRet_, by = c("ea", "age", "start_year", "age_servRet")) %>% 
+	left_join(liab_active %>% select(start_year, ea, age, pxm_servRet), by = c("age", "ea", "start_year")) %>% 
+	group_by(start_year, age_servRet, ea) %>% 
+	mutate(year_servRet = start_year + age_servRet - ea, 
+				 year = start_year + age - ea,
+				 COLA.scale = (1 + cola)^(age - min(age)), 
+				 # B.la   = ifelse(year_servRet <= init_year, benefit_servRet, Bx.laca),
+				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
+				 B.la   = benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
+				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
+				  )
 	
-	
+# liab_la_init
+
+
+## Current and future active members
+liab_la <- 
 	# grids for who retire after year 1.
 	expand.grid(ea           = range_ea[range_ea < max_retAge],
 							age_servRet  = min_retAge:max_retAge,
@@ -251,18 +263,14 @@ liab_la <- rbind(
 							age        = range_age[range_age >=min_retAge]) %>%
 		filter(age         >= ea,
 					 age_servRet >= ea,
-					 age         >= age_servRet,
-					 start_year + (age_servRet - ea) >= init_year + 1, # retire after year 2, LHS is the year of retirement
-					 start_year + age - ea           >= init_year + 1) # not really necessary since we already have age >= age.r
-) %>%
+					 age         >= age_servRet) %>% 
+					 #start_year + (age_servRet - ea) >= init_year,     # retire after year 2, LHS is the year of retirement
+					 #start_year + age - ea           >= init_year) %>% # not really necessary since we already have age >= age.r
 	data.table(key = "start_year,ea,age_servRet,age")
 
 
-liab_la <- liab_la[!duplicated(liab_la %>% select(start_year, ea, age, age_servRet ))]  # should have no duplication, just for safety
+#liab_la <- liab_la[!duplicated(liab_la %>% select(start_year, ea, age, age_servRet ))]  # should have no duplication, just for safety
 
-
-
-# Calculate benefit payments and ALs
 
 liab_la <- merge(liab_la,
 								 select(liab_active, start_year, ea, age, Bx.laca, pxm_servRet) %>% data.table(key = "ea,age,start_year"),
@@ -270,33 +278,57 @@ liab_la <- merge(liab_la,
 								 by = c("ea", "age","start_year")) %>%
 	arrange(start_year, ea, age_servRet) %>% 
 	mutate(year   = start_year + age - ea) %>% 
-	as.data.frame %>% 
+	as.data.frame
 	# left_join(select(mortality.post.model_, year, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore. 
-	left_join(benefit_servRet_, by = c("ea", "age", "start_year", "age_servRet"))
+	#left_join(benefit_servRet_, by = c("ea", "age", "start_year", "age_servRet"))
 
 
 liab_la %<>% 
 	group_by(age_servRet, start_year, ea) %>% 
 	mutate(year_servRet = start_year + age_servRet - ea, 
 				 COLA.scale = (1 + cola)^(age - min(age)), 
-		     B.la   = ifelse(year_servRet <= init_year, benefit_servRet, Bx.laca),
+		     B.la   = Bx.laca,
 				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
 				 B.la   = B.la[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
 				 )
 
 
-# save liability upon retirement for later calculations
+## save liability upon retirement for later calculations
 df_AL.la_init <-
 liab_la %>% 
 	ungroup() %>% 
 	mutate(year = start_year + age - ea) %>% 
 	filter(age == age_servRet
 				 ) %>% 
-	select(year, start_year, ea, age, ALx.la) %>% 
+	select(start_year, ea, age, ALx.la) %>% 
 	arrange(ea, age)
 
-df_AL.la_init %>% filter(year == 2015)
+
+# df_AL.la_init %>% 
+# 	mutate(year = start_year + age -ea ) %>% 
+# 	filter(start_year == 1979, ea == 20)
+
+
+
+## For benefit and liability for retirees
+liab_la <- 
+   bind_rows(
+      liab_la_init,
+      liab_la %>% filter(start_year + (age_servRet - ea) >= init_year + 1, # retire after year 2, LHS is the year of retirement
+   									     start_year + age - ea           >= init_year + 1) 
+   ) 
+
+cat("......DONE\n")
+
+# liab_la %>% head
+
+
+
+
+
+
+
 
 # Check compatibility 
 # df_AL.la_init %>% filter(start_year == 2016, ea == 20)
@@ -376,7 +408,8 @@ liab_active %<>%
 
   # NC and AL of EAN.CD
   NCx.EAN.CD.laca = ifelse(age < max_retAge, PVFBx.laca[age == min(age)]/ayx[age == max_retAge], 0),
-  ALx.EAN.CD.laca = PVFBx.laca - NCx.EAN.CD.laca * axR,
+  PVFNC.EAN.CD.laca = NCx.EAN.CD.laca * axR,
+  ALx.EAN.CD.laca = PVFBx.laca - PVFNC.EAN.CD.laca,
   
   # NC and AL of EAN.CP
   NCx.EAN.CP.laca   = ifelse(age < max_retAge, sx * PVFBx.laca[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
@@ -396,20 +429,22 @@ cat("......DONE\n")
 # x %>% filter(start.year == 2017, ea == 30) 
 
 
-#liab_active_newCOLA = liab_active
-#save(liab_active_newCOLA, file = "liab_active_newCOLA.RData") 
+# liab_active_newCOLA = liab_active
+# save(liab_active_newCOLA, file = "liab_active_newCOLA.RData") 
 
+# liab_active %>% select(NCx.EAN.CD.laca) %>% filter(start_year == 2016, ea == 20) %>%  head
 
-
-liab_active %>% 
-	filter(start_year == 1985,
-		     #year == 2015, 
-				 ea == 20,
-				 #ea %in% 20:69,
-				 age %in% 20:70) %>% 
-	select(year, start_year, ea, age, NCx.EAN.CP.laca, ALx.EAN.CP.laca, qxr.la, ALx.la, TCx.laca, gx.laca, elig_early, elig_full) %>% 
-	ungroup %>% 
-	arrange(ea, age)
+# liab_active_newCOLA1 <- liab_active
+# 
+# liab_active %>% 
+# 	filter(start_year == 1980,
+# 		     #year == 2015, 
+# 				 ea == 20,
+# 				 #ea %in% 20:69,
+# 				 age %in% 20:70) %>% 
+# 	select(start_year, ea, age, NCx.EAN.CP.laca, ALx.EAN.CP.laca, qxr.la, ALx.la, TCx.laca, gx.laca, elig_early, elig_full) %>% 
+# 	ungroup %>% 
+# 	arrange(ea, age)
 
 
 
@@ -543,7 +578,8 @@ liab_active %<>%
          
          # NC and AL of EAN.CD
          NCx.EAN.CD.v = ifelse(age < age_vben, PVFBx.v[age == min(age)]/ayx[age == age_vben], 0),
-         ALx.EAN.CD.v = PVFBx.v - NCx.EAN.CD.v * axr,
+  			 PVFNC.EAN.CD.v = NCx.EAN.CD.v * axr,
+         ALx.EAN.CD.v = PVFBx.v - PVFNC.EAN.CD.v,
          
          # NC and AL of EAN.CP
          NCx.EAN.CP.v = ifelse(age < age_vben, PVFBx.v[age == min(age)]/(sx[age == min(age)] * ayxs[age == age_vben]) * sx, 0), 
@@ -725,7 +761,8 @@ liab_active %<>%
           ## Under EAN methods, costs are spread up to r.max
           # NC and AL of EAN.CD
           NCx.EAN.CD.death = ifelse(age < max_retAge, PVFBx.death[age == min(age)]/ayx[age == max_retAge], 0),
-          ALx.EAN.CD.death = PVFBx.death - NCx.EAN.CD.death * axR,
+  				PVFNC.EAN.CD.death =  NCx.EAN.CD.death * axR,
+  				ALx.EAN.CD.death = PVFBx.death - PVFNC.EAN.CD.death,
 
           # NC and AL of EAN.CP
           NCx.EAN.CP.death   = ifelse(age < max_retAge, sx * PVFBx.death[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
@@ -836,11 +873,12 @@ liab_active %<>%
 
           # NC and AL of EAN.CD
           NCx.EAN.CD.disbRet = ifelse(age < max_retAge, PVFBx.disbRet[age == min(age)]/ayx[age == max_retAge], 0),
-          ALx.EAN.CD.disbRet = PVFBx.disbRet - NCx.EAN.CD.disbRet * axR,
+  				PVFNC.EAN.CD.disbRet =  NCx.EAN.CD.disbRet * axR,
+  				ALx.EAN.CD.disbRet = PVFBx.disbRet - PVFNC.EAN.CD.disbRet,
 
           # NC and AL of EAN.CP
           NCx.EAN.CP.disbRet   = ifelse(age < max_retAge, sx * PVFBx.disbRet[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
-          PVFNC.EAN.CP.disbRet = NCx.EAN.CP.disbRet * axRs,
+  				PVFNC.EAN.CP.disbRet = NCx.EAN.CP.disbRet * axRs,
           ALx.EAN.CP.disbRet   = PVFBx.disbRet - PVFNC.EAN.CP.disbRet
   )
 

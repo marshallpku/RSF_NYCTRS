@@ -182,7 +182,7 @@ pop <- get_Population()
 #*********************************************************************************************************
 
 #source("NYCTRS_Model_IndivLiab.R")
-source("NYCTRS_Model_IndivLiab_TRS_COLA1.R")
+source("NYCTRS_Model_IndivLiab_TRS_COLA.R")
 invisible(gc())
 
 liab <- get_indivLab(tier_select)
