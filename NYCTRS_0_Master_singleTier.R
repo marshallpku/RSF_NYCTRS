@@ -268,7 +268,9 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 # 6.  Simulation ####
 #*********************************************************************************************************
-source("NYCTRS_Model_Sim_wTDA.R")
+# source("NYCTRS_Model_Sim.R")
+# source("NYCTRS_Model_Sim_wTDA.R")
+source("NYCTRS_Model_Sim_wTDA_payouts.R.R")
 penSim_results <- run_sim(tier_select, AggLiab)
 
 
