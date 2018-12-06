@@ -176,11 +176,9 @@ run_sim <- function(tier_select_,
   
   
   # Vector used in asset smoothing
-  s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
+  # s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
   s.vector.TDA <- seq(0,1,length = s.year.TDA + 1)[-(s.year.TDA+1)]; s.vector.TDA  # a vector containing the porportion of 
-
-
-  
+  s.vector <- c(0, 0.15, 0.3, 0.45, 0.6, 0.8)
   
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
@@ -327,7 +325,7 @@ run_sim <- function(tier_select_,
    
    UAAL.year1.model <- AL.year1.model - AA.year1.model
    
-   factor.initAmort <- UAAL.year1.model/ 1983860720 # AV2016 page n3
+   factor.initAmort <- UAAL.year1.model/ 1# 1983860720 # AV2016 page n3
    # Notes: Theoretically, the AV UAAL should be equal to the sum of outstanding amortization balance. Need to check the document
    
    if(useAVamort){

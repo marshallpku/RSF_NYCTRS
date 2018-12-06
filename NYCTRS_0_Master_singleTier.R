@@ -8,7 +8,7 @@ suppressMessages(gc())
 # 1.1 Load data ####
 #*********************************************************************************************************
 
-# # Load plan information
+# Load plan information
 # source("NYCTRS_Data_readPlanInfo17.R")
 # 
 # # Load demographics data in CAFR 2017
@@ -325,7 +325,7 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 
 
 
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 

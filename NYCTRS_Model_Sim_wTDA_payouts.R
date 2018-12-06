@@ -176,7 +176,10 @@ run_sim <- function(tier_select_,
     			 I.TDA.fixed  = 0, # fixed TDA return
     			 I.TDA.actual = 0, # actual TDA return
     			 I.dif.TDA    = 0, # investment losses/gains due to TDA
-    			 i.r.wTDA     = 0 # effective QPP investment returns after accounting for TDA
+    			 i.r.wTDA     = 0, # effective QPP investment returns after accounting for TDA
+    			 
+    			 ERC_TDApayouts = 0,
+    			 C_TDApayouts   = 0
     			 
     			 )
   # penSim0 <- as.list(penSim0)
@@ -337,7 +340,7 @@ run_sim <- function(tier_select_,
    
    UAAL.year1.model <- AL.year1.model - AA.year1.model
    
-   factor.initAmort <- UAAL.year1.model/ 1983860720 # AV2016 page n3
+   factor.initAmort <- UAAL.year1.model/ 1 # 1983860720 # AV2016 page n3
    # Notes: Theoretically, the AV UAAL should be equal to the sum of outstanding amortization balance. Need to check the document
    
    if(useAVamort){
@@ -614,12 +617,11 @@ run_sim <- function(tier_select_,
       penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
       penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
       
+      
       if(TDA_on & k != -1){
-      penSim$ERC[j] = penSim$ERC[j] - penSim$I.dif.TDA[j]
-      penSim$C[j]   = penSim$C[j]   - penSim$I.dif.TDA[j]
+      penSim$ERC_TDApayouts[j] = penSim$ERC[j] - penSim$I.dif.TDA[j]
+      penSim$C_TDApayouts[j]   = penSim$C[j]   - penSim$I.dif.TDA[j]
       }
-      
-      
       
     }
     
