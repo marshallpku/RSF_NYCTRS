@@ -266,7 +266,10 @@ run_sim <- function(tier_select_,
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.yearsum"]
-
+  
+  # EEC(j)
+  penSim0$EEC <- AggLiab_$active[, "EEC.yearsum"]
+  
 
   
   # nactives, nretirees, nterms
@@ -525,8 +528,8 @@ run_sim <- function(tier_select_,
       # Notes on nonNegC and EEC_fixed
       
       
-      # EEC(j)
-      penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
+      # # EEC(j)
+      # penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
       
       
       # ADC(j)

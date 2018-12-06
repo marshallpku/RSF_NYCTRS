@@ -184,10 +184,10 @@ run_sim <- function(tier_select_,
   
   
   # Vector used in asset smoothing
-  s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
+  # s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
   
-
-
+  s.vector <- c(0, 0.15, 0.3, 0.45, 0.6, 0.8)
+  
   
   
   #*************************************************************************************************************
@@ -277,7 +277,9 @@ run_sim <- function(tier_select_,
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.yearsum"]
 
-
+  # EEC(j)
+  penSim0$EEC <- AggLiab_$active[, "EEC.yearsum"]
+  
   
   # nactives, nretirees, nterms
   penSim0$nactives  <- AggLiab_$active[, "nactives"]
@@ -530,8 +532,8 @@ run_sim <- function(tier_select_,
       # Notes on nonNegC and EEC_fixed
       
       
-      # EEC(j)
-      penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
+      # # EEC(j)
+      # penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
       
       
       # ADC(j)
@@ -606,14 +608,16 @@ run_sim <- function(tier_select_,
       
       # TDA as payouts and effect on contributions
       
+      
       penSim$I.TDA.fixed[j]  = with(penSim, MA.TDA[j] * i.TDAfixed)
       penSim$I.TDA.actual[j] = with(penSim, MA.TDA[j] * i.r[j])
       penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
       penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
       
+      if(TDA_on & k != -1){
       penSim$ERC[j] = penSim$ERC[j] - penSim$I.dif.TDA[j]
       penSim$C[j]   = penSim$C[j]   - penSim$I.dif.TDA[j]
-      
+      }
       
       
       

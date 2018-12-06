@@ -113,7 +113,8 @@ get_AggLiab <- function( tier_select_,
            PVFBx.actAll.cellsum    = PVFBx.laca.cellsum + PVFBx.v.cellsum + PVFBx.disbRet.cellsum + PVFBx.death.cellsum,
            
            PR.cellsum  = sx * number.a,
-           
+           EEC.cellsum = EEC * number.a,
+    			 
            runname = runname)
   
   active.agg <- liab_$active %>%  
@@ -138,6 +139,7 @@ get_AggLiab <- function( tier_select_,
       PVFBx.actAll.yearsum   = sum(PVFBx.actAll.cellsum,   na.rm = TRUE),
       
       PR.yearsum    = sum(PR.cellsum,  na.rm = TRUE),
+      EEC.yearsum   = sum(EEC.cellsum, na.rm = TRUE),
       
       #DC_EEC.yearsum = sum(DC_EEC.cellsum, na.rm = TRUE),
 

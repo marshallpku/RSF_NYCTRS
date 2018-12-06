@@ -292,7 +292,7 @@ penSim_results <- run_sim(tier_select, AggLiab)
 # 
 # 
 var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "PR")
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",

@@ -67,35 +67,35 @@ paramlist <- list(
 									
 									# Economic assumptions
 									i = 0.07,
-									infl = 0.03,
+									infl = 0.025,
 									
 									# Actuarial methods and assumptions
 									actuarial_method = "EAN.CD",
 									startingSalgrowth = 0.03,
 									
 									# Funding policy
-							    s.year = 5,
+							    s.year = 6,
 									s.upper = 1.2, 
 									s.lower = 0.8,
 									smooth_method = "method1",
 									
 									amort_method = "cd",
 									amort_type   = "closed",
-									m = 15,
+									m = 14,
 									salgrowth_amort = 0.03,
 									
 									ConPolicy = "ADC",
 									nonNegC   = FALSE,
 									EEC_fixed = FALSE,
 									
-									EEC_rate = 0.04,
+									#EEC_rate = 0.04,
 									
 									
 								  ## Initial Funding:
 									init_MA_type = "AL_pct",  # need to make values more straightforward
 									init_AA_type = "AL_pct",  # need to make values more straightforward
-									MA_0_pct = 0.566,
-									AA_0_pct = 0.566,
+									MA_0_pct = 0.60,
+									AA_0_pct = 0.60,
 									MA_0 = 0,
 									AA_0 = 0,
 									

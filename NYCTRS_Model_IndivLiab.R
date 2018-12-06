@@ -184,11 +184,19 @@ liab_active %<>%
     
     # Temporary annuity values from a fixed entry age y to x (fixed start) (PV of future salary at entry age w/0 and w/ salary growth)
     ayx = c(get_tla2(pxT[age <= max_retAge], i), rep(0, max_age - max_retAge)),                          # need to make up the length of the vector up to age max.age
-    ayxs= c(get_tla2(pxT[age <= max_retAge], i,  sx[age <= max_retAge]), rep(0, max_age - max_retAge))   # need to make up the length of the vector up to age max.age
+    ayxs= c(get_tla2(pxT[age <= max_retAge], i,  sx[age <= max_retAge]), rep(0, max_age - max_retAge)),   # need to make up the length of the vector up to age max.age
     
     
     # axr = ifelse(ea >= r.min, 0, c(get_tla(pxT[age < r.min], i), rep(0, max.age - r.min + 1))),                 # Similar to axR, but based on r.min.  For calculation of term benefits when costs are spread up to r.min.        
     # axrs= ifelse(ea >= r.min, 0, c(get_tla(pxT[age < r.min], i, sx[age<r.min]), rep(0, max.age - r.min + 1))),  # Similar to axRs, but based on r.min. For calculation of term benefits when costs are spread up to r.min.
+    
+    
+    # EEC
+     # For now use 55/25 and 55/27 rule
+     # 4.85% for yos <=10,
+     # 1.85% for yos >= 10
+    
+    EEC = ifelse(yos <= 10, 0.0485 * sx, 0.0185 * sx)
     
   )
 cat("......DONE\n")
@@ -838,7 +846,8 @@ var.names <- c("sx", ALx.laca.method,  NCx.laca.method,  PVFNC.laca.method,
 							       "PVFBx.death", 
 							       "PVFBx.disbRet", 
 							       #"Bx.laca", "Bx.disb", "Bx", 
-							       "PVFSx")
+							       "PVFSx",
+							       "EEC")
 
 liab_active %<>% 
   filter(year %in% seq(init_year, len = nyear)) %>%
