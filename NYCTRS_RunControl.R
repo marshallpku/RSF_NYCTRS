@@ -70,7 +70,7 @@ paramlist <- list(
 									infl = 0.03,
 									
 									# Actuarial methods and assumptions
-									actuarial_method = "EAN.CP",
+									actuarial_method = "EAN.CD",
 									startingSalgrowth = 0.03,
 									
 									# Funding policy

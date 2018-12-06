@@ -240,7 +240,7 @@ liab_la_init <-
 	filter(# age >= ea, 
 		     age >= age_servRet) %>% 
 	left_join(benefit_servRet_, by = c("ea", "age", "start_year", "age_servRet")) %>% 
-	left_join(liab_active %>% select(start_year, ea, age, pxm_servRet, by = c("age", "ea", "start_year"))) %>% 
+	left_join(liab_active %>% select(start_year, ea, age, pxm_servRet), by = c("age", "ea", "start_year")) %>% 
 	group_by(start_year, age_servRet, ea) %>% 
 	mutate(year_servRet = start_year + age_servRet - ea, 
 				 year = start_year + age - ea,
@@ -408,7 +408,8 @@ liab_active %<>%
 
   # NC and AL of EAN.CD
   NCx.EAN.CD.laca = ifelse(age < max_retAge, PVFBx.laca[age == min(age)]/ayx[age == max_retAge], 0),
-  ALx.EAN.CD.laca = PVFBx.laca - NCx.EAN.CD.laca * axR,
+  PVFNC.EAN.CD.laca = NCx.EAN.CD.laca * axR,
+  ALx.EAN.CD.laca = PVFBx.laca - PVFNC.EAN.CD.laca,
   
   # NC and AL of EAN.CP
   NCx.EAN.CP.laca   = ifelse(age < max_retAge, sx * PVFBx.laca[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
@@ -428,9 +429,10 @@ cat("......DONE\n")
 # x %>% filter(start.year == 2017, ea == 30) 
 
 
-liab_active_newCOLA = liab_active
-save(liab_active_newCOLA, file = "liab_active_newCOLA.RData") 
+# liab_active_newCOLA = liab_active
+# save(liab_active_newCOLA, file = "liab_active_newCOLA.RData") 
 
+# liab_active %>% select(NCx.EAN.CD.laca) %>% filter(start_year == 2016, ea == 20) %>%  head
 
 # liab_active_newCOLA1 <- liab_active
 # 
@@ -576,7 +578,8 @@ liab_active %<>%
          
          # NC and AL of EAN.CD
          NCx.EAN.CD.v = ifelse(age < age_vben, PVFBx.v[age == min(age)]/ayx[age == age_vben], 0),
-         ALx.EAN.CD.v = PVFBx.v - NCx.EAN.CD.v * axr,
+  			 PVFNC.EAN.CD.v = NCx.EAN.CD.v * axr,
+         ALx.EAN.CD.v = PVFBx.v - PVFNC.EAN.CD.v,
          
          # NC and AL of EAN.CP
          NCx.EAN.CP.v = ifelse(age < age_vben, PVFBx.v[age == min(age)]/(sx[age == min(age)] * ayxs[age == age_vben]) * sx, 0), 
@@ -758,7 +761,8 @@ liab_active %<>%
           ## Under EAN methods, costs are spread up to r.max
           # NC and AL of EAN.CD
           NCx.EAN.CD.death = ifelse(age < max_retAge, PVFBx.death[age == min(age)]/ayx[age == max_retAge], 0),
-          ALx.EAN.CD.death = PVFBx.death - NCx.EAN.CD.death * axR,
+  				PVFNC.EAN.CD.death =  NCx.EAN.CD.death * axR,
+  				ALx.EAN.CD.death = PVFBx.death - PVFNC.EAN.CD.death,
 
           # NC and AL of EAN.CP
           NCx.EAN.CP.death   = ifelse(age < max_retAge, sx * PVFBx.death[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
@@ -869,11 +873,12 @@ liab_active %<>%
 
           # NC and AL of EAN.CD
           NCx.EAN.CD.disbRet = ifelse(age < max_retAge, PVFBx.disbRet[age == min(age)]/ayx[age == max_retAge], 0),
-          ALx.EAN.CD.disbRet = PVFBx.disbRet - NCx.EAN.CD.disbRet * axR,
+  				PVFNC.EAN.CD.disbRet =  NCx.EAN.CD.disbRet * axR,
+  				ALx.EAN.CD.disbRet = PVFBx.disbRet - PVFNC.EAN.CD.disbRet,
 
           # NC and AL of EAN.CP
           NCx.EAN.CP.disbRet   = ifelse(age < max_retAge, sx * PVFBx.disbRet[age == min(age)]/(sx[age == min(age)] * ayxs[age == max_retAge]), 0),
-          PVFNC.EAN.CP.disbRet = NCx.EAN.CP.disbRet * axRs,
+  				PVFNC.EAN.CP.disbRet = NCx.EAN.CP.disbRet * axRs,
           ALx.EAN.CP.disbRet   = PVFBx.disbRet - PVFNC.EAN.CP.disbRet
   )
 
