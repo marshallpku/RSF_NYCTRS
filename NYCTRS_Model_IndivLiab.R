@@ -263,6 +263,28 @@ cat("......DONE\n")
  
 
 
+# liab_active %>% 
+# 	filter(start_year == 1979,
+# 				 #year == 2015, 
+# 				 ea == 20,
+# 				 #ea %in% 21,
+# 				 age %in% 20:70) %>% 
+# 	select(year, start_year, ea, age, NCx.EAN.CP.laca, ALx.EAN.CP.laca, qxr.la, Bx.laca, TCx.laca, gx.laca, elig_early, elig_full) %>% 
+# 	ungroup %>% 
+# 	arrange(ea, age)
+# 
+# 
+# liab_active_newCOLA %>% 
+# 	filter(start_year == 1979,
+# 				 #year == 2015, 
+# 				 ea == 20,
+# 				 #ea %in% 21,
+# 				 age %in% 20:70) %>% 
+# 	select(year, start_year, ea, age, NCx.EAN.CP.laca, ALx.EAN.CP.laca, qxr.la, ALx.la, TCx.laca, gx.laca, elig_early, elig_full) %>% 
+# 	ungroup %>% 
+# 	arrange(ea, age)
+
+
 
 #*************************************************************************************************************
 #                       2.2   ALs and benefits for retirees with life annuity                        #####                  

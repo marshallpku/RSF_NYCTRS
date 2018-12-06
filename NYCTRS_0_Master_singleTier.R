@@ -174,15 +174,15 @@ pop <- get_Population()
 #                                       apply_reduction = FALSE) %>% 
 #                 rename(age.disb = age.r)
 # 
-# 
-# 
+
+
 
 #*********************************************************************************************************
 # 4. Individual actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
 
-source("NYCTRS_Model_IndivLiab.R")
-#source("NYCTRS_Model_IndivLiab_TRS_COLA.R")
+#source("NYCTRS_Model_IndivLiab.R")
+source("NYCTRS_Model_IndivLiab_TRS_COLA1.R")
 invisible(gc())
 
 liab <- get_indivLab(tier_select)
