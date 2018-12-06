@@ -169,7 +169,16 @@ run_sim <- function(tier_select_,
            C_PR = 0,
            nactives  = 0,
            nretirees = 0,
-           nterms    = 0)
+           nterms    = 0,
+    			 
+    			 # TDA variables
+    			 MA.TDA = 0,     # TDA assets
+    			 I.TDA.fixed  = 0, # fixed TDA return
+    			 I.TDA.actual = 0, # actual TDA return
+    			 I.dif.TDA    = 0, # investment losses/gains due to TDA
+    			 i.r.wTDA     = 0 # effective QPP investment returns after accounting for TDA
+    			 
+    			 )
   # penSim0 <- as.list(penSim0)
   
   
@@ -352,6 +361,17 @@ run_sim <- function(tier_select_,
   
   # # save(SC_amort0, file = "SC_amort0.RData")  
   
+  
+  #*************************************************************************************************************
+  #                                  Setting up TDA  ####
+  #*************************************************************************************************************  
+  
+  penSim0$MA.TDA[1] <- switch(init_MA_TDA_type,
+  														MA_pct = MA.year1.model * init_MA_TDA_pct,
+  														preset = init_MA_TDA_preset)
+  
+  
+  
   #*************************************************************************************************************
   #                                       Simuation  ####
   #*************************************************************************************************************
@@ -415,6 +435,22 @@ run_sim <- function(tier_select_,
         )
       }
       
+    	
+    	
+    	if(j > 1){
+    		
+    		penSim$MA.TDA[j] <- with(penSim, MA.TDA[j - 1] + I.TDA.fixed[j - 1])
+    		
+    		# if(TDA_on & k != -1){
+    		# 	penSim$MA[j]  <- with(penSim, MA[j] - I.dif.TDA[j])  
+    		# 	penSim$AA[j]  <- switch(smooth_method,
+    		# 													method1 = with(penSim, MA[j] - sum(s.vector.TDA[max(s.year.TDA + 2 - j, 1):s.year.TDA] * I.dif.TDA[(j-min(j, s.year.TDA + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
+    		# 													method2 = with(penSim, (1 - w) * EAA[j] + w * MA[j])
+    		# 	)}
+    		
+    	}
+    	
+    	
       
       ## Incorporating initial unrecognized returns
        # - The unrecognized returns/losses, which are the differences between initial MA and AA, 
@@ -546,17 +582,6 @@ run_sim <- function(tier_select_,
       
       
       
-      # TDA as payouts and effect on contributions
-      
-      penSim$I.TDA.fixed[j]  = with(penSim, MA.TDA[j] * i.TDAfixed)
-      penSim$I.TDA.actual[j] = with(penSim, MA.TDA[j] * i.r[j])
-      penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
-      penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
-      
-      penSim$ERC[j] = penSim$ERC[j] - penSim$I.dif.TDA[j]
-      penSim$C[j]   = penSim$C[j]   - penSim$I.dif.TDA[j]
-      
-      
       #******************************************
       #   4. Investment income                 **
       #******************************************
@@ -576,6 +601,21 @@ run_sim <- function(tier_select_,
       
       # I.dif(j) = I.r(j) - I.e(j): Difference between expected and actual investment incomes (for asset smoothing)
       penSim$I.dif[j] <- with(penSim, I.r[j] - I.e[j])
+      
+      
+      
+      # TDA as payouts and effect on contributions
+      
+      penSim$I.TDA.fixed[j]  = with(penSim, MA.TDA[j] * i.TDAfixed)
+      penSim$I.TDA.actual[j] = with(penSim, MA.TDA[j] * i.r[j])
+      penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
+      penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
+      
+      penSim$ERC[j] = penSim$ERC[j] - penSim$I.dif.TDA[j]
+      penSim$C[j]   = penSim$C[j]   - penSim$I.dif.TDA[j]
+      
+      
+      
       
     }
     

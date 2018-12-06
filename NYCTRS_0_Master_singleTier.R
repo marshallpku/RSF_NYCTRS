@@ -270,7 +270,7 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 # source("NYCTRS_Model_Sim.R")
 # source("NYCTRS_Model_Sim_wTDA.R")
-source("NYCTRS_Model_Sim_wTDA_payouts.R.R")
+source("NYCTRS_Model_Sim_wTDA_payouts.R")
 penSim_results <- run_sim(tier_select, AggLiab)
 
 
@@ -311,7 +311,7 @@ var_display3 <- c("Tier", "sim", "year", "FR_MA", "PVFB.act.laca", "PVFB.act.v",
 var_display3 <- c("Tier", "sim", "year", "FR_MA", "AL.act.death", "NC.death", "AL.death", "B.death")
 
 
-var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual")
+var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual", "I.r")
 
 # var_display.cali <- c("runname", "sim", "year", "FR","FR_MA", "MA", "AA", "AL",
 #                       "AL.act", "AL.disb.la", "AL.term",
@@ -329,7 +329,7 @@ penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 
-penSim_results %>% filter(sim == 1) %>% select(one_of(var_TDA)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_TDA)) %>% print
 
 
 # Check geometric return
