@@ -21,11 +21,11 @@ suppressMessages(gc())
 # source("NYCTRS_Data_demoLargePlans.R")
 # 
 # 
-# # Imputation of yos distributions for CAFR 2017 active members data
-# source("NYCTRS_Data_ImputationActives.R")
-# 
-# # Construct member data
-# source("NYCTRS_Data_memberData_CAFR2017.R")
+# Imputation of yos distributions for CAFR 2017 active members data
+source("NYCTRS_Data_ImputationActives.R")
+
+# Construct member data
+source("NYCTRS_Data_memberData_CAFR2017.R")
 
 dir_data <- "Inputs_data/"
 
@@ -408,7 +408,8 @@ df_all.stch %>%
   ) %>%
   ungroup()
 
-df_all.stch
+df_all.stch %>% 
+	filter(year %in% c(2016, seq(2020, 2045, 5)))
 
 
 # Distribution of QPP and effective investment returns 

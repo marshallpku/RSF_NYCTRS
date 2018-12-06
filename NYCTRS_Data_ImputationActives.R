@@ -56,8 +56,43 @@ scale_largePlans <-
 				 yos.cell,
 				 scale_nact = !!scaleName_nact,
 				 scale_sal  = !!scaleName_sal) %>% 
-	filter(age.cell - yos.cell >= 20)
+	filter(age.cell - yos.cell >= 20) %>% 
+	arrange(age.cell, yos.cell)
 scale_largePlans
+
+
+scale_largePlans %>% 
+	arrange(age.cell, yos.cell) %>% 
+	ggplot(aes(x = yos.cell, y = scale_nact, color = as.character(age.cell) )) + geom_line() + geom_point()
+
+
+scale_largePlans %>% 
+	arrange(age.cell, yos.cell) %>% 
+	ggplot(aes(x = yos.cell, y = scale_sal, color = as.character(age.cell) )) + geom_line() + geom_point()
+
+
+
+adj_factor <- 0.3
+
+scale_largePlans %<>%
+	group_by(age.cell) %>% 
+	mutate(scale_nact_LowYosUp  = scale_nact * seq(1 + adj_factor, 1, len = n()),
+				 scale_nact_HighYosUp = scale_nact * seq(1, 1 + adj_factor, len = n()),
+				 scale_nact_MidYosUp  = scale_nact * (1 +  pmax(0, 1 - abs(row_number() - round(n()/2) )/(n()/2)) * adj_factor),
+				 
+				 scale_sal_LowYosUp  = scale_nact * seq(1 + adj_factor, 1, len = n()),
+				 scale_sal_HighYosUp = scale_nact * seq(1, 1 + adj_factor, len = n()),
+				 scale_sal_MidYosUp  = scale_nact * (1 +  pmax(0, 1 - abs(row_number() - round(n()/2) )/(n()/2)) * adj_factor) 
+				 )
+		
+
+
+# scale_largePlans %<>%
+# 	mutate(scale_nact = scale_nact_HighYosUp,
+# 				 scale_sal  = scale_sal_HighYosUp)
+# 	
+
+
 
 df_actives_impt_CAFR17 <-
 	scale_largePlans %>%
@@ -69,6 +104,7 @@ df_actives_impt_CAFR17 <-
 		type_weight_nact = type_weight_nact,
 		type_weight_sal  = type_weight_sal
 	) %>% 
+	arrange(age.cell, yos.cell) %>% 
 	select(plan, age.cell, yos.cell, type_weight_nact, type_weight_sal, nactives_impt, salary_impt)
 
 df_actives_impt_CAFR17
