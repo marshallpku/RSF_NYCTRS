@@ -659,7 +659,11 @@ run_sim <- function(tier_select_,
            NC.v_PR   = 100 * NC.v / PR,
            SC_PR   = 100 * SC / PR, 
            ERC_PR  = 100 * ERC / PR,
-           EEC_PR  = 100 * EEC / PR, 
+           EEC_PR  = 100 * EEC / PR,
+    			 
+    			 ERC_TDApayouts_PR  = 100 * ERC_TDApayouts / PR,
+    			 C_TDApayouts_PR    = 100 * C_TDApayouts   / PR,
+    			 
            C_PR    = 100 * C / PR,
            B_PR    = 100 * B / PR,
            ExF     = C - B,
