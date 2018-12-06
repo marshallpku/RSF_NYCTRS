@@ -34,7 +34,7 @@ tier_select = "t4a"
 
 Global_paramlist <- list(
 	ncore = 6,
-  nsim = 10,
+  nsim = 2000,
 	
 	max_retAge = 70,
 	min_retAge = 55, 
@@ -44,7 +44,7 @@ Global_paramlist <- list(
 	min_ea  = 20,
 	max_ea  = 68,
 	
-	init_year = 2015,
+	init_year = 2016,
 	nyear     = 30
 )
 
@@ -85,8 +85,8 @@ paramlist <- list(
 									salgrowth_amort = 0.03,
 									
 									ConPolicy = "ADC",
-									nonNegC   = FALSE,
-									EEC_fixed = FALSE,
+									nonNegC   = TRUE,
+									EEC_fixed = TRUE,
 									
 									#EEC_rate = 0.04,
 									
@@ -126,4 +126,29 @@ Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)
 
 
 
+RIG.blue  <- "#003598"
+RIG.red   <- "#A50021"
+RIG.green <- "#009900"
+RIG.yellow <- "#FFFF66"
+RIG.purple <- "#9966FF"
+RIG.yellow.dark <- "#ffc829"
+RIG.orange <- "#fc9272"
+
+demo.color6 <- c(RIG.red,
+								 RIG.orange,
+								 RIG.purple,
+								 RIG.green ,
+								 RIG.blue,
+								 RIG.yellow.dark)
+
+
+RIG.theme <- function(){
+	theme(panel.grid.major.x = element_blank(),
+				panel.grid.minor.x = element_blank(),
+				panel.grid.minor.y = element_blank(),
+				panel.grid.major.y = element_line(size = 0.5, color = "gray80"),
+				plot.title=element_text(hjust=0.5),
+				plot.subtitle=element_text(hjust=0.5),
+				plot.caption=element_text(hjust=0, size = 9))
+}
 

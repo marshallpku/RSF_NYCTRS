@@ -289,8 +289,8 @@ penSim_results <- run_sim(tier_select, AggLiab)
 # #*********************************************************************************************************
 # # 8. Showing results ####
 # #*********************************************************************************************************
-# 
-# 
+
+
 var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
                   "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
@@ -353,47 +353,266 @@ geoR %>%
 # 
 # 
 # 
-# #*********************************************************************************************************
-# # 8. Showing risk measures ####
-# #*********************************************************************************************************
-# 
-# df_all.stch <- penSim_results  %>% 
-#   filter(sim >= 0, year <= 2045)
-# 
-# 
-# df_all.stch %<>%   
-#   select(runname, sim, year, AL, MA, EEC, PR, ERC_PR) %>% 
-#   group_by(runname, sim) %>% 
-#   mutate(FR_MA     = 100 * MA / AL,
-#          FR40less  = cumany(FR_MA <= 40),
-#          FR100more  = cumany(FR_MA >= 100),
-#          FR100more2 = FR_MA >= 100,
-#          ERC_high  = cumany(ERC_PR >= 50), 
-#          ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10))) %>% 
-#   group_by(runname, year) %>% 
-#   summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
-#             FR100more = 100 * sum(FR100more, na.rm = T)/n(),
-#             FR100more2= 100 * sum(FR100more2, na.rm = T)/n(),
-#             ERC_high = 100 * sum(ERC_high, na.rm = T)/n(),
-#             ERC_hike = 100 * sum(ERC_hike, na.rm = T)/n(),
-#             
-#             FR.q10   = quantile(FR_MA, 0.1,na.rm = T),
-#             FR.q25   = quantile(FR_MA, 0.25, na.rm = T),
-#             FR.q50   = quantile(FR_MA, 0.5, na.rm = T),
-#             FR.q75   = quantile(FR_MA, 0.75, na.rm = T),
-#             FR.q90   = quantile(FR_MA, 0.9, na.rm = T),
-#             
-#             ERC_PR.q10 = quantile(ERC_PR, 0.1, na.rm = T),
-#             ERC_PR.q25 = quantile(ERC_PR, 0.25, na.rm = T),
-#             ERC_PR.q50 = quantile(ERC_PR, 0.5, na.rm = T),
-#             ERC_PR.q75 = quantile(ERC_PR, 0.75, na.rm = T),
-#             ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T)
-#             
-# 
-#   ) %>% 
-#   ungroup()
-# 
-# df_all.stch
+#*********************************************************************************************************
+# 8. Showing risk measures ####
+#*********************************************************************************************************
+
+df_all.stch <- penSim_results  %>%
+  filter(sim >= 0, year <= 2045)
+
+
+df_all.stch <- 
+df_all.stch %>%
+  select(runname, sim, year, AL, MA, PR, ERC_PR, ERC_TDApayouts_PR, i.r, i.r.wTDA) %>%
+  group_by(runname, sim) %>%
+  mutate(FR_MA     = 100 * MA / AL,
+         FR40less  = cumany(FR_MA <= 40),
+         FR100more  = cumany(FR_MA >= 100),
+         FR100more2 = FR_MA >= 100,
+         ERC_high  = cumany(ERC_PR >= 50),
+         ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10)),
+  			 
+  			 ERC_TDA_high  = cumany(ERC_TDApayouts_PR >= 60),
+  			 ERC_TDA_hike  = cumany(na2zero(ERC_TDApayouts_PR - lag(ERC_TDApayouts_PR, 5) >= 10))
+  			 
+  			 
+  			 ) %>%
+  group_by(runname, year) %>%
+  summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
+            FR100more = 100 * sum(FR100more, na.rm = T)/n(),
+            FR100more2= 100 * sum(FR100more2, na.rm = T)/n(),
+            ERC_high = 100 * sum(ERC_high, na.rm = T)/n(),
+            ERC_hike = 100 * sum(ERC_hike, na.rm = T)/n(),
+  					
+  					ERC_TDA_high = 100 * sum(ERC_TDA_high, na.rm = T)/n(),
+  					ERC_TDA_hike = 100 * sum(ERC_TDA_hike, na.rm = T)/n(),
+
+            FR.q10   = quantile(FR_MA, 0.1,na.rm = T),
+            FR.q25   = quantile(FR_MA, 0.25, na.rm = T),
+            FR.q50   = quantile(FR_MA, 0.5, na.rm = T),
+            FR.q75   = quantile(FR_MA, 0.75, na.rm = T),
+            FR.q90   = quantile(FR_MA, 0.9, na.rm = T),
+
+            ERC_PR.q10 = quantile(ERC_PR, 0.1, na.rm = T),
+            ERC_PR.q25 = quantile(ERC_PR, 0.25, na.rm = T),
+            ERC_PR.q50 = quantile(ERC_PR, 0.5, na.rm = T),
+            ERC_PR.q75 = quantile(ERC_PR, 0.75, na.rm = T),
+            ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T),
+  					
+  					ERC_TDApayouts_PR.q10 = quantile(ERC_TDApayouts_PR, 0.1, na.rm = T),
+  					ERC_TDApayouts_PR.q25 = quantile(ERC_TDApayouts_PR, 0.25, na.rm = T),
+  					ERC_TDApayouts_PR.q50 = quantile(ERC_TDApayouts_PR, 0.5, na.rm = T),
+  					ERC_TDApayouts_PR.q75 = quantile(ERC_TDApayouts_PR, 0.75, na.rm = T),
+  					ERC_TDApayouts_PR.q90 = quantile(ERC_TDApayouts_PR, 0.9, na.rm = T)
+  					
+  ) %>%
+  ungroup()
+
+df_all.stch
+
+
+# Distribution of QPP and effective investment returns 
+
+
+
+
+
+# Distribuiton of FR, ERC w/o and w/ TDA payments
+
+# Distribution of funded ratio 
+fig.title <- "Distribution of funded ratios across simulations"
+fig.subtitle <- "Assumption achieved: expected compound return = 7%"
+fig_FRdist <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
+	# left_join(results_all  %>%
+	# 						filter(runname  %in% c("RS1.closed", "RS1.open"), sim == 0) %>%
+	# 						select(runname, year, FR_det = FR_MA)) %>%
+	select(runname, year, FR.q25, FR.q50, FR.q75) %>% 
+	gather(type, value, -runname, -year) %>% 
+	ggplot(aes(x = year, y = value,
+						 color = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25")),
+						 shape = factor(type, levels = c("FR.q75", "FR.q50", "FR.q25"))
+	)) + theme_bw() + 
+	# facet_grid(.~runname) +
+	geom_line() + 
+	geom_point(size = 2) + 
+	geom_hline(yintercept = 100, linetype = 2, size = 1) +
+	coord_cartesian(ylim = c(0,200)) + 
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_y_continuous(breaks = seq(0, 500, 20)) + 
+	scale_color_manual(values = c(RIG.green, RIG.blue, RIG.red, "black"),  name = NULL, 
+										 label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) + 
+	scale_shape_manual(values = c(15, 16, 17, 18),  name = NULL, 
+										 label  = c("75th percentile", "50th percentile", "25th percentile", "Deterministic")) +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "Percent") + 
+	theme(axis.text.x = element_text(size = 8)) + 
+	RIG.theme()
+
+fig_FRdist
+
+
+
+# Distribution of ERC ($ value)
+fig.title <- "Distribution of employer contribution rates across simulations"
+fig.subtitle <- "Assumption achieved: expected compound return = 7%"
+fig_ERCdist <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
+	select(runname, year, ERC_PR.q25, 
+				                ERC_PR.q50, 
+				                ERC_PR.q75,
+				                ERC_TDApayouts_PR.q25, 
+				                ERC_TDApayouts_PR.q50, 
+				                ERC_TDApayouts_PR.q75) %>% 
+	gather(Var, value, -runname, -year) %>% 
+	mutate(type = ifelse(str_detect(Var, "TDA"), "wTDA", "noTDA"),
+				 Var  = str_replace(Var, "TDApayouts_", "")) %>% 
+	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
+	ggplot(aes(x = year, y = value,
+						 color = factor(Var, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")))) + 
+	facet_grid(. ~ type) + 
+	theme_bw() + 
+	geom_line() + 
+	geom_point(size = 2) + 
+	coord_cartesian(ylim = c(-20,60)) + 
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_y_continuous(breaks = seq(-100, 100, 10)) + 
+	scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
+										 label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+	scale_shape_manual(values = c(17, 16, 15, 18),  name = NULL, 
+										 label  = c("75th percentile", "50th percentile", "25th percentile")) +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "%") + 
+	theme(axis.text.x = element_text(size = 8)) + 
+	RIG.theme()
+
+fig_ERCdist 
+
+
+
+
+# Probs of low funded ratio, ERC high and ERC hike w/ and w/o TDA payouts
+
+
+# Risk of low funded ratio
+fig.title <- "Probability of funded ratio below 40% in any year up to the given year"
+fig.subtitle <- "Assumption achieved; expected compound return = 8%"
+fig_FR40less <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
+	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
+	select(runname, year, FR40less) %>% 
+	#mutate(FR40less.det = 0) %>% 
+	#gather(variable, value, -year) %>% 
+	ggplot(aes(x = year, y = FR40less, color = runname, shape = runname)) + theme_bw() + 
+	geom_point(size = 2) + geom_line() + 
+	coord_cartesian(ylim = c(0,10)) + 
+	scale_y_continuous(breaks = seq(0,200, 2)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_color_manual(values = c("black",RIG.red),  name = "") + 
+	scale_shape_manual(values = c(17,16),  name = "") +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "Probability (%)") + 
+	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	RIG.theme()
+fig_FR40less
+
+
+
+# Risk of sharp increase in ERC
+fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
+fig.subtitle <- "Assumption achieved; expected compound return = 7%"
+fig_ERChike <- df_all.stch %>% 
+  select(runname, year, ERC_hike, ERC_TDA_hike) %>% 
+	#mutate(ERChike.det = 0) %>% 
+	gather(type, value, -year, -runname) %>% 
+	ggplot(aes(x = year, y = value, color = type, shape = type)) + theme_bw() + 
+	geom_point(size = 2) + geom_line() + 
+	coord_cartesian(ylim = c(0,100)) + 
+	scale_y_continuous(breaks = seq(0,200, 5)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_color_manual(values = c("black", RIG.red),  name = "") + 
+	scale_shape_manual(values = c(17,16),  name = "") +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "Probability (%)") + 
+	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	RIG.theme()
+fig_ERChike
+
+
+
+
+# Risk of sharp increase in ERC
+fig.title <- "Probability of employer contribution rising above 50% of payroll \nat any time prior to and including the given year"
+fig.subtitle <- "Assumption achieved; expected compound return = 7%"
+fig_ERChike <- df_all.stch %>% 
+	select(runname, year, ERC_high, ERC_TDA_high) %>% 
+	#mutate(ERChike.det = 0) %>% 
+	gather(type, value, -year, -runname) %>% 
+	ggplot(aes(x = year, y = value, color = type, shape = type)) + theme_bw() + 
+	geom_point(size = 2) + geom_line() + 
+	coord_cartesian(ylim = c(0,100)) + 
+	scale_y_continuous(breaks = seq(0,200, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_color_manual(values = c("black", RIG.red),  name = "") + 
+	scale_shape_manual(values = c(17,16),  name = "") +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "Probability (%)") + 
+	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	RIG.theme()
+fig_ERChike
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# df_all.stch_TDA %<>%
+# 	select(runname, sim, year, AL, MA, PR, ERC_PR) %>%
+# 	group_by(runname, sim) %>%
+# 	mutate(ERC_PR = 
+# 		     FR_MA     = 100 * MA / AL,
+# 				 FR40less  = cumany(FR_MA <= 40),
+# 				 FR100more  = cumany(FR_MA >= 100),
+# 				 FR100more2 = FR_MA >= 100,
+# 				 ERC_high  = cumany(ERC_PR >= 60),
+# 				 ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10))) %>%
+# 	group_by(runname, year) %>%
+# 	summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
+# 						FR100more = 100 * sum(FR100more, na.rm = T)/n(),
+# 						FR100more2= 100 * sum(FR100more2, na.rm = T)/n(),
+# 						ERC_high = 100 * sum(ERC_high, na.rm = T)/n(),
+# 						ERC_hike = 100 * sum(ERC_hike, na.rm = T)/n(),
+# 						
+# 						FR.q10   = quantile(FR_MA, 0.1,na.rm = T),
+# 						FR.q25   = quantile(FR_MA, 0.25, na.rm = T),
+# 						FR.q50   = quantile(FR_MA, 0.5, na.rm = T),
+# 						FR.q75   = quantile(FR_MA, 0.75, na.rm = T),
+# 						FR.q90   = quantile(FR_MA, 0.9, na.rm = T),
+# 						
+# 						ERC_PR.q10 = quantile(ERC_PR, 0.1, na.rm = T),
+# 						ERC_PR.q25 = quantile(ERC_PR, 0.25, na.rm = T),
+# 						ERC_PR.q50 = quantile(ERC_PR, 0.5, na.rm = T),
+# 						ERC_PR.q75 = quantile(ERC_PR, 0.75, na.rm = T),
+# 						ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T)
+# 						
+# 						
+# 	) %>%
+# 	ungroup()
+
+
+
+
+
 
 
 
