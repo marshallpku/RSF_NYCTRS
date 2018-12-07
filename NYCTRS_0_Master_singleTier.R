@@ -280,12 +280,11 @@ penSim_results <- run_sim(tier_select, AggLiab)
 # # 7.  Saving results ####
 # #*********************************************************************************************************
 # 
-# outputs_list <- list(paramlist = paramlist, 
-#                      Global_paramlist = Global_paramlist,
-#                      results     = penSim_results)
-# 
-# 
-# 
+outputs_list <- list(paramlist = paramlist,
+                     Global_paramlist = Global_paramlist,
+                     results     = penSim_results)
+
+ 
 # #*********************************************************************************************************
 # # 8. Showing results ####
 # #*********************************************************************************************************
@@ -566,49 +565,6 @@ fig_ERChike
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-# df_all.stch_TDA %<>%
-# 	select(runname, sim, year, AL, MA, PR, ERC_PR) %>%
-# 	group_by(runname, sim) %>%
-# 	mutate(ERC_PR = 
-# 		     FR_MA     = 100 * MA / AL,
-# 				 FR40less  = cumany(FR_MA <= 40),
-# 				 FR100more  = cumany(FR_MA >= 100),
-# 				 FR100more2 = FR_MA >= 100,
-# 				 ERC_high  = cumany(ERC_PR >= 60),
-# 				 ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10))) %>%
-# 	group_by(runname, year) %>%
-# 	summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
-# 						FR100more = 100 * sum(FR100more, na.rm = T)/n(),
-# 						FR100more2= 100 * sum(FR100more2, na.rm = T)/n(),
-# 						ERC_high = 100 * sum(ERC_high, na.rm = T)/n(),
-# 						ERC_hike = 100 * sum(ERC_hike, na.rm = T)/n(),
-# 						
-# 						FR.q10   = quantile(FR_MA, 0.1,na.rm = T),
-# 						FR.q25   = quantile(FR_MA, 0.25, na.rm = T),
-# 						FR.q50   = quantile(FR_MA, 0.5, na.rm = T),
-# 						FR.q75   = quantile(FR_MA, 0.75, na.rm = T),
-# 						FR.q90   = quantile(FR_MA, 0.9, na.rm = T),
-# 						
-# 						ERC_PR.q10 = quantile(ERC_PR, 0.1, na.rm = T),
-# 						ERC_PR.q25 = quantile(ERC_PR, 0.25, na.rm = T),
-# 						ERC_PR.q50 = quantile(ERC_PR, 0.5, na.rm = T),
-# 						ERC_PR.q75 = quantile(ERC_PR, 0.75, na.rm = T),
-# 						ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T)
-# 						
-# 						
-# 	) %>%
-# 	ungroup()
 
 
 

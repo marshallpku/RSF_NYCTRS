@@ -72,7 +72,7 @@ scale_largePlans %>%
 
 
 
-adj_factor <- 0.3
+adj_factor <- 0.2
 
 scale_largePlans %<>%
 	group_by(age.cell) %>% 
