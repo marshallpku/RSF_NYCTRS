@@ -61,15 +61,15 @@ scale_largePlans <-
 scale_largePlans
 
 
-scale_largePlans %>% 
-	arrange(age.cell, yos.cell) %>% 
-	ggplot(aes(x = yos.cell, y = scale_nact, color = as.character(age.cell) )) + geom_line() + geom_point()
-
-
-scale_largePlans %>% 
-	arrange(age.cell, yos.cell) %>% 
-	ggplot(aes(x = yos.cell, y = scale_sal, color = as.character(age.cell) )) + geom_line() + geom_point()
-
+# scale_largePlans %>% 
+# 	arrange(age.cell, yos.cell) %>% 
+# 	ggplot(aes(x = yos.cell, y = scale_nact, color = as.character(age.cell) )) + geom_line() + geom_point()
+# 
+# 
+# scale_largePlans %>% 
+# 	arrange(age.cell, yos.cell) %>% 
+# 	ggplot(aes(x = yos.cell, y = scale_sal, color = as.character(age.cell) )) + geom_line() + geom_point()
+# 
 
 
 adj_factor <- 0.2
@@ -87,10 +87,10 @@ scale_largePlans %<>%
 		
 
 
-# scale_largePlans %<>%
-# 	mutate(scale_nact = scale_nact_HighYosUp,
-# 				 scale_sal  = scale_sal_HighYosUp)
-# 	
+
+scale_largePlans %<>%
+	mutate_("scale_nact" = paramlist$scaleName_nact,
+				  "scale_sal"  = paramlist$scaleName_sal)
 
 
 

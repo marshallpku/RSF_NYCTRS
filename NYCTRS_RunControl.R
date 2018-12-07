@@ -90,7 +90,7 @@ folder_save <- "Results/"
 
 for(runName in runList$runname ){
 	
-	runName <- "t4a"
+	# runName <- runList$runname
 	
 	paramlist <- get_parmsList(runList, runName)
 	
@@ -119,8 +119,8 @@ for(runName in runList$runname ){
 	# } else {
 		#Tier_select <- paramlist$tier
 		
-	#source("NYCTRS_0_Master_singleTier.R")
-	#save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
+	source("NYCTRS_0_Master_singleTier.R")
+	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 	
 	#}
 	
