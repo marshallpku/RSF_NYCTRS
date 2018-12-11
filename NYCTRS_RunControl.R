@@ -109,6 +109,7 @@ for(runName in runList$runname ){
 	Global_paramlist$range_age <- with(Global_paramlist, min_age:max_age)
 	Global_paramlist$range_ea  <- with(Global_paramlist, min_ea:max_ea)
 	
+	Global_paramlist$tier_select = "t4a"
 	tier_select = "t4a"
 	
 
@@ -120,7 +121,7 @@ for(runName in runList$runname ){
 		#Tier_select <- paramlist$tier
 		
 	source("NYCTRS_0_Master_singleTier.R")
-	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
+	# save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 	
 	#}
 	

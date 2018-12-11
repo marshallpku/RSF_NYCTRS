@@ -130,7 +130,7 @@ liab_active %<>%
   mutate(year = start_year + age - ea) %>%            
   arrange(start_year, ea, age) %>% 
   left_join(salary_, by =  c("start_year", "ea", "age", "year")) %>%
-  left_join(decrement_model_, by = c("ea", "age")) %>% 
+  left_join(decrement_model_, by = c("start_year", "ea", "age")) %>% 
   # left_join(mortality.post.model_ %>% filter(age == age.r) %>% ungroup %>% select(year, age, ax.r.W)) %>%
   # left_join(liab.ca_      %>% filter(age == age.r)    %>% ungroup %>% select(year, age, liab.ca.sum.1)) %>% 
   # left_join(liab.disb.ca_ %>% filter(age == age.disb) %>% ungroup %>% select(year, age, liab.disb.ca.sum.1 = liab.ca.sum.1)) %>% 
@@ -941,7 +941,7 @@ liab_disbRet <- merge(liab_disbRet,
   arrange(start_year, ea, age_disbRet) %>%
   as.data.frame %>%
   left_join(benefit_disbRet_, by = c("ea", "age", "start_year", "age_disbRet")) %>%
-  left_join(decrement_model_ %>% select(ea, age, pxm_disbRet), by = c("ea", "age"))  # need to add start_year if we use generational table in the future
+  left_join(decrement_model_ %>% select(start_year, ea, age, pxm_disbRet), by = c("start_year", "ea", "age"))  # need to add start_year if we use generational table in the future
 
 #%>%
 # left_join(select(mortality.post.model_, age, age.r, ax.r.W.ret = ax.r.W)) %>%  #  load present value of annuity for all retirement ages, ax.r.W in liab.active cannot be used anymore.
@@ -961,7 +961,7 @@ liab_disbRet %<>% as.data.frame  %>%
     Bx.disbRet    = ifelse(is.na(Bx.disbRet), 0, Bx.disbRet),  # just for safety
     B.disbRet     = ifelse(year_disbRet <= init_year,
                            benefit_disbRet[year == init_year] * COLA.scale / COLA.scale[year == init_year],  # Benefits for initial disability retirees
-                           Bx.disbRet[age == age_disbRet] * COLA.scale / COLA.scale[age == age_disbRet]),             # Benefits for disability retirees after year 1
+                           Bx.disbRet[age == age_disbRet] * COLA.scale / COLA.scale[age == age_disbRet]),    # Benefits for disability retirees after year 1
     ALx.disbRet   = B.disbRet * ax.disbRet                                                                   # Liability for remaining diability benefits, PV of all future benefit adjusted with COLA
 
   ) %>% ungroup %>%

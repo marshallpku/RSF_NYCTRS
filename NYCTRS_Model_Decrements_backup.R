@@ -66,7 +66,7 @@ assign_parmsList(paramlist_,        envir = environment())
 dir_data <- "Inputs_data/"
   
 #*************************************************************************************************************
-#                                Loading data                       #####                  
+#                                Loading Experience study data                       #####                  
 #*************************************************************************************************************
 
 
@@ -79,6 +79,42 @@ rownames(gratio) <- gratio$type
 gratio
 gratio["actives", "pct_male"]
   
+
+#*************************************************************************************************************
+#                                Loading MP2015 data                       #####                  
+#*************************************************************************************************************
+
+# Import projection scale (scale BB-2D)
+
+data_scale_M <- read_excel(paste0(dir_data, "MP2015/research-2015-mort-imp-scale-rates.xlsx"), sheet = "Male", skip = 1) %>% 
+	filter(!is.na(Age)) %>% 
+	mutate(Age = 20:120, 
+				 gender = "male")
+names(data_scale_M) <- c("age",1951:2030,"gender")
+
+
+data_scale_F <- read_excel(paste0(dir_data, "MP2015/research-2015-mort-imp-scale-rates.xlsx"), sheet = "Female", skip = 1) %>%
+	filter(!is.na(Age)) %>% 
+	mutate(Age = 20:120, 
+				 gender = "female")
+names(data_scale_F) <- c("age",1951:2030, "gender")
+
+
+
+# Transform data to long format
+data_scale_M %<>% gather(year_match, scale.M, -age, -gender) %>% mutate(year_match = as.numeric((year_match)))
+data_scale_F %<>% gather(year_match, scale.F, -age, -gender) %>% mutate(year_match = as.numeric((year_match)))
+
+
+
+# Expand the scales to 1915-2164
+# 1915: the year when a 120-year old retiree in 2015 was at age 20. 
+# 2235: the year when a 20-year old new entrant in 2115 will be at age 120.
+# The scale BB-2D covers year 1951-2030. Years before 1951 use the scale for 1951, and years after 2030 use the scale for 2030. 
+
+
+
+
 #*************************************************************************************************************
 #                                Prepare mortality tables                       #####                  
 #*************************************************************************************************************
@@ -88,48 +124,79 @@ df_qxm_disbRet
 df_qxm_servRet
 
 
-mortality_model <- tibble(age = range_age) %>% 
-  left_join(df_qxm_actives) %>% 
-  left_join(df_qxm_servRet) %>% 
-  left_join(df_qxm_disbRet) 
-  
-# Fill mortality for service retirees and disability retirees to min age.
-  # We need to do this because there may be young retirees/beneficiaries in the demograhic data, and also for safety of the modeling process.
-  # We may want to move this part to the data loading procedure later. 
-  # For service retirees, fill age 20-54 with mortality of active members
-  # For disabilty retirees, fill age 20-40 with mortality of active members
-mortality_model %<>% 
-  mutate(qxm_servRet_male   = ifelse(age <= 54, qxm_actives_male,   qxm_servRet_male),
-         qxm_servRet_female = ifelse(age <= 54, qxm_actives_female, qxm_servRet_female),
-         
-         qxm_disbRet_male   = ifelse(age <= 54, qxm_actives_male,   qxm_disbRet_male),
-         qxm_disbRet_female = ifelse(age <= 54, qxm_actives_female, qxm_disbRet_female))
+mortality_model_MP2015 <- 
+	expand.grid(year = 1915:2120, age = range_age, gender = c("male", "female")) %>% 
+	mutate(gender = as.character(gender),
+		     year_match = ifelse(year < 1951, 1951, ifelse(year>2030, 2030, year))) %>% 
+	left_join(df_qxm_actives %>% 
+							gather(gender, qxm_actives, -age) %>% 
+							mutate(gender = str_replace(gender, "qxm_actives_", "")),
+						by = c("age", "gender")
+	) %>%
+	left_join(df_qxm_servRet %>% 
+							gather(gender, qxm_servRet, -age) %>% 
+							mutate(gender = str_replace(gender, "qxm_servRet_", "")),
+						  by = c("age", "gender")
+	) %>% 
+	left_join(df_qxm_disbRet %>% 
+							gather(gender, qxm_disbRet, -age) %>% 
+							mutate(gender = str_replace(gender, "qxm_disbRet_", "")),
+						  by = c("age", "gender")
+	) %>% 
+	group_by(year, gender) %>% 
+	mutate(qxm_servRet   = ifelse(age <= 54, qxm_actives,   qxm_servRet),
+				 qxm_disbRet   = ifelse(age <= 54, qxm_actives,   qxm_disbRet)
+				 ) %>% 
+	arrange(year, gender, age)
 
-# Calculate weighted averages of mortality rates
-# and set the mortality rates for retirees to 1 at max age. 
-mortality_model %<>% 
-  mutate(qxm_actives = qxm_actives_male * gratio["actives", "pct_male"] + qxm_actives_female * gratio["actives", "pct_female"],
-         qxm_servRet = qxm_servRet_male * gratio["servRet", "pct_male"] + qxm_servRet_female * gratio["servRet", "pct_female"],
-         qxm_disbRet = qxm_disbRet_male * gratio["disbRet", "pct_male"] + qxm_disbRet_female * gratio["disbRet", "pct_female"],
-         
-         qxm_servRet =  ifelse(age == max(age), 1, qxm_servRet),
-         qxm_disbRet =  ifelse(age == max(age), 1, qxm_disbRet)
-         ) %>% 
-  mutate_all(funs(na2zero(.))) %>% 
 
-# Mortality for vested terminated workers: actives mortality before retirement age, and service retirees mortality thereafter.
-	mutate(qxm_terms = ifelse(age < age_vben, qxm_actives, qxm_servRet))
+
+# Applying MP-2015 
+mortality_model_MP2015 %<>% 
+	left_join(data_scale_M, by = c("gender", "age", "year_match")) %>% 
+	left_join(data_scale_F, by = c("gender", "age", "year_match")) %>% 
+	mutate(scale = ifelse(gender == "male", scale.M, scale.F)) %>% 
+	group_by(gender, age) %>% 
+	mutate(
+		# service retirees
+		qxm_servRet_proj = ifelse(year >= 2014, qxm_servRet[year == 2014] *  cumprod(ifelse(year <= 2014, 1, 1 - scale)), NA),
+		qxm_servRet_proj = ifelse(year < 2014,  qxm_servRet[year == 2014] * lead(order_by(-year, cumprod(ifelse(year > 2014, 1, 1/(1 - scale))))), qxm_servRet_proj),
+		
+		qxm_disbRet_proj = ifelse(year >= 2014, qxm_disbRet[year == 2014] *  cumprod(ifelse(year <= 2014, 1, 1 - scale)), NA),
+		qxm_disbRet_proj = ifelse(year < 2014,  qxm_disbRet[year == 2014] * lead(order_by(-year, cumprod(ifelse(year > 2014, 1, 1/(1 - scale))))), qxm_disbRet_proj)
+		
+	) %>% 
+	select(year, age, gender, qxm_actives, qxm_servRet_proj, qxm_disbRet_proj)
+
+
+
+# Combine genders
+
+mortality_model_MP2015 %<>% 
+	gather(variable, value, -age, -year, -gender) %>% 
+	ungroup() %>% 
+	mutate(variable = paste0(variable, "_", gender),
+				 gender = NULL) %>% 
+	spread(variable, value) %>% 
+	mutate(qxm_actives = qxm_actives_male * gratio["actives", "pct_male"] + qxm_actives_female * gratio["actives", "pct_female"],
+				 qxm_servRet = qxm_servRet_proj_male * gratio["servRet", "pct_male"] + qxm_servRet_proj_female * gratio["servRet", "pct_female"],
+				 qxm_disbRet = qxm_disbRet_proj_male * gratio["disbRet", "pct_male"] + qxm_disbRet_proj_female * gratio["disbRet", "pct_female"],
+				 
+				 qxm_servRet =  ifelse(age == max(age), 1, qxm_servRet),
+				 qxm_disbRet =  ifelse(age == max(age), 1, qxm_disbRet)
+	) %>% 
+	mutate_all(funs(na2zero(.))) %>% 
 	
-  
-mortality_model %<>% select(age, qxm_actives, qxm_servRet, qxm_disbRet, qxm_terms)
-
-mortality_model 
+	# Mortality for vested terminated workers: actives mortality before retirement age, and service retirees mortality thereafter.
+	mutate(qxm_terms = ifelse(age < age_vben, qxm_actives, qxm_servRet))
 
 
+mortality_model_MP2015 %<>% select(year, age, qxm_actives, qxm_servRet, qxm_disbRet, qxm_terms)
 
-#*************************************************************************************************************
-#                                Prepare mortality tables                       #####                  
-#*************************************************************************************************************
+mortality_model_MP2015 
+
+
+
 
 
 
@@ -251,28 +318,6 @@ termRates_model
 
 
 
-#*************************************************************************************************************
-#                      Putting together decrements  ####
-#*************************************************************************************************************
-
-# Create decrement table and calculate probability of survival
-decrement_model <- expand.grid(age = range_age, ea = range_ea) %>% 
-  mutate(yos = age - ea) %>% 
-  filter(age >= ea) %>% 
-  left_join(mortality_model)   %>%                # mortality 
-  left_join(termRates_model)   %>%                # termination
-  left_join(disbRates_model)   %>%                # disability
-  left_join(retRates_model_EM) %>%                # retirement: elected and mandated
-  left_join(retRates_model_E %>% select(-qxr_early))  %>%                # retirement: elected
-  left_join(retRates_model_M %>% select(-qxr_early))  %>%                # retirement: mandated
-  select(ea, age, everything())%>%          
-  arrange(ea, age)  %>%
-  colwise(na2zero)(.) %>% 
-  group_by(ea) 
-
-decrement_model
-
-
 
 
 #*************************************************************************************************************
@@ -324,8 +369,15 @@ decrement_model
 # Construct single column of retirement rates for each tier 
  # The elected rates are used for Tier 4 55/25 members; the Mandated rates are used for all else
 
-
-decrement_model %<>% 
+retRates_model_tiers <- 
+	expand.grid(age = range_age, 
+							ea = range_ea) %>% 
+	mutate(yos = age - ea) %>% 
+	filter(age >= ea) %>% 
+	group_by(ea) %>% 
+	left_join(retRates_model_EM, by = "age") %>%                                  # retirement: elected and mandated
+	left_join(retRates_model_E %>% select(-qxr_early), by = "age")  %>%           # retirement: elected
+	left_join(retRates_model_M %>% select(-qxr_early), by = "age")  %>%           # retirement: mandated
 	mutate(
 		     # Full retirement 
 		     elig_full_t4a = ifelse( (age >= 62 & yos >= 5) | 
@@ -392,8 +444,31 @@ decrement_model %<>%
 	)
 
 
-# Check the rate
+
+
+#*************************************************************************************************************
+#                      Putting together decrements  ####
+#*************************************************************************************************************
+
+# Create decrement table and calculate probability of survival
+decrement_model <- expand.grid(start_year = 1915:(init_year + nyear - 1) ,
+															 age = range_age, 
+															 ea = range_ea) %>% 
+	mutate(yos = age - ea,
+				 year = start_year + age - ea) %>% 
+	filter(age >= ea) %>% 
+	left_join(mortality_model_MP2015, by = c("year", "age"))   %>%                # mortality 
+	left_join(termRates_model, by = "yos")   %>%                                  # termination
+	left_join(disbRates_model, by = "age")   %>%                                  # disability
+	left_join(retRates_model_tiers, by = c("ea", "age", "yos")) %>%                      # retirement: by tier
+	select(start_year, ea, age, yos, everything())%>%          
+	arrange(ea, age)  %>%
+	colwise(na2zero)(.) %>% 
+	group_by(start_year, ea) 
+
 decrement_model
+
+
 
 
 #*************************************************************************************************************
@@ -520,7 +595,7 @@ decrement_model %<>%
 # decrement_model %>% names
 
 decrement_model %<>% 
-	select(ea, age, yos,
+	select(start_year, ea, age, yos,
 				 qxm_actives,
 				 qxm_servRet,
 				 qxm_disbRet,

@@ -146,24 +146,24 @@ make_dmat <- function(qx, df = decrement_wf) {
 # cell in the transtition matrices. 
 
 # Where do the active go
-p_active2term    <- make_dmat("qxt")
-p_active2disbRet <- make_dmat("qxd")
-p_active2dead    <- make_dmat("qxm_actives")
-p_active2servRet <- make_dmat("qxr")
-p_active2la      <- make_dmat("qxr")
-p_active2deathBen<- make_dmat("qxm_actives") # * pct.QSS
+p_active2term    <- make_dmat("qxt", df = filter(decrement_wf, start_year == min(start_year)))
+p_active2disbRet <- make_dmat("qxd", df = filter(decrement_wf, start_year == min(start_year)))
+p_active2dead    <- make_dmat("qxm_actives", df = filter(decrement_wf, start_year == min(start_year)))
+p_active2servRet <- make_dmat("qxr", df = filter(decrement_wf, start_year == min(start_year)))
+p_active2la      <- make_dmat("qxr", df = filter(decrement_wf, start_year == min(start_year)))
+p_active2deathBen<- make_dmat("qxm_actives", df = filter(decrement_wf, start_year == min(start_year))) # * pct.QSS
 
 
 # Where do the terminated go
-p_term2dead    <- make_dmat("qxm_terms") 
+p_term2dead    <- make_dmat("qxm_terms", df = filter(decrement_wf, start_year == min(start_year))) 
 
 
 # Where do the disabled go
-p_disbRet2dead    <- make_dmat("qxm_disbRet")
+p_disbRet2dead    <- make_dmat("qxm_disbRet", df = filter(decrement_wf, start_year == min(start_year)))
 
 
 # Where do the death beneficiaries go
-p_deathBen2dead <- make_dmat("qxm_servRet") # Simplified: weighted average of male and female mortality
+p_deathBen2dead <- make_dmat("qxm_servRet", df = filter(decrement_wf, start_year == min(start_year))) # Simplified: weighted average of male and female mortality
 
 
 
@@ -180,7 +180,9 @@ p_la2dead <- expand.grid(ea  = range_ea,
                          year_servRet = init_year:(init_year + nyear - 1)) %>%
   # filter(age >= ea) %>% 
   mutate(age_servRet = age - (year - year_servRet)) %>% 
-  left_join(decrement_wf %>% select(ea, age, qxm_servRet), by = c("ea", "age")) %>% 
+  left_join(decrement_wf %>% 
+  					  mutate(year = start_year + age - ea) %>% 
+  					  select(year, ea, age, qxm_servRet) , by = c("year", "ea", "age")) %>% 
 	mutate(qxm_servRet = na2zero(qxm_servRet)) %>% 
   #left_join(mortality.post.model %>% select(age.r, age, qxm.post.W)) %>%
   # mutate(qxm.post.W = na2zero(qxm.post.W)) %>% 
