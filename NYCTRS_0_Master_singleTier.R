@@ -106,11 +106,11 @@ source("NYCTRS_Model_InvReturns.R")
 i.r <- gen_returns()
 
 #i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
+i.r[1:5, 1:5]
 
 
 
-
-#*********************************************************************************************************
+s#*********************************************************************************************************
 # 1.2 Create plan data ####
 #*********************************************************************************************************
 
@@ -296,7 +296,7 @@ outputs_list <- list(paramlist = paramlist,
 
 
 var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR", "Amort_basis")
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR", "Amort_basis", "i.r")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",

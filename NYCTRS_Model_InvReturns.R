@@ -1,8 +1,8 @@
 # This module create investment return series. 
 
 gen_returns <- function( paramlist_ = paramlist,
-                         Global_paramlist_ = Global_paramlist
-                         #returnScenarios_ = returnScenarios
+                         Global_paramlist_ = Global_paramlist,
+                         returnScenarios_ = returnScenarios
                          ){
 #   
   # paramlist_ = paramlist
