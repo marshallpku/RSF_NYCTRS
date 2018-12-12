@@ -155,11 +155,47 @@ p_active2deathBen<- make_dmat("qxm_actives", df = filter(decrement_wf, start_yea
 
 
 # Where do the terminated go
-p_term2dead    <- make_dmat("qxm_terms", df = filter(decrement_wf, start_year == min(start_year))) 
+# p_term2dead    <- make_dmat("qxm_terms", df = filter(decrement_wf, start_year == min(start_year))) 
+
+
+p_term2dead <- expand.grid(ea  = range_ea, 
+															age = range_age, 
+															year = init_year:(init_year + nyear - 1), 
+															year_term = (init_year-1):(init_year + nyear - 1)) %>%
+	# filter(age >= ea) %>% 
+	mutate(age_term = age - (year - year_term)) %>% 
+	left_join(decrement_wf %>% 
+							mutate(year = start_year + age - ea) %>% 
+							select(year, ea, age, qxm_terms) , by = c("year", "ea", "age")) %>% 
+	mutate(qxm_terms = na2zero(qxm_terms)) %>% 
+	#left_join(mortality.post.model %>% select(age.r, age, qxm.post.W)) %>%
+	# mutate(qxm.post.W = na2zero(qxm.post.W)) %>% 
+	arrange(year, year_term, age, ea)
+
+
+
 
 
 # Where do the disabled go
-p_disbRet2dead    <- make_dmat("qxm_disbRet", df = filter(decrement_wf, start_year == min(start_year)))
+#p_disbRet2dead    <- make_dmat("qxm_disbRet", df = filter(decrement_wf, start_year == min(start_year)))
+
+p_disbRet2dead <- expand.grid(ea  = range_ea, 
+												 age = range_age, 
+												 year = init_year:(init_year + nyear - 1), 
+												 year_disbRet = init_year:(init_year + nyear - 1)) %>%
+	# filter(age >= ea) %>% 
+	mutate(age_disbRet = age - (year - year_disbRet)) %>% 
+	left_join(decrement_wf %>% 
+							mutate(year = start_year + age - ea) %>% 
+							select(year, ea, age, qxm_disbRet) , by = c("year", "ea", "age")) %>% 
+	mutate(qxm_disbRet = na2zero(qxm_disbRet)) %>% 
+	#left_join(mortality.post.model %>% select(age.r, age, qxm.post.W)) %>%
+	# mutate(qxm.post.W = na2zero(qxm.post.W)) %>% 
+	arrange(year, year_disbRet, age, ea)
+
+
+
+
 
 
 # Where do the death beneficiaries go
@@ -267,13 +303,15 @@ for (j in 1:(nyear - 1)){
   active2deathBen<- wf_active[, , j] * p_active2deathBen 
   
   # Where do the terminated_vested go
-  term2dead  <- wf_term[, , j, ] * as.vector(p_term2dead)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
+  # term2dead  <- wf_term[, , j, ] * as.vector(p_term2dead)           # a 3D array, each slice(3rd dim) contains the # of death in a termination age group
+  term2dead  <- wf_term[, , j, ] * (p_term2dead %>% filter(year == j + init_year - 1))[["qxm_terms"]] 
   
   # Where do the retired go
   la2dead   <- wf_la[, , j, ] * (p_la2dead %>% filter(year == j + init_year - 1))[["qxm_servRet"]]  #[["qxm.post.W"]]  # a 3D array, each slice(3rd dim) contains the # of death in a retirement age group    
   
   # Where do the disabled la go
-  disbRet2dead      <- wf_disbRet[, , j, ] * as.vector(p_disbRet2dead)
+  # disbRet2dead      <- wf_disbRet[, , j, ] * as.vector(p_disbRet2dead)
+  disbRet2dead  <- wf_disbRet[, , j, ] * (p_disbRet2dead %>% filter(year == j + init_year - 1))[["qxm_disbRet"]] 
   
   # Where do the death beneficiaries go
   deathBen2dead  <- wf_deathBen[, , j, ] * as.vector(p_deathBen2dead)
@@ -297,7 +335,7 @@ for (j in 1:(nyear - 1)){
   
   in_dead <- active2dead +                                             
              apply(term2dead,    c(1,2), sum) +   # 
-             apply(la2dead,      c(1,2), sum) +     # get a matirix of ea x age by summing over year.term/year.retiree
+             apply(la2dead,      c(1,2), sum) +   # get a matirix of ea x age by summing over year.term/year.retiree
              apply(disbRet2dead, c(1,2), sum) 
   
   

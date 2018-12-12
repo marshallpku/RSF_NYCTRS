@@ -334,8 +334,6 @@ cat("......DONE\n")
 
 
 
-
-
 # Check compatibility 
 # df_AL.la_init %>% filter(start_year == 2016, ea == 20)
 # 
@@ -565,7 +563,7 @@ cat("Deferred Retirement - actives")
 
 
 liab_active %<>%
-  mutate(gx.v = 0,# yos >= v.year,  #  ifelse(elig_vest == 1, 1, 0),  # actives become vested after reaching v.yos years of yos
+  mutate(gx.v = yos >= v.year,  #  ifelse(elig_vest == 1, 1, 0),  # actives become vested after reaching v.yos years of yos
          
   			 Bx.v = ifelse(ea < age_vben, 
   			 							gx.v * Bx,  # For NYCTRS, deferred retirement benefits accrue the same way as the service retirement benefits
@@ -681,7 +679,7 @@ liab_term %<>%
   mutate(year_term = year[age == age_term],
 
          COLA.scale = (1 + cola)^(age - min(age)),         # COLA.scale in liab.active does not trace back long enough
-         # ax.vben     = get_tla(pxm_terms, i, COLA.scale),  # COLA.scale in liab.active does not trace back long enough
+         ax.terms   = get_tla(pxm_terms, i, COLA.scale),   # COLA.scale in liab.active does not trace back long enough
 
          B.v   = ifelse(age >= age_vben, Bx.v[age == unique(age_term)] * COLA.scale/COLA.scale[age == age_vben], 0),  # Benefit payment after age_vben
          ALx.v = ifelse(age <  age_vben, Bx.v[age == unique(age_term)] * ax.terms[age == age_vben] * px_r.vben_m * v^(age_vben - age),
@@ -854,7 +852,7 @@ cat("Disability Retirement - actives")
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>% 
-  mutate( gx.disbRet  = 0, #yos >= v.year,
+  mutate( gx.disbRet  = yos >= v.year,
           Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.

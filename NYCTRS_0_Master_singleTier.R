@@ -218,7 +218,7 @@ AggLiab <- get_AggLiab(tier_select,
 # Based on method used in PSERS model. 
 
 if (paramlist$estInitTerm){
-AL.init.v <-  2000000000 # AV2016 pdf p17
+AL.init.v <-  0#2000000000 # AV2016 pdf p17
 
 
 df_init.vested <- data.frame(
@@ -325,6 +325,10 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 #                       "PR", "nactives", "nla",
 #                       "NC_PR", "SC_PR", # "ERC_PR",
 #                       "UAAL")
+
+
+penSim_results %>% filter(sim == -1) %>% select(year, AL.act.v, NC.v, AL.term, B.v) %>% print
+
 
 
 
