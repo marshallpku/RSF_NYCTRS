@@ -438,9 +438,9 @@ run_sim <- function(tier_select_,
     		
     		if(TDA_on & k != -1){
     		penSim$MA[j]  <- with(penSim, MA[j] - I.dif.TDA[j])  
-    		penSim$AA[j]  <- switch(smooth_method,
-    														method1 = with(penSim, MA[j] - sum(s.vector.TDA[max(s.year.TDA + 2 - j, 1):s.year.TDA] * I.dif.TDA[(j-min(j, s.year.TDA + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
-    														method2 = with(penSim, (1 - w) * EAA[j] + w * MA[j])
+    		penSim$AA[j]  <- switch(TDA_smooth_on,
+    														on  = with(penSim, MA[j] - sum(s.vector.TDA[max(s.year.TDA + 2 - j, 1):s.year.TDA] * I.dif.TDA[(j-min(j, s.year.TDA + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
+    														off = with(penSim, MA[j])
     		)}
     		
     	}
@@ -642,7 +642,11 @@ run_sim <- function(tier_select_,
            NC.v_PR   = 100 * NC.v / PR,
            SC_PR   = 100 * SC / PR, 
            ERC_PR  = 100 * ERC / PR,
-           EEC_PR  = 100 * EEC / PR, 
+           EEC_PR  = 100 * EEC / PR,
+    			 
+    			 ERC_noTDA_PR  = 100 * ERC / PR,
+    			 C_noTDA_PR    = 100 * C   / PR,
+    			 
            C_PR    = 100 * C / PR,
            B_PR    = 100 * B / PR,
            ExF     = C - B,

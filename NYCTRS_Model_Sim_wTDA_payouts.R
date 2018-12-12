@@ -640,7 +640,14 @@ run_sim <- function(tier_select_,
     mutate(sim     = rep(-1:nsim, each = nyear),
            runname = runname,
            Tier    = tier_select_,
-           FR      = 100 * AA / exp(log(AL)),
+           
+    			 ERC_noTDA = ERC,
+    			 C_noTDA   = C,
+    			 
+    			 ERC     = ERC_TDApayouts,
+    			 C       = C_TDApayouts,
+    			 
+    			 FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),
            UAAL_PR = 100 * UAAL / PR,
            MA_PR   = 100 * MA / PR,
@@ -659,8 +666,8 @@ run_sim <- function(tier_select_,
            ERC_PR  = 100 * ERC / PR,
            EEC_PR  = 100 * EEC / PR,
     			 
-    			 ERC_TDApayouts_PR  = 100 * ERC_TDApayouts / PR,
-    			 C_TDApayouts_PR    = 100 * C_TDApayouts   / PR,
+    			 ERC_noTDA_PR  = 100 * ERC_noTDA / PR,
+    			 C_noTDA_PR    = 100 * C_noTDA   / PR,
     			 
            C_PR    = 100 * C / PR,
            B_PR    = 100 * B / PR,

@@ -106,11 +106,11 @@ source("NYCTRS_Model_InvReturns.R")
 i.r <- gen_returns()
 
 #i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
-i.r[1:5, 1:5]
+# i.r[1:5, 1:5]
 
 
 
-s#*********************************************************************************************************
+#*********************************************************************************************************
 # 1.2 Create plan data ####
 #*********************************************************************************************************
 
@@ -273,9 +273,11 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 # 6.  Simulation ####
 #*********************************************************************************************************
-# source("NYCTRS_Model_Sim.R")
-# source("NYCTRS_Model_Sim_wTDA.R")
-source("NYCTRS_Model_Sim_wTDA_payouts.R")
+
+
+if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA.R")
+if(paramlist$TDA_type == "payout") source("NYCTRS_Model_Sim_wTDA_payouts.R")
+
 penSim_results <- run_sim(tier_select, AggLiab)
 
 
@@ -342,13 +344,13 @@ penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_TDA)) %>% print
+penSim_results %>% filter(sim == 1) %>% select(one_of(var_TDA)) %>% print
 
 
 # Check geometric return
 geoR <- 
 	penSim_results %>% 
-	filter(sim >= 1) %>% 
+	filter(sim >= 1, year >= 2019) %>% 
 	group_by(sim) %>% 
 	summarise(geoR_noTDA = get_geoReturn(i.r),
 						geoR_TDA   = get_geoReturn(i.r.wTDA))
@@ -376,29 +378,31 @@ df_all.stch <- penSim_results  %>%
 
 df_all.stch <- 
 df_all.stch %>%
-  select(runname, sim, year, AL, MA, PR, ERC_PR, ERC_TDApayouts_PR, i.r, i.r.wTDA) %>%
+  select(runname, sim, year, AL, MA, PR, ERC_PR, ERC_noTDA_PR, i.r, i.r.wTDA) %>%
   group_by(runname, sim) %>%
   mutate(FR_MA     = 100 * MA / AL,
          FR40less  = cumany(FR_MA <= 40),
+  			 FR50less  = cumany(FR_MA <= 50),
          FR100more  = cumany(FR_MA >= 100),
          FR100more2 = FR_MA >= 100,
-         ERC_high  = cumany(ERC_PR >= 50),
+         ERC_high  = cumany(ERC_PR >= 60),
          ERC_hike  = cumany(na2zero(ERC_PR - lag(ERC_PR, 5) >= 10)),
   			 
-  			 ERC_TDA_high  = cumany(ERC_TDApayouts_PR >= 60),
-  			 ERC_TDA_hike  = cumany(na2zero(ERC_TDApayouts_PR - lag(ERC_TDApayouts_PR, 5) >= 10))
+  			 ERC_noTDA_high  = cumany(ERC_noTDA_PR >= 60),
+  			 ERC_noTDA_hike  = cumany(na2zero(ERC_noTDA_PR - lag(ERC_noTDA_PR, 5) >= 10))
   			 
   			 
   			 ) %>%
   group_by(runname, year) %>%
   summarize(FR40less = 100 * sum(FR40less, na.rm = T)/n(),
+  					FR50less = 100 * sum(FR50less, na.rm = T)/n(),
             FR100more = 100 * sum(FR100more, na.rm = T)/n(),
             FR100more2= 100 * sum(FR100more2, na.rm = T)/n(),
             ERC_high = 100 * sum(ERC_high, na.rm = T)/n(),
             ERC_hike = 100 * sum(ERC_hike, na.rm = T)/n(),
   					
-  					ERC_TDA_high = 100 * sum(ERC_TDA_high, na.rm = T)/n(),
-  					ERC_TDA_hike = 100 * sum(ERC_TDA_hike, na.rm = T)/n(),
+  					ERC_noTDA_high = 100 * sum(ERC_noTDA_high, na.rm = T)/n(),
+  					ERC_noTDA_hike = 100 * sum(ERC_noTDA_hike, na.rm = T)/n(),
 
             FR.q10   = quantile(FR_MA, 0.1,na.rm = T),
             FR.q25   = quantile(FR_MA, 0.25, na.rm = T),
@@ -412,11 +416,11 @@ df_all.stch %>%
             ERC_PR.q75 = quantile(ERC_PR, 0.75, na.rm = T),
             ERC_PR.q90 = quantile(ERC_PR, 0.9, na.rm = T),
   					
-  					ERC_TDApayouts_PR.q10 = quantile(ERC_TDApayouts_PR, 0.1, na.rm = T),
-  					ERC_TDApayouts_PR.q25 = quantile(ERC_TDApayouts_PR, 0.25, na.rm = T),
-  					ERC_TDApayouts_PR.q50 = quantile(ERC_TDApayouts_PR, 0.5, na.rm = T),
-  					ERC_TDApayouts_PR.q75 = quantile(ERC_TDApayouts_PR, 0.75, na.rm = T),
-  					ERC_TDApayouts_PR.q90 = quantile(ERC_TDApayouts_PR, 0.9, na.rm = T)
+  					ERC_noTDA_PR.q10 = quantile(ERC_noTDA_PR, 0.1, na.rm = T),
+  					ERC_noTDA_PR.q25 = quantile(ERC_noTDA_PR, 0.25, na.rm = T),
+  					ERC_noTDA_PR.q50 = quantile(ERC_noTDA_PR, 0.5, na.rm = T),
+  					ERC_noTDA_PR.q75 = quantile(ERC_noTDA_PR, 0.75, na.rm = T),
+  					ERC_noTDA_PR.q90 = quantile(ERC_noTDA_PR, 0.9, na.rm = T)
   					
   ) %>%
   ungroup()
@@ -465,119 +469,119 @@ fig_FRdist <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open"))
 
 fig_FRdist
 
-
-
-# Distribution of ERC ($ value)
-fig.title <- "Distribution of employer contribution rates across simulations"
-fig.subtitle <- "Assumption achieved: expected compound return = 7%"
-fig_ERCdist <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
-	select(runname, year, ERC_PR.q25, 
-				                ERC_PR.q50, 
-				                ERC_PR.q75,
-				                ERC_TDApayouts_PR.q25, 
-				                ERC_TDApayouts_PR.q50, 
-				                ERC_TDApayouts_PR.q75) %>% 
-	gather(Var, value, -runname, -year) %>% 
-	mutate(type = ifelse(str_detect(Var, "TDA"), "wTDA", "noTDA"),
-				 Var  = str_replace(Var, "TDApayouts_", "")) %>% 
-	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
-	ggplot(aes(x = year, y = value,
-						 color = factor(Var, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")))) + 
-	facet_grid(. ~ type) + 
-	theme_bw() + 
-	geom_line() + 
-	geom_point(size = 2) + 
-	coord_cartesian(ylim = c(-20,60)) + 
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_y_continuous(breaks = seq(-100, 100, 10)) + 
-	scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
-										 label  = c("75th percentile", "50th percentile", "25th percentile")) + 
-	scale_shape_manual(values = c(17, 16, 15, 18),  name = NULL, 
-										 label  = c("75th percentile", "50th percentile", "25th percentile")) +
-	labs(title = fig.title,
-			 subtitle = fig.subtitle,
-			 x = NULL, y = "%") + 
-	theme(axis.text.x = element_text(size = 8)) + 
-	RIG.theme()
-
-fig_ERCdist 
-
-
-
-
-# Probs of low funded ratio, ERC high and ERC hike w/ and w/o TDA payouts
-
-
-# Risk of low funded ratio
-fig.title <- "Probability of funded ratio below 40% in any year up to the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 8%"
-fig_FR40less <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
-	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
-	select(runname, year, FR40less) %>% 
-	#mutate(FR40less.det = 0) %>% 
-	#gather(variable, value, -year) %>% 
-	ggplot(aes(x = year, y = FR40less, color = runname, shape = runname)) + theme_bw() + 
-	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,10)) + 
-	scale_y_continuous(breaks = seq(0,200, 2)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_color_manual(values = c("black",RIG.red),  name = "") + 
-	scale_shape_manual(values = c(17,16),  name = "") +
-	labs(title = fig.title,
-			 subtitle = fig.subtitle,
-			 x = NULL, y = "Probability (%)") + 
-	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
-	RIG.theme()
-fig_FR40less
-
-
-
-# Risk of sharp increase in ERC
-fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 7%"
-fig_ERChike <- df_all.stch %>% 
-  select(runname, year, ERC_hike, ERC_TDA_hike) %>% 
-	#mutate(ERChike.det = 0) %>% 
-	gather(type, value, -year, -runname) %>% 
-	ggplot(aes(x = year, y = value, color = type, shape = type)) + theme_bw() + 
-	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,100)) + 
-	scale_y_continuous(breaks = seq(0,200, 5)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_color_manual(values = c("black", RIG.red),  name = "") + 
-	scale_shape_manual(values = c(17,16),  name = "") +
-	labs(title = fig.title,
-			 subtitle = fig.subtitle,
-			 x = NULL, y = "Probability (%)") + 
-	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
-	RIG.theme()
-fig_ERChike
-
-
-
-
-# Risk of sharp increase in ERC
-fig.title <- "Probability of employer contribution rising above 50% of payroll \nat any time prior to and including the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 7%"
-fig_ERChike <- df_all.stch %>% 
-	select(runname, year, ERC_high, ERC_TDA_high) %>% 
-	#mutate(ERChike.det = 0) %>% 
-	gather(type, value, -year, -runname) %>% 
-	ggplot(aes(x = year, y = value, color = type, shape = type)) + theme_bw() + 
-	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,100)) + 
-	scale_y_continuous(breaks = seq(0,200, 10)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_color_manual(values = c("black", RIG.red),  name = "") + 
-	scale_shape_manual(values = c(17,16),  name = "") +
-	labs(title = fig.title,
-			 subtitle = fig.subtitle,
-			 x = NULL, y = "Probability (%)") + 
-	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
-	RIG.theme()
-fig_ERChike
-
-
+# 
+# 
+# # Distribution of ERC ($ value)
+# fig.title <- "Distribution of employer contribution rates across simulations"
+# fig.subtitle <- "Assumption achieved: expected compound return = 7%"
+# fig_ERCdist <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
+# 	select(runname, year, ERC_PR.q25, 
+# 				                ERC_PR.q50, 
+# 				                ERC_PR.q75,
+# 				                ERC_noTDA_PR.q25, 
+# 				                ERC_noTDA_PR.q50, 
+# 				                ERC_noTDA_PR.q75) %>% 
+# 	gather(Var, value, -runname, -year) %>% 
+# 	mutate(type = ifelse(str_detect(Var, "TDA"), "noTDA", "TDA"),
+# 				 Var  = str_replace(Var, "noTDA_", "")) %>% 
+# 	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
+# 	ggplot(aes(x = year, y = value,
+# 						 color = factor(Var, levels = c("ERC_PR.q75", "ERC_PR.q50", "ERC_PR.q25")))) + 
+# 	facet_grid(. ~ type) + 
+# 	theme_bw() + 
+# 	geom_line() + 
+# 	geom_point(size = 2) + 
+# 	coord_cartesian(ylim = c(-20,60)) + 
+# 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+# 	scale_y_continuous(breaks = seq(-100, 100, 10)) + 
+# 	scale_color_manual(values = c(RIG.red, RIG.blue, RIG.green, "black"),  name = NULL, 
+# 										 label  = c("75th percentile", "50th percentile", "25th percentile")) + 
+# 	scale_shape_manual(values = c(17, 16, 15, 18),  name = NULL, 
+# 										 label  = c("75th percentile", "50th percentile", "25th percentile")) +
+# 	labs(title = fig.title,
+# 			 subtitle = fig.subtitle,
+# 			 x = NULL, y = "%") + 
+# 	theme(axis.text.x = element_text(size = 8)) + 
+# 	RIG.theme()
+# 
+# fig_ERCdist 
+# 
+# 
+# 
+# 
+# # Probs of low funded ratio, ERC high and ERC hike w/ and w/o TDA payouts
+# 
+# 
+# # Risk of low funded ratio
+# fig.title <- "Probability of funded ratio below 40% in any year up to the given year"
+# fig.subtitle <- "Assumption achieved; expected compound return = 8%"
+# fig_FR40less <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open")) %>% 
+# 	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
+# 	select(runname, year, FR40less) %>% 
+# 	#mutate(FR40less.det = 0) %>% 
+# 	#gather(variable, value, -year) %>% 
+# 	ggplot(aes(x = year, y = FR40less, color = runname, shape = runname)) + theme_bw() + 
+# 	geom_point(size = 2) + geom_line() + 
+# 	coord_cartesian(ylim = c(0,10)) + 
+# 	scale_y_continuous(breaks = seq(0,200, 2)) +
+# 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+# 	scale_color_manual(values = c("black",RIG.red),  name = "") + 
+# 	scale_shape_manual(values = c(17,16),  name = "") +
+# 	labs(title = fig.title,
+# 			 subtitle = fig.subtitle,
+# 			 x = NULL, y = "Probability (%)") + 
+# 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+# 	RIG.theme()
+# fig_FR40less
+# 
+# 
+# 
+# # Risk of sharp increase in ERC
+# fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
+# fig.subtitle <- "Assumption achieved; expected compound return = 7%"
+# fig_ERChike <- df_all.stch %>% 
+#   select(runname, year, ERC_hike, ERC_TDA_hike) %>% 
+# 	#mutate(ERChike.det = 0) %>% 
+# 	gather(type, value, -year, -runname) %>% 
+# 	ggplot(aes(x = year, y = value, color = type, shape = type)) + theme_bw() + 
+# 	geom_point(size = 2) + geom_line() + 
+# 	coord_cartesian(ylim = c(0,100)) + 
+# 	scale_y_continuous(breaks = seq(0,200, 5)) +
+# 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+# 	scale_color_manual(values = c("black", RIG.red),  name = "") + 
+# 	scale_shape_manual(values = c(17,16),  name = "") +
+# 	labs(title = fig.title,
+# 			 subtitle = fig.subtitle,
+# 			 x = NULL, y = "Probability (%)") + 
+# 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+# 	RIG.theme()
+# fig_ERChike
+# 
+# 
+# 
+# 
+# # Risk of sharp increase in ERC
+# fig.title <- "Probability of employer contribution rising above 50% of payroll \nat any time prior to and including the given year"
+# fig.subtitle <- "Assumption achieved; expected compound return = 7%"
+# fig_ERChike <- df_all.stch %>% 
+# 	select(runname, year, ERC_high, ERC_TDA_high) %>% 
+# 	#mutate(ERChike.det = 0) %>% 
+# 	gather(type, value, -year, -runname) %>% 
+# 	ggplot(aes(x = year, y = value, color = type, shape = type)) + theme_bw() + 
+# 	geom_point(size = 2) + geom_line() + 
+# 	coord_cartesian(ylim = c(0,100)) + 
+# 	scale_y_continuous(breaks = seq(0,200, 10)) +
+# 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+# 	scale_color_manual(values = c("black", RIG.red),  name = "") + 
+# 	scale_shape_manual(values = c(17,16),  name = "") +
+# 	labs(title = fig.title,
+# 			 subtitle = fig.subtitle,
+# 			 x = NULL, y = "Probability (%)") + 
+# 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+# 	RIG.theme()
+# fig_ERChike
+# 
+# 
 
 
 
