@@ -68,7 +68,7 @@ load(paste0(dir_data, "Data_ES2015.RData"))
 #*********************************************************************************************************
 
 # Decrement tables
-source("NYCTRS_Model_Decrements_backup.R")
+source("NYCTRS_Model_Decrements_MP2015.R")
 
 decrement_model <- get_decrements(tier_select)
 
@@ -128,12 +128,12 @@ entrants_dist <- get_entrantsDist(init_actives)
 
 # Detective work
 # init_pop$actives[,c(1, 3:51) ] <- 0
-init_pop$actives[,] <- 0
-init_pop$servRet[,] <- 0
-init_pop$disbRet[,] <- 0
-# 
-init_pop$actives
-init_pop$actives[1,26] <- 1 # ea == 20, age == 30, start_year == 2006
+# init_pop$actives[,] <- 0
+# init_pop$servRet[,] <- 0
+# init_pop$disbRet[,] <- 0
+# # 
+# init_pop$actives
+# init_pop$actives[1,26] <- 1 # ea == 20, age == 30, start_year == 2006
 
 
 # salary
@@ -153,7 +153,7 @@ init_pop$actives[1,26] <- 1 # ea == 20, age == 30, start_year == 2006
 #*********************************************************************************************************
 # 2. Demographics ####
 #*********************************************************************************************************
-source("NYCTRS_Model_Demographics_singleTier_test.R")
+source("NYCTRS_Model_Demographics_singleTier.R")
 invisible(gc())
 pop <- get_Population()
 
@@ -219,7 +219,7 @@ AggLiab <- get_AggLiab(tier_select,
 # Based on method used in PSERS model. 
 
 if (paramlist$estInitTerm){
-AL.init.v <-  0#2000000000 # AV2016 pdf p17
+AL.init.v <-  1500000000 # AV2016 pdf p17
 
 
 df_init.vested <- data.frame(

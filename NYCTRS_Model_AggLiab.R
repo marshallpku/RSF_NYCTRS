@@ -297,12 +297,6 @@ get_AggLiab <- function( tier_select_,
            runname = runname)
   
   
-  
-  x <- liab_$term
-  x %>% filter(year %in% 2018, ea == 20, age %in% 47)
-  x %>% filter(year %in% 2017, ea == 20, age %in% 46)
-  
-  
   term.agg <- liab_$term %>%
     group_by(year) %>%
     summarise(ALx.v.yearsum   = sum(ALx.v.cellsum, na.rm = TRUE),

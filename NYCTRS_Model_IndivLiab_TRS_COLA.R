@@ -253,7 +253,7 @@ liab_la_init <-
 				 COLA.scale = (1 + cola)^(age - min(age)), 
 				 # B.la   = ifelse(year_servRet <= init_year, benefit_servRet, Bx.laca),
 				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
-				 B.la   = 0,#benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
+				 B.la   = benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
 				  )
 	
@@ -295,7 +295,7 @@ liab_la %<>%
 				 COLA.scale = (1 + cola)^(age - min(age)), 
 		     B.la   = Bx.laca,
 				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
-				 B.la   = 0, #B.la[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
+				 B.la   = B.la[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
 				 )
 
@@ -755,7 +755,7 @@ cat("......DONE\n")
 cat("Death Benefits - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>%
-  mutate( gx.death  = 0,#1,
+  mutate( gx.death  = 1,
            
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
@@ -870,7 +870,7 @@ cat("Disability Retirement - actives")
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>% 
-  mutate( gx.disbRet  = 0, #yos >= v.year,
+  mutate( gx.disbRet  = yos >= v.year,
           Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.

@@ -112,8 +112,8 @@ for(runName in runList$runname ){
 	Global_paramlist$tier_select = "t4a"
 	tier_select = "t4a"
 	
-  paramlist$no_entrants <- TRUE
-	paramlist$EEC_fixed <- FALSE
+#   paramlist$no_entrants <- TRUE
+# 	paramlist$EEC_fixed <- FALSE
 
 	# if(paramlist$tier == "sumTiers"){
 	# 	source("NCTSERS_0_Master_allTiers.R")
@@ -122,8 +122,8 @@ for(runName in runList$runname ){
 	# } else {
 		#Tier_select <- paramlist$tier
 		
-	#source("NYCTRS_0_Master_singleTier.R")
-	# save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
+	source("NYCTRS_0_Master_singleTier.R")
+	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 	
 	#}
 	
