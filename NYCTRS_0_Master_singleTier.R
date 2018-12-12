@@ -127,9 +127,13 @@ init_pop <- get_initPop()
 entrants_dist <- get_entrantsDist(init_actives)
 
 # Detective work
-#init_pop$actives  <- 0
-#init_pop$servRet <- 0
-#init_pop$disbRet <- 0
+# init_pop$actives[,c(1, 3:51) ] <- 0
+# init_pop$actives[,] <- 0
+# init_pop$servRet[,] <- 0
+init_pop$disbRet[,] <- 0
+# 
+# init_pop$actives
+# init_pop$actives[1,2] <- 1
 
 # salary
 # benefit_servRet
@@ -324,7 +328,7 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 
 
 
-penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 

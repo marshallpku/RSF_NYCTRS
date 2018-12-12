@@ -112,6 +112,8 @@ for(runName in runList$runname ){
 	Global_paramlist$tier_select = "t4a"
 	tier_select = "t4a"
 	
+  # paramlist$no_entrants <- TRUE
+	
 
 	# if(paramlist$tier == "sumTiers"){
 	# 	source("NCTSERS_0_Master_allTiers.R")

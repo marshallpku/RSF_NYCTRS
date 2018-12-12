@@ -257,7 +257,7 @@ calc_entrants <- function(wf0, wf1, delta, dist, no.entrants = FALSE){
  # i runs from 2 to nyear. 
 
 for (j in 1:(nyear - 1)){
-  # j <- 1  
+  #j <- 1
   # compute the inflow to and outflow
   active2term    <- wf_active[, , j] * p_active2term     # This will join wf_term[, , j + 1, j + 1], note that workers who terminate in year j won't join the terminated group until j+1. 
   active2servRet <- wf_active[, , j] * p_active2servRet  # This will be used to calculate the number of actives leaving the workforce
@@ -326,9 +326,13 @@ for (j in 1:(nyear - 1)){
   newDeath.ret[j]  <- sum(la2dead)
   newDisb.act[j]   <- sum(active2disbRet)
   
+  active2la
+  wf_active[,,j]
+  
 }
 
 
+wf_la
 
 
 #*************************************************************************************************************

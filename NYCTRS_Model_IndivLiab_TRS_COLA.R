@@ -565,7 +565,7 @@ cat("Deferred Retirement - actives")
 
 
 liab_active %<>%
-  mutate(gx.v = yos >= v.year,  #  ifelse(elig_vest == 1, 1, 0),  # actives become vested after reaching v.yos years of yos
+  mutate(gx.v = 0,# yos >= v.year,  #  ifelse(elig_vest == 1, 1, 0),  # actives become vested after reaching v.yos years of yos
          
   			 Bx.v = ifelse(ea < age_vben, 
   			 							gx.v * Bx,  # For NYCTRS, deferred retirement benefits accrue the same way as the service retirement benefits
@@ -739,7 +739,7 @@ cat("......DONE\n")
 cat("Death Benefits - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>%
-  mutate( gx.death  = 1,
+  mutate( gx.death  = 0,# 1,
            
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
@@ -854,7 +854,7 @@ cat("Disability Retirement - actives")
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>% 
-  mutate( gx.disbRet  = yos >= v.year,
+  mutate( gx.disbRet  = 0, #yos >= v.year,
           Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.

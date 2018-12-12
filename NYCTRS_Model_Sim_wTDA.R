@@ -226,9 +226,9 @@ run_sim <- function(tier_select_,
   # AL(j)
   penSim0$AL.act.laca   <- AggLiab_$active[, "ALx.laca.yearsum"]
   penSim0$AL.act.v      <- AggLiab_$active[, "ALx.v.yearsum"]
-  penSim0$AL.act.death <- AggLiab_$active[, "ALx.death.yearsum"]
+  penSim0$AL.act.death   <- AggLiab_$active[, "ALx.death.yearsum"]
   penSim0$AL.act.disbRet <- AggLiab_$active[, "ALx.disbRet.yearsum"]
-  penSim0$AL.act      <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.disbRet + penSim0$AL.act.death)
+  penSim0$AL.act         <-  with(penSim0, AL.act.laca + AL.act.v + penSim0$AL.act.disbRet + penSim0$AL.act.death)
   
   penSim0$AL.la    <- AggLiab_$la[,   "ALx.la.yearsum"]
   #penSim0$AL.ca    <- AggLiab_$ca[,   "liab.ca.yearsum"]
@@ -252,7 +252,7 @@ run_sim <- function(tier_select_,
   penSim0$PVFB.v    <- AggLiab_$active[, "PVFBx.v.yearsum"]
   penSim0$PVFB.death<- AggLiab_$active[, "PVFBx.death.yearsum"]
   penSim0$PVFB.disbRet <- AggLiab_$active[, "PVFBx.disbRet.yearsum"] 
-  penSim0$PVFB      <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.disbRet + PVFB.death) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
+  penSim0$PVFB         <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.disbRet + PVFB.death) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
   
   # B(j)
   penSim0$B.la    <- AggLiab_$la[, "B.la.yearsum"]
