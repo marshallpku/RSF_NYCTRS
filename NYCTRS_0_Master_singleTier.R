@@ -296,7 +296,7 @@ outputs_list <- list(paramlist = paramlist,
 
 
 var_display1 <- c("Tier", "sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR")
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR", "Amort_basis")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
@@ -338,7 +338,7 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 
 
 
-penSim_results %>% filter(sim == -1) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 

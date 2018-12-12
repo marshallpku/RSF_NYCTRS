@@ -30,7 +30,7 @@ init_amort_raw
 #*********************************************************************************************************
 
 
-init_unrecReturns.unadj <- read_xlsx(paste0(dir_data, "NYCTRS_Planinfo_AV2017.xlsx"), sheet = "Init_unrecReturn", range = "C6:D10")
+init_unrecReturns.unadj <- read_xlsx(paste0(dir_data, "NYCTRS_Planinfo_AV2017.xlsx"), sheet = "Init_unrecReturn", range = "C6:D11")
 init_unrecReturns.unadj
 
 
