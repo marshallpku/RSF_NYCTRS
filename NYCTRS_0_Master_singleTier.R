@@ -130,7 +130,7 @@ entrants_dist <- get_entrantsDist(init_actives)
 # init_pop$actives[,c(1, 3:51) ] <- 0
 # init_pop$actives[,] <- 0
 # init_pop$servRet[,] <- 0
-init_pop$disbRet[,] <- 0
+# init_pop$disbRet[,] <- 0
 # 
 # init_pop$actives
 # init_pop$actives[1,2] <- 1

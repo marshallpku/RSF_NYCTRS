@@ -739,7 +739,7 @@ cat("......DONE\n")
 cat("Death Benefits - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>%
-  mutate( gx.death  = 0,# 1,
+  mutate( gx.death  = 1,
            
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
