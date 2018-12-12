@@ -564,7 +564,7 @@ decrement_model %<>% group_by(ea) %>%
 #*************************************************************************************************************
 
 decrement_model %<>% 
-	group_by(ea) %>% 
+	group_by(start_year, ea) %>% 
 	mutate( 
 		      # pxm: probability of survival
 		      pxm_actives = 1 - qxm_actives,
@@ -619,9 +619,16 @@ return(decrement_model)
 
 }
 
-
-
-
+# decrement_model %>% 
+# 	mutate(year =start_year + age - ea) %>% 
+# 	filter(year %in% 2016, ea == 20, age == 45) %>% 
+# 	select(start_year, year, ea, age, qxm_terms, qxt)
+# 
+# 
+# decrement_model %>%
+# 	mutate(year =start_year + age - ea) %>%
+# 	filter(year %in% 2017, ea == 20, age == 46) %>%
+# 	select(start_year, year, ea, age, qxm_terms, qxt)
 
 # 
 # 

@@ -253,7 +253,7 @@ liab_la_init <-
 				 COLA.scale = (1 + cola)^(age - min(age)), 
 				 # B.la   = ifelse(year_servRet <= init_year, benefit_servRet, Bx.laca),
 				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
-				 B.la   = benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
+				 B.la   = 0,#benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
 				  )
 	
@@ -295,7 +295,7 @@ liab_la %<>%
 				 COLA.scale = (1 + cola)^(age - min(age)), 
 		     B.la   = Bx.laca,
 				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
-				 B.la   = B.la[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
+				 B.la   = 0, #B.la[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
 				 )
 
@@ -571,7 +571,7 @@ liab_active %<>%
   			                            # May be unnecessary since we have set qxt = 0 for age>= age_vben. Left for safety. 
          
          #TCx.v  = ifelse(ea < r.vben, Bx.v * qxt * lead(px_r.vben_m) * v^(r.vben - age) * ax.r.W[age == r.vben], 0),             # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
-         TCx.v   = ifelse(ea < age_vben, qxt * lead(px_r.vben_m) * v^(age_vben - age) * (Bx.v * ax.terms[age == age_vben])  , 0), # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
+         TCx.v   = ifelse(ea < age_vben, qxt * lead(px_r.vben_m) * v^(age_vben - age) * (lead(Bx.v) * ax.terms[age == age_vben])  , 0), # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
          
          PVFBx.v = ifelse(ea < age_vben, c(get_PVFB(pxT[age < age_vben], v, TCx.v[age < age_vben]), rep(0, max_age - age_vben + 1)), 0),  # To be compatible with the cases where workers enter after age age_vben, max_retAge is used instead of min_retAge, which is used in textbook formula(winklevoss p115).
          
@@ -660,7 +660,7 @@ liab_term <- expand.grid(
                          start_year   = min_year:(init_year + nyear - 1),   # (init_year + 1 - (max_retAge - min(range_ea))):(init_year + nyear - 1),
                          ea  = range_ea[range_ea < age_vben ],
                          age = range_age,
-                         age_term = range_age[range_age < age_vben]) %>%
+                         age_term = range_age[range_age <= age_vben]) %>%
   filter(start_year + max_age - ea >= init_year,
          age >= ea, 
   			 age_term >= ea,
@@ -687,10 +687,28 @@ liab_term %<>%
 
   ) %>%
   ungroup  %>%
-  select(ea, age, age_term, start_year, year, year_term, B.v, ALx.v) %>%
+  select(ea, age, age_term, start_year, year, year_term, B.v, ALx.v, Bx.v, ax.terms, px_r.vben_m) %>%
   filter(year %in% seq(init_year, len = nyear))
 
 cat("......DONE\n")
+
+
+# liab_term %>% filter(start_year == 2006, ea == 20, age_term == 49)
+# 
+# liab_active %>%
+# 	filter(start_year == 1991, ea == 20, year %in% 2016:2018) %>%
+# 	select(start_year, year, ea, age, ALx.EAN.CD.v, NCx.EAN.CD.v, Bx.v, TCx.v, qxm_terms, qxt) %>% 
+# 	mutate(TCx.v_head = TCx.v/ (qxt*v) )
+# 
+# 
+# liab_term %>% filter(start_year == 1991, year %in% 2016:2045, ea == 20, age_term %in% 46) %>% arrange(age_term)
+
+
+
+
+
+
+
 
 # liab.term %<>% mutate(B.v   = ifelse(year.term == init.year - 1, 0, B.v),
 #                       ALx.v = ifelse(year.term == init.year - 1, 0, ALx.v))
@@ -737,7 +755,7 @@ cat("......DONE\n")
 cat("Death Benefits - actives")
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>%
-  mutate( gx.death  = 1,
+  mutate( gx.death  = 0,#1,
            
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
@@ -852,7 +870,7 @@ cat("Disability Retirement - actives")
 
 # Calculate normal costs and liabilities of retirement benefits with multiple retirement ages
 liab_active %<>% 
-  mutate( gx.disbRet  = yos >= v.year,
+  mutate( gx.disbRet  = 0, #yos >= v.year,
           Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.

@@ -128,12 +128,13 @@ entrants_dist <- get_entrantsDist(init_actives)
 
 # Detective work
 # init_pop$actives[,c(1, 3:51) ] <- 0
-# init_pop$actives[,] <- 0
-# init_pop$servRet[,] <- 0
-# init_pop$disbRet[,] <- 0
+init_pop$actives[,] <- 0
+init_pop$servRet[,] <- 0
+init_pop$disbRet[,] <- 0
 # 
-# init_pop$actives
-# init_pop$actives[1,2] <- 1
+init_pop$actives
+init_pop$actives[1,26] <- 1 # ea == 20, age == 30, start_year == 2006
+
 
 # salary
 # benefit_servRet
@@ -152,7 +153,7 @@ entrants_dist <- get_entrantsDist(init_actives)
 #*********************************************************************************************************
 # 2. Demographics ####
 #*********************************************************************************************************
-source("NYCTRS_Model_Demographics_singleTier.R")
+source("NYCTRS_Model_Demographics_singleTier_test.R")
 invisible(gc())
 pop <- get_Population()
 
@@ -327,7 +328,12 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 #                       "UAAL")
 
 
-penSim_results %>% filter(sim == -1) %>% select(year, AL.act.v, NC.v, AL.term, B.v) %>% print
+# penSim_results %>% filter(sim == -1) %>% select(year,FR_MA, MA, AL, AL.act.v, NC.v, AL.term, B.v, nterms, nactives) %>% 
+# 	mutate(x = B.v == 0,
+# 				 v1 = lag((AL.act.v + NC.v - B.v + AL.term) * 1.07),
+# 				 v2 = AL.act.v + AL.term,
+# 				 df = v1- v2
+# 				 ) %>% print
 
 
 
