@@ -288,27 +288,51 @@ geoR %>%
 df_singleRuns <- 
 results_all %>% 
 	filter(runname %in% runs_TDA, sim == 912) %>% 
-	select(runname, year, FR_MA, ERC_PR, i.r, i.r.wTDA)
+	select(runname, year, FR_MA, ERC_PR, i.r, i.r.wTDA) %>% 
+	mutate(runname.fct = factor(runname, levels = runs_all, labels = runs_all_labels)) 
 
 df_singleRuns %>% 
 	filter(runname %in% "t4a_TDAamort") %>%
-	select(runname, year, i.r, i.r.wTDA) %>% 
-	gather(Var, value, -year,-runname) %>% 
-	ggplot(aes(x = year, y = value, color = Var)) + theme_bw()+
+	select(runname.fct, year, i.r, i.r.wTDA) %>% 
+	gather(Var, value, -year,-runname.fct) %>% 
+	ggplot(aes(x = year, y = value*100, color = Var)) + theme_bw()+
 	geom_line() + 
-	geom_point()
+	geom_point() +
+	scale_y_continuous(breaks = seq(-100,100, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	labs(title =    "Actual returns and effective returns with TDA transfers",
+			 subtitle = "sim #912; 30-year geometric return = 7.0%",
+			 x = NULL, y = "Rate of return (%)") +
+	RIG.theme()
 
 
 df_singleRuns %>% 
-	ggplot(aes(x = year, y = FR_MA, color = runname)) + theme_bw()+
+	ggplot(aes(x = year, y = FR_MA, color = runname.fct)) + theme_bw()+
 	geom_line() + 
-	geom_point()
+	geom_point() + 
+	coord_cartesian(ylim = c(0,150)) + 
+	scale_y_continuous(breaks = seq(0,200, 20)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	labs(title =    "Funded ratio with different treatment of TDA",
+			 subtitle = "sim #912; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, 
+			 y = "Funded ratio (%)") +
+	RIG.theme()
 	
 
 df_singleRuns %>% 
-	ggplot(aes(x = year, y = ERC_PR, color = runname)) + theme_bw()+
+	ggplot(aes(x = year, y = ERC_PR, color = runname.fct)) + theme_bw()+
 	geom_line() + 
-	geom_point()
+	geom_point() + 
+	coord_cartesian(ylim = c(0,80)) + 
+	scale_y_continuous(breaks = seq(-100,200, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	labs(title =    "Employer contribution rate with different treatment of TDA",
+			 subtitle = "sim #912; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, y = "Employer contribution Rate (%)") +
+	RIG.theme()
 
 
 
