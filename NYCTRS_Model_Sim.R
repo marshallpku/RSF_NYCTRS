@@ -388,7 +388,7 @@ run_sim <- function(tier_select_,
                                              ifelse(init_AA_type == "AA0" & k != -1, AA_0,             # Use preset value 
                                                     switch(smooth_method,
                                                            method1 =  with(penSim, MA[j]),             # AA = MA  (always true for if k == -1 regardless of the value of init_AA_type)
-                                                           method2 =  with(penSim, (1 - w) * EAA[j] + w * MA[j])
+                                                           method2 =  with(penSim, MA[j])
                                                     ) 
                                              )
                                   )
@@ -404,7 +404,7 @@ run_sim <- function(tier_select_,
         penSim$EAA[j] <- with(penSim, AA[j - 1] + I.e[j - 1] + C[j - 1] - B[j - 1])
         penSim$AA[j]  <- switch(smooth_method,
                                 method1 = with(penSim, MA[j] - sum(s.vector[max(s.year + 2 - j, 1):s.year] * I.dif[(j-min(j, s.year + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
-                                method2 = with(penSim, (1 - w) * EAA[j] + w * MA[j]) 
+                                method2 = with(penSim, MA[j]) 
         )
       }
       
