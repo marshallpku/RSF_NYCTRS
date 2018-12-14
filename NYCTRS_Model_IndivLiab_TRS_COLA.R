@@ -224,7 +224,7 @@ liab_active %<>%
 			as.logical(elig_early) ~ benReduction,
 			TRUE ~ 0),
 		
-		Bx.laca  = gx.laca * Bx
+		Bx.laca  = gx.laca * Bx * adj_fct.act.laca
 		)
 
 
@@ -569,7 +569,8 @@ liab_active %<>%
   			 							gx.v * Bx,  # For NYCTRS, deferred retirement benefits accrue the same way as the service retirement benefits
    			 							0),           # initial annuity amount when the vested term retires at age r.vben, when a employee is vested at a certain age. 
   			                            # May be unnecessary since we have set qxt = 0 for age>= age_vben. Left for safety. 
-         
+         Bx.v = Bx.v * adj_fct.act.v,
+  			 
          #TCx.v  = ifelse(ea < r.vben, Bx.v * qxt * lead(px_r.vben_m) * v^(r.vben - age) * ax.r.W[age == r.vben], 0),             # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
          TCx.v   = ifelse(ea < age_vben, qxt * lead(px_r.vben_m) * v^(age_vben - age) * (lead(Bx.v) * ax.terms[age == age_vben])  , 0), # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
          
@@ -760,6 +761,7 @@ liab_active %<>%
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
   				
+  				Bx.death = Bx.death * adj_fct.act.death,
   				   
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
           # For TRS: 1. Lump sum death benefit equal to PV of future benefit (Bx.death * ax.deathBen);
@@ -872,7 +874,9 @@ cat("Disability Retirement - actives")
 liab_active %<>% 
   mutate( gx.disbRet  = yos >= v.year,
           Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
-
+          
+  				Bx.disbRet = Bx.disbRet * adj_fct.act.disbRet,
+  				 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
   				TCx.disbRet = qxd * v * lead(Bx.disbRet) *  lead(ax.disbRet), 
   				

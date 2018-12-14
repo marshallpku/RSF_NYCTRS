@@ -4,6 +4,35 @@ suppressMessages(gc())
 
 # tier_select <- paramlist$tier
 
+
+
+#*********************************************************************************************************
+#  parameters for sensitivity analysis ####
+#*********************************************************************************************************
+
+#runname = "t4a_LowYos_nUp"
+adj_type = str_replace(paramlist$runname, "t4a_", "")
+adj_type
+load("df_sensitivity.RData")
+
+adj_fct.act.laca    <- df_sensitivity[df_sensitivity$variable == "AL.act.laca",   paste0("ratio_", adj_type)] %>% unlist
+adj_fct.act.v       <- df_sensitivity[df_sensitivity$variable == "AL.act.v",      paste0("ratio_", adj_type)] %>% unlist
+adj_fct.act.death   <- df_sensitivity[df_sensitivity$variable == "AL.act.death",  paste0("ratio_", adj_type)] %>% unlist
+adj_fct.act.disbRet <- df_sensitivity[df_sensitivity$variable == "AL.act.disbRet",paste0("ratio_", adj_type)] %>% unlist
+
+
+if(!paramlist$sensitivity_on){
+	
+adj_fct.act.laca    <-    
+adj_fct.act.v       <- 
+adj_fct.act.death   <-   
+adj_fct.act.disbRet <- 1 	
+}
+
+adj_fct.act.laca   
+adj_fct.act.v      
+adj_fct.act.death  
+adj_fct.act.disbRet
 #*********************************************************************************************************
 # 1.1 Load data ####
 #*********************************************************************************************************
