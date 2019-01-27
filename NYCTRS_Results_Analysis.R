@@ -200,9 +200,22 @@ df_all.stch %>%
 
 
 results_all %>% 
-	select(runname, sim, year, AL, MA, AA, FR) %>% 
-	filter(sim == 1, year %in% c(2016:2045), runname %in% runs_TDA)
+	select(runname, sim, year, AL, MA, AA, FR, SC, ERC,EEC,PR, Amort_basis) %>% 
+	filter(sim == 912, year %in% c(2016:2045), runname %in% "t4a_TDAamort")
 
+x <- 
+results_all %>% filter(runname == "t4a_TDAamort") %>% 
+	group_by(sim) %>% 
+	summarise(SD = sd(i.r.wTDA),
+						SD.r = sd(i.r)) %>% 
+	summarise(SD.med = median(SD),
+						SD.r.med = median(SD.r))
+
+x
+
+x$i.r.wTDA %>% sd
+
+x$i.r %>% sd
 
 #*****************************************************
 ## Compare key results  ####
@@ -266,6 +279,7 @@ df_all.stch %>%
  # ERC
 
 
+
 geoR <- 
 	results_all %>%
 	filter(runname == "t4a_TDAamort") %>% 
@@ -274,6 +288,10 @@ geoR <-
 	summarise(geoR_noTDA = get_geoReturn(i.r),
 						geoR_TDA   = get_geoReturn(i.r.wTDA)) %>% 
 	arrange(geoR_noTDA)
+
+
+
+
 
 geoR %>% filter(geoR_noTDA > 0.0695, geoR_noTDA <= 0.0705)
 
@@ -295,6 +313,9 @@ df_singleRuns %>%
 	filter(runname %in% "t4a_TDAamort") %>%
 	select(runname.fct, year, i.r, i.r.wTDA) %>% 
 	gather(Var, value, -year,-runname.fct) %>% 
+	mutate(Var = factor(Var, levels = c("i.r", "i.r.wTDA"),
+											     labels = c("Actual market return",
+											     					   "Effective return with TDA"))) %>% 
 	ggplot(aes(x = year, y = value*100, color = Var)) + theme_bw()+
 	geom_line() + 
 	geom_point() +
@@ -302,6 +323,7 @@ df_singleRuns %>%
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
 	labs(title =    "Actual returns and effective returns with TDA transfers",
 			 subtitle = "sim #912; 30-year geometric return = 7.0%",
+			 color = NULL,
 			 x = NULL, y = "Rate of return (%)") +
 	RIG.theme()
 
@@ -343,7 +365,6 @@ df_singleRuns %>%
 df_all.stch %>% 
 	filter(runname %in% runs_TDA, year %in% c(2030, 2045)) %>% 
 	arrange(year)
-
 
 
 # Figure: Risk of low funded ratio (FR40less and FR50less, 3 lines in each graph)
