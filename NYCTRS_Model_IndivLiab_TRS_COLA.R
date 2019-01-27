@@ -399,7 +399,8 @@ liab_active %<>%
     # Present value of future benefits and present value of future salary
     PVFBx.laca  = c(get_PVFB(pxT[age <= max_retAge], v, TCx.laca[age <= max_retAge]), rep(0, max_age - max_retAge)),
     PVFSx       = c(get_PVFB(pxT[age <= max_retAge], v, sx[age <= max_retAge]),       rep(0, max_age - max_retAge)),
-  
+  	PVFEEC      = c(get_PVFB(pxT[age <= max_retAge], v, EEC[age <= max_retAge]),      rep(0, max_age - max_retAge)),
+ 
   ## NC and AL of UC
   # TCx.r1 = gx.r * qxe * ax,  # term cost of $1's benefit
   # NCx.UC = bx * c(get_NC.UC(pxT[age <= r.max], v, TCx.r1[age <= r.max]), rep(0, 45)),
@@ -1022,15 +1023,16 @@ NCx.v.method    <- paste0("NCx.", actuarial_method, ".v")
 PVFNC.v.method  <- paste0("PVFNC.", actuarial_method, ".v")
 
 
-var.names <- c("sx", ALx.laca.method,  NCx.laca.method,  PVFNC.laca.method,
-                     ALx.v.method,     NCx.v.method,     PVFNC.v.method,
-                     ALx.death.method, NCx.death.method, PVFNC.death.method,
-                     ALx.disbRet.method,  NCx.disbRet.method,  PVFNC.disbRet.method,
+var.names <- c("sx", ALx.laca.method,    NCx.laca.method,    PVFNC.laca.method,
+                     ALx.v.method,       NCx.v.method,       PVFNC.v.method,
+                     ALx.death.method,   NCx.death.method,   PVFNC.death.method,
+                     ALx.disbRet.method, NCx.disbRet.method, PVFNC.disbRet.method,
                      "PVFBx.laca", "PVFBx.v", 
 							       "PVFBx.death", 
 							       "PVFBx.disbRet", 
 							       #"Bx.laca", "Bx.disb", "Bx", 
-							       "PVFSx", 
+							       "PVFSx",
+							       "PVFEEC",
 							       "EEC")
 
 liab_active %<>% 
