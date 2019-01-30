@@ -369,7 +369,7 @@ df_all.stch %>%
 	ggplot(aes(x = year, y = value, color = runname.fct, shape = runname.fct)) + theme_bw() + 
 	facet_grid(.~ variable) + 
 	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,60)) + 
+	coord_cartesian(ylim = c(0,65)) + 
 	scale_y_continuous(breaks = seq(0,200, 5)) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
 	scale_color_manual(values = c("black", "grey40",  "grey70",  RIG.blue, RIG.red, RIG.green),  name = "") + 
@@ -475,14 +475,14 @@ geoR %>%
 
 df_singleRuns <- 
 	results_all %>% 
-	filter(runname %in% runs_TDA[1:2], sim == 476) %>% 
+	filter(runname %in% runs_TDA_OYLM[1:2], sim == 476) %>% 
 	select(runname, year, FR_MA, ERC_PR, i.r, i.r.wTDA) %>% 
-	mutate(runname.fct = factor(runname, levels = runs_all, labels = runs_all_labels)) 
+	mutate(runname.fct = factor(runname, levels = runs_TDA_OYLM[1:2], labels = runs_TDA_OYLM_labels[1:2])) 
 
 
 # Actual return vs effective return with TDA
 df_singleRuns %>% 
-	filter(runname %in% "t4a_TDAamortAS") %>%
+	filter(runname %in% "t4a_TDAamortAS_OYLM") %>%
 	select(runname.fct, year, i.r, i.r.wTDA) %>% 
 	gather(Var, value, -year,-runname.fct) %>% 
 	mutate(Var = factor(Var, levels = c("i.r", "i.r.wTDA"),
