@@ -98,7 +98,7 @@ results_all <- get_results(IO_folder) %>% select(runname, sim, year, everything(
 ##  Selecting runs and calculating risk measures ####
 #*****************************************************
 
-runs_test <-   c("t4a_TDAamort_OYLM",
+runs_test <-   c("t4a_TDAamortAS_OYLM",
 								 "t4a_HighYos_nUp",
 								 "t4a_LowYos_nUp",
 								 "t4a_HighYos_sUp",
@@ -135,7 +135,7 @@ runs_all_labels <- runs_test_labels
 df_all.stch <- 
   results_all %>%
 	filter(runname %in% runs_all) %>% 
-  filter(sim >= 0, year <= 2045)
+  filter(sim >= 0, year <= 2048)
 
 
 df_all.stch <- 
@@ -310,9 +310,9 @@ fig_FR40less <- df_all.stch %>%
 	ggplot(aes(x = year, y = value, color = runname.fct, shape = runname.fct)) + theme_bw() + 
 	facet_grid(.~ variable) + 
 	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,40)) + 
+	coord_cartesian(ylim = c(0,50)) + 
 	scale_y_continuous(breaks = seq(0,200, 5)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
 	scale_color_manual(values = c("black",RIG.blue, RIG.green, RIG.purple, RIG.orange),  name = "") + 
 	scale_shape_manual(values = c(17,16,15, 18, 19),  name = "") +
 	labs(title = fig.title,
@@ -337,7 +337,7 @@ fig_ERChike <- df_all.stch %>%
 	geom_point(size = 2) + geom_line() + 
 	coord_cartesian(ylim = c(0,100)) + 
 	scale_y_continuous(breaks = seq(0,200, 10)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
 	scale_color_manual(values = c("black",RIG.blue, RIG.green, RIG.purple, RIG.orange),  name = "") + 
 	scale_shape_manual(values = c(17,16, 15, 18, 19),  name = "") +
 	labs(title = fig.title,
@@ -361,7 +361,7 @@ fig_ERChigh <- df_all.stch %>%
 	geom_point(size = 2) + geom_line() + 
 	coord_cartesian(ylim = c(0,50)) + 
 	scale_y_continuous(breaks = seq(0,200, 10)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
 	scale_color_manual(values = c("black",RIG.blue, RIG.green, RIG.purple, RIG.orange),  name = "") + 
 	scale_shape_manual(values = c(17,16, 15, 18, 19),  name = "") +
 	labs(title = fig.title,

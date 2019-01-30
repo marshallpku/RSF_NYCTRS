@@ -412,8 +412,8 @@ fig_ERChike.fPolicy
 fig.title <- "Probability of employer contribution rising above 60% of payroll \nat any time prior to and including the given year"
 fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
 fig_ERChigh.fPolicy <- df_all.stch %>% 
-	filter(runname %in% runs_fPolicy1[1:5]) %>% 
-	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:5], labels = runs_fPolicy_labels1[1:5])) %>% 
+	filter(runname %in% runs_fPolicy1[1:6]) %>% 
+	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:6], labels = runs_fPolicy_labels1[1:6])) %>% 
 	select(runname.fct, year, ERC_high) %>% 
 	#mutate(ERChike.det = 0) %>% 
 	# gather(type, value, -year, -runname) %>% 
@@ -452,7 +452,7 @@ fig_ERChigh.fPolicy
 
 geoR <- 
 	results_all %>%
-	filter(runname == "t4a_TDAamort") %>% 
+	filter(runname == "t4a_TDAamortAS") %>% 
 	filter(sim >= 1, year >= 2019) %>% 
 	group_by(sim) %>% 
 	summarise(geoR_noTDA = get_geoReturn(i.r),
@@ -791,8 +791,8 @@ fig_FRdist
 
 
 results_all %>% 
-	filter(runname %in% runs_DF, sim == 1) %>% 
-	select(runname, year, FR_MA, ERC_PR, AA, MA) 
+	filter(runname %in% runs_DF, sim == 1, year %in% c(2019, 2020, 2048)) %>% 
+	select(runname, year, FR_MA, ERC_PR, AA, MA, ERC_PR) 
 	
 fig.title <- "TRS funded ratio under hypothetical asset shock scenario"
 fig.subtitle <- NULL
