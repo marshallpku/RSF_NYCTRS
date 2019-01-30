@@ -38,20 +38,20 @@ get_indivLab <- function(tier_select_,
                          Global_paramlist_ = Global_paramlist){
 
 # Inputs
-  # decrement_model_ = decrement_model
-  # salary_          = salary
-  # benefit_servRet_ = benefit_servRet
-  # 
-  # #init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
-  # tier_select_     = tier_select
-  # 
-  # benefit_disbRet_ = benefit_disbRet
-  # #mortality.post.model_ = mortality.post.model
-  # #liab.ca_         = liab.ca
-  # #liab.disb.ca_ = liab.disb.ca
-  # 
-  # paramlist_       =  paramlist
-  # Global_paramlist_ =  Global_paramlist
+  decrement_model_ = decrement_model
+  salary_          = salary
+  benefit_servRet_ = benefit_servRet
+
+  #init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
+  tier_select_     = tier_select
+
+  benefit_disbRet_ = benefit_disbRet
+  #mortality.post.model_ = mortality.post.model
+  #liab.ca_         = liab.ca
+  #liab.disb.ca_ = liab.disb.ca
+
+  paramlist_       =  paramlist
+  Global_paramlist_ =  Global_paramlist
     
   # Tier_select_ = "tE"
   # decrement.model_ = decrement.model.tE
@@ -937,9 +937,9 @@ liab_disbRet <- rbind(
               age_disbRet  = min_age:max_retAge,
               start_year   = (init_year + 1 - (max_retAge - min(range_ea))):(init_year + nyear - 1),
               age          = range_age) %>%
-    filter(age   >= ea,
+    filter(age         >= ea,
            age_disbRet >= ea,
-           age   >= age_disbRet,
+           age         >= age_disbRet,
            start_year + (age_disbRet - ea) >= init_year + 1, # retire after year 2, LHS is the year of retirement
            start_year + age - ea >= init_year + 1)           # not really necessary since we already have age >= age.r
 ) %>%

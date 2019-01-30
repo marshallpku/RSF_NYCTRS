@@ -67,8 +67,6 @@ get_AggLiab <- function( tier_select_,
    # "actAll"  menas sum of variables related to active members, including life annuity, contingent annuity, and term benefits for actives. (now plus death benefit and disability benefit)
    
    
-   
-   
    # liab_
    # #liab.ca_
    # #liab.disb.ca_
@@ -111,9 +109,17 @@ get_AggLiab <- function( tier_select_,
            PVFBx.death.cellsum = PVFBx.death * number.a,
            PVFBx.disbRet.cellsum  = PVFBx.disbRet * number.a,
            PVFBx.actAll.cellsum    = PVFBx.laca.cellsum + PVFBx.v.cellsum + PVFBx.disbRet.cellsum + PVFBx.death.cellsum,
+    			 
+    			 PVFNC.laca.cellsum  = PVFNC.laca * number.a,
+    			 PVFNC.v.cellsum     = PVFNC.v    * number.a,
+    			 PVFNC.death.cellsum = PVFNC.death * number.a,
+    			 PVFNC.disbRet.cellsum  = PVFNC.disbRet * number.a,
+    			 PVFNC.actAll.cellsum    = PVFNC.laca.cellsum + PVFNC.v.cellsum + PVFNC.disbRet.cellsum + PVFNC.death.cellsum,
            
            PR.cellsum  = sx * number.a,
            EEC.cellsum = EEC * number.a,
+    			 PVFEEC.cellsum = PVFEEC * number.a,
+    			 PVFSx.cellsum = PVFSx * number.a,
     			 
            runname = runname)
   
@@ -138,8 +144,16 @@ get_AggLiab <- function( tier_select_,
       PVFBx.disbRet.yearsum = sum(PVFBx.disbRet.cellsum, na.rm = TRUE),
       PVFBx.actAll.yearsum   = sum(PVFBx.actAll.cellsum,   na.rm = TRUE),
       
+      PVFNC.laca.yearsum = sum(PVFNC.laca.cellsum, na.rm = TRUE),
+      PVFNC.v.yearsum    = sum(PVFNC.v.cellsum,    na.rm = TRUE),
+      PVFNC.death.yearsum= sum(PVFNC.death.cellsum,na.rm = TRUE),
+      PVFNC.disbRet.yearsum = sum(PVFNC.disbRet.cellsum, na.rm = TRUE),
+      PVFNC.actAll.yearsum   = sum(PVFNC.actAll.cellsum,   na.rm = TRUE),
+      
       PR.yearsum    = sum(PR.cellsum,  na.rm = TRUE),
       EEC.yearsum   = sum(EEC.cellsum, na.rm = TRUE),
+      PVFEEC.yearsum= sum(PVFEEC.cellsum, na.rm = TRUE),
+      PVFSx.yearsum  = sum(PVFSx.cellsum, na.rm = TRUE),
       
       #DC_EEC.yearsum = sum(DC_EEC.cellsum, na.rm = TRUE),
 
@@ -150,7 +164,7 @@ get_AggLiab <- function( tier_select_,
       as.matrix # extracting elements from matrices is much faster than from data.frame
   
   
-  # active.agg %>% as.data.frame()
+   active.agg %>% as.data.frame()
 
    
   #*************************************************************************************************************

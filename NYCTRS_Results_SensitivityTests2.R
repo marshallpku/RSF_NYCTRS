@@ -98,7 +98,7 @@ results_all <- get_results(IO_folder) %>% select(runname, sim, year, everything(
 ##  Selecting runs and calculating risk measures ####
 #*****************************************************
 
-runs_test <-   c("t4a_TDAamort",
+runs_test <-   c("t4a_TDAamort_OYLM",
 								 "t4a_HighYos_nUp",
 								 "t4a_LowYos_nUp",
 								 "t4a_HighYos_sUp",

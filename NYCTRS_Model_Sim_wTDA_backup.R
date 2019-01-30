@@ -164,6 +164,13 @@ run_sim <- function(tier_select_,
            nretirees = 0,
            nterms    = 0,
     			 
+    			 # OYLM
+    			 ADC_current = 0,
+    			 ADC.ER_current = 0,
+    			 ADC_lag = 0,
+    			 ADC.ER_lag = 0,
+    			 
+    			 
     			 # TDA variables
     			 MA.TDA = 0,     # TDA assets
     			 I.TDA.fixed  = 0, # fixed TDA return
@@ -179,6 +186,8 @@ run_sim <- function(tier_select_,
   # s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
   #s.vector.TDA <- seq(0,1,length = s.year.TDA + 1)[-(s.year.TDA+1)]; s.vector.TDA  # a vector containing the porportion of 
   s.vector <- c(0, 0.15, 0.3, 0.45, 0.6, 0.8)
+  # s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
+  
   s.vector.TDA <- s.vector
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
@@ -254,6 +263,14 @@ run_sim <- function(tier_select_,
   penSim0$PVFB.disbRet <- AggLiab_$active[, "PVFBx.disbRet.yearsum"] 
   penSim0$PVFB         <-  with(penSim0, PVFB.laca + PVFB.v + PVFB.disbRet + PVFB.death) #Note this is the total PVFB for actives. PVFB for retirees/beneficiaries are the same as AL.
   
+  
+  # PVFNC(j)
+  penSim0$PVFNC.laca    <- AggLiab_$active[, "PVFNC.laca.yearsum"]
+  penSim0$PVFNC.v       <- AggLiab_$active[, "PVFNC.v.yearsum"]
+  penSim0$PVFNC.death   <- AggLiab_$active[, "PVFNC.death.yearsum"]
+  penSim0$PVFNC.disbRet <- AggLiab_$active[, "PVFNC.disbRet.yearsum"] 
+  penSim0$PVFNC         <-  with(penSim0, PVFNC.laca + PVFNC.v + PVFNC.disbRet + PVFNC.death)
+  
   # B(j)
   penSim0$B.la    <- AggLiab_$la[, "B.la.yearsum"]
   # penSim0$B.ca    <- AggLiab_$ca[, "B.ca.yearsum"]
@@ -268,7 +285,13 @@ run_sim <- function(tier_select_,
   # EEC(j)
   penSim0$EEC <- AggLiab_$active[, "EEC.yearsum"]
   
+  # PVFEEC(j)
+  penSim0$PVFEEC <- AggLiab_$active[, "PVFEEC.yearsum"]
 
+  
+  # PVFS(j)
+  penSim0$PVFS <- AggLiab_$active[, "PVFSx.yearsum"]
+  
   
   # nactives, nretirees, nterms
   penSim0$nactives  <- AggLiab_$active[, "nactives"]
@@ -281,10 +304,28 @@ run_sim <- function(tier_select_,
   #penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
 
   
+ 
+  #*************************************************************************************************************
+  #                                 Calculating NC under One-Year-Lag-Method ####
+  #*************************************************************************************************************  
+  # 
+  # penSim0 %>% select(year, NC, EEC, PVFNC, PVFEEC, PVFS, PR) %>% 
+  # 	mutate(PVFNC_ER = PVFNC - PVFEEC,
+  # 				 NC_PR_indiv = NC / PR,
+  # 				 NC_PR_agg   = PVFNC / PVFS)
+  # 
+  # 
+  
+  
+  	
+  	
   penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
   
   
   penSim0 %>% as.data.frame
+  
+  
+  
   
   #*************************************************************************************************************
   #                                  Setting up initial amortization payments ####
@@ -429,21 +470,18 @@ run_sim <- function(tier_select_,
         )
       }
       
-    
-    	
-      
     	# TDA
 
     	if(j > 1){
     		
     		penSim$MA.TDA[j] <- with(penSim, MA.TDA[j - 1] + I.TDA.fixed[j - 1])
-    		
-    		if(TDA_on & k != -1){
-    		penSim$MA[j]  <- with(penSim, MA[j] + I.dif.TDA[j - 1])  
-    		penSim$AA[j]  <- switch(TDA_smooth_on,
-    														on  = with(penSim, AA[j] - sum(s.vector.TDA[max(s.year.TDA + 2 - j, 1):s.year.TDA] * I.dif.TDA[(j-min(j, s.year.TDA + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
-    														off = with(penSim, AA[j] + I.dif.TDA[j - 1])
-    		)}
+    		# 
+    		# if(TDA_on & k != -1){
+    		# penSim$MA[j]  <- with(penSim, MA[j] + I.dif.TDA[j - 1])  
+    		# penSim$AA[j]  <- switch(TDA_smooth_on,
+    		# 												on  = with(penSim, AA[j] + I.dif.TDA[j - 1] - sum(s.vector.TDA[max(s.year.TDA + 2 - j, 1):s.year.TDA] * I.dif.TDA[(j-min(j, s.year.TDA + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
+    		# 												off = with(penSim, AA[j] + I.dif.TDA[j - 1])
+    		# )}
     		
     	}
     	
@@ -469,9 +507,9 @@ run_sim <- function(tier_select_,
         
       
     	
-      ## Apply corridor for MA, MA must not deviate from AA by more than 40%.
-      penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], MA[j], AA[j])) 
-      penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], MA[j], AA[j]))
+      ## Apply corridor for MA, MA must not deviate from AA by more than 20%.
+      penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], s.upper * MA[j], AA[j])) 
+      penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], s.lower * MA[j], AA[j]))
     
 
       # UAAL(j)
@@ -532,11 +570,46 @@ run_sim <- function(tier_select_,
       # penSim$EEC[j] <- with(penSim, PR[j] * EEC_rate)
       
       
-      # ADC(j)
-      
+      # ADC(j) no OYLM
+     
       if(nonNegC){
-        penSim$ADC[j]    <- with(penSim, max(0, NC[j] + SC[j])) 
-        penSim$ADC.ER[j] <- with(penSim, ifelse(ADC[j] > EEC[j], ADC[j] - EEC[j], 0)) 
+        #penSim$ADC[j]    <- with(penSim, max(0, NC[j] + SC[j])) 
+        #penSim$ADC.ER[j] <- with(penSim, ifelse(ADC[j] > EEC[j], ADC[j] - EEC[j], 0)) 
+        
+      	
+      	
+      	# OYLM *******************************************************************
+        
+      	penSim$ADC_current[j]    <- with(penSim, max(0, NC[j] + SC[j]))
+        penSim$ADC.ER_current[j] <- with(penSim, ifelse(ADC_current[j] > EEC[j], ADC_current[j] - EEC[j], 0)) 
+        
+        # ADC(j) with OYLM
+        # NC, SC, EEC
+        # noNegC = TRUE and Fixed_EEC = TRUE by default
+        
+        if(j >=2){
+        	penSim$ADC.ER_lag[j] <- with(penSim,  ADC.ER_current[j - 1] * (1 + 0)) 
+        	penSim$ADC_lag[j]    <- with(penSim,  EEC[j] + ADC.ER_lag[j])
+        	
+        } else {
+        	penSim$ADC.ER_lag[j] <- with(penSim,  ADC.ER_current[j])
+        	penSim$ADC_lag[j]    <- with(penSim, EEC[j] + ADC.ER_lag[j])
+        }
+        
+        
+        # Use OYLM or not 
+        
+        if (k != -1 & OYLM_on) {
+        	penSim$ADC[j]    <- penSim$ADC_lag[j]
+        	penSim$ADC.ER[j] <- penSim$ADC.ER_lag[j]
+        } else {
+        	penSim$ADC[j]    <- penSim$ADC_current[j]
+        	penSim$ADC.ER[j] <- penSim$ADC.ER_current[j]
+        }
+        
+        
+        # End of OYLM ************************************************************
+        
         
         # Adjustment of EEC
         if(!EEC_fixed) penSim$EEC[j] <- with(penSim, ifelse(ADC[j] > EEC[j], EEC[j], ADC[j])) # penSim$EEC[j] <- with(penSim, EEC[j]) else
@@ -563,18 +636,23 @@ run_sim <- function(tier_select_,
       }
       
       
+
+      
       # ERC
       penSim$ERC[j] <- switch(ConPolicy,
                               ADC     = with(penSim, ADC.ER[j]),                          # Full ADC
                               ADC_cap = with(penSim, min(ADC.ER[j], PR_pct_cap * PR[j])), # ADC with cap. Cap is a percent of payroll 
                               Fixed   = with(penSim, PR_pct_fixed * PR[j])                # Fixed percent of payroll
       ) 
-   
+      
+      
+     
       
       # C(j)
+      
       penSim$C[j] <- with(penSim, EEC[j] + ERC[j])
-      
-      
+      	
+
       # C(j) - ADC(j)
       penSim$C_ADC[j] <- with(penSim, C[j] - ADC[j])
       
@@ -598,15 +676,20 @@ run_sim <- function(tier_select_,
       # I.r(j) Actual investment income
       penSim$I.r[j] <- with(penSim, i.r[j] *( MA[j] + C[j] - B[j]))   # C[j] should be multiplied by i.r if assuming contribution is made at year end. 
       
-      # I.dif(j) = I.r(j) - I.e(j): Difference between expected and actual investment incomes (for asset smoothing)
-      penSim$I.dif[j] <- with(penSim, I.r[j] - I.e[j])
-      
-      
+
       penSim$I.TDA.fixed[j]  = with(penSim, MA.TDA[j] * i.TDAfixed)
       penSim$I.TDA.actual[j] = with(penSim, MA.TDA[j] * i.r[j])
       penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
       penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
+     
       
+      if(TDA_on & k != -1) penSim$I.r[j] <- penSim$I.r[j] +  penSim$I.dif.TDA[j]
+       
+      # I.dif(j) = I.r(j) - I.e(j): Difference between expected and actual investment incomes (for asset smoothing)
+      penSim$I.dif[j] <- with(penSim, I.r[j] - I.e[j])
+      
+      
+       
     }
     
     # penSim_results[[k]] <- penSim
@@ -627,6 +710,9 @@ run_sim <- function(tier_select_,
     mutate(sim     = rep(-1:nsim, each = nyear),
            runname = runname,
            Tier    = tier_select_,
+    			 OYLM    = OYLM,
+    			 TDA_policy = TDA_policy,
+    			 return_scenario = return_scenario, 
            FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),
            UAAL_PR = 100 * UAAL / PR,
