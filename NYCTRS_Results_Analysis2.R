@@ -491,7 +491,8 @@ df_singleRuns %>%
 	ggplot(aes(x = year, y = value*100, color = Var)) + theme_bw()+
 	geom_line() + 
 	geom_point() +
-	scale_y_continuous(breaks = seq(-100,100, 10)) +
+	geom_hline(yintercept = 7, linetype = 2)+
+	scale_y_continuous(breaks = c(7, seq(-100,100, 10)) ) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
 	labs(title =    "Actual returns and effective returns with TDA transfers",
 			 subtitle = "sim #424; 30-year geometric return = 7.0%",
@@ -791,7 +792,7 @@ fig_FRdist
 
 
 results_all %>% 
-	filter(runname %in% runs_DF, sim == 1, year %in% c(2019, 2020, 2048)) %>% 
+	filter(runname %in% runs_DF, sim == 1, year %in% c(2019, 2020, 2021, 2048)) %>% 
 	select(runname, year, FR_MA, ERC_PR, AA, MA, ERC_PR) 
 	
 fig.title <- "TRS funded ratio under hypothetical asset shock scenario"

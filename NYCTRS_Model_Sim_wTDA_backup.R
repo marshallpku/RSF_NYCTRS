@@ -185,8 +185,8 @@ run_sim <- function(tier_select_,
   # Vector used in asset smoothing
   # s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
   #s.vector.TDA <- seq(0,1,length = s.year.TDA + 1)[-(s.year.TDA+1)]; s.vector.TDA  # a vector containing the porportion of 
-  s.vector <- c(0, 0.15, 0.3, 0.45, 0.6, 0.8)
-  # s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
+  # s.vector <- c(0, 0.15, 0.3, 0.45, 0.6, 0.8)
+  s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
   
   s.vector.TDA <- s.vector
   #*************************************************************************************************************
@@ -428,7 +428,7 @@ run_sim <- function(tier_select_,
     
     for (j in 1:nyear){
         
-        # j <- 1
+        # j <- 5
         # j <- 2
       
     	#***********************************
