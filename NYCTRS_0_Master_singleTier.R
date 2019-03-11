@@ -217,8 +217,7 @@ pop <- get_Population()
 # 4. Individual actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
 
-#source("NYCTRS_Model_IndivLiab.R")
-source("NYCTRS_Model_IndivLiab_TRS_COLA.R")
+source("NYCTRS_Model_IndivLiab_FlexCOLA.R")
 invisible(gc())
 
 liab <- get_indivLab(tier_select)
@@ -306,8 +305,8 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 
 
-if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA_backup.R")
-if(paramlist$TDA_type == "payout") source("NYCTRS_Model_Sim_wTDA_payouts.R")
+if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA.R")
+# if(paramlist$TDA_type == "payout") source("NYCTRS_Model_Sim_wTDA_payouts.R")
 
 penSim_results <- run_sim(tier_select, AggLiab)
 

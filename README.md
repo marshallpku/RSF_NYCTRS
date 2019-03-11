@@ -2,6 +2,7 @@
 
 This repository is for the project "Analyzing Risks and Issues Relating to the New York City Teachers' Retirement System", funded by the Equable Institute. 
 
+
 ## Project summary
 
 This project will analyze costs and risks of the New York City Teachers’ Retirement System (NYC TRS) under current policies and underpotential alternative policies. It will place this analysis in the context of the New York City budget, including approximate ranges of how costs and risks of other public pension funds in New York City may affect the City budget. This is important because when NYC TRS suffers downside risks, or benefits from upside risks, other City pension funds are likely to face similar risks, and so the aggregate implications for the City budget are likely to be greater than those for NYC TRS alone.
