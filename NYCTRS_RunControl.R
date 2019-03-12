@@ -103,10 +103,8 @@ for(runName in runList$runname ){
 	if(paramlist$nyear.override != 0) Global_paramlist$nyear <- paramlist$nyear.override
 	
 	
-
-	# Investment returns
-	paramlist$seed <- 1234
 	
+	paramlist$seed <- 1234 # For generating investment returns
 	
 	paramlist$v <- 1/(1 + paramlist$i)
 	
@@ -119,11 +117,9 @@ for(runName in runList$runname ){
 #   paramlist$no_entrants <- TRUE
 # 	paramlist$EEC_fixed <- FALSE
 
-	# 	
-	# source("NYCTRS_0_Master_singleTier.R")
-	# save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
+	source("NYCTRS_0_Master_singleTier.R")
+	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 
-	
 }
 
 

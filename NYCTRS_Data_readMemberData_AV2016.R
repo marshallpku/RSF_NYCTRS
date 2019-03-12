@@ -128,7 +128,7 @@ df_nactives_CAFR17 <-
 				 tier = "allTiers")
 
 df_nactives_CAFR17[1,                 c("age_lb", "age_ub")] <- c(20, 24)
-df_nactives_CAFR17[nrow(df_nactives), c("age_lb", "age_ub")] <- c(70, 74)	
+df_nactives_CAFR17[nrow(df_nactives_allTieres), c("age_lb", "age_ub")] <- c(70, 74)	
 df_nactives_CAFR17 
 
 
@@ -220,7 +220,9 @@ df_nsurvivors
 df_TierShares
 df_TDAwithdrawal
 
-save(df_nactives_allTieres,
+df_nactives <- df_nactives_allTieres
+
+save(df_nactives,
 		 df_nactives_tier1,
 		 df_nactives_tier2,
 		 df_nactives_tier4,
@@ -235,7 +237,7 @@ save(df_nactives_allTieres,
 		 df_nsurvivors,
 		 df_TierShares,
 		 df_TDAwithdrawal,
-		 file = paste0(dir_data, "Data_MemberData_raw_AV2016.RData")
+		 file = paste0(dir_data, "Data_memberData_raw_AV2016.RData")
 )
 
 

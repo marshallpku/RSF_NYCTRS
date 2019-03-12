@@ -38,41 +38,7 @@ adj_fct.act.disbRet
 # 1.1 Load data (CAFR2017) ####
 #*********************************************************************************************************
 
-# Load plan information
-source("NYCTRS_Data_readPlanInfo17.R")
-
-# Load demographics data in CAFR 2017
-source("NYCTRS_Data_readDemoCAFR17.R")
-
-# Load decrement tables and salary scales in Experience Study 2015
-source("NYCTRS_Data_readDecrements.R")
-
-# Load Large plans data for estimation of yos distributions
-source("NYCTRS_Data_demoLargePlans.R")
-
-
-# Imputation of yos distributions for CAFR 2017 active members data
-source("NYCTRS_Data_ImputationActives.R")
-
-# Construct member data
-source("NYCTRS_Data_memberData_CAFR2017.R")
-
-dir_data <- "Inputs_data/"
-
-load(paste0(dir_data, "Data_planInfo17.RData"))
-load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
-load(paste0(dir_data, "Data_ES2015.RData"))
-
-
-init_amort_raw
-init_unrecReturns.unadj
-
-
-#*********************************************************************************************************
-# 1.1 Load data (AV2016lag) ####
-#*********************************************************************************************************
-
-# Load plan information
+# # Load plan information
 # source("NYCTRS_Data_readPlanInfo17.R")
 # 
 # # Load demographics data in CAFR 2017
@@ -85,7 +51,7 @@ init_unrecReturns.unadj
 # source("NYCTRS_Data_demoLargePlans.R")
 # 
 # 
-# Imputation of yos distributions for CAFR 2017 active members data
+# # Imputation of yos distributions for CAFR 2017 active members data
 # source("NYCTRS_Data_ImputationActives.R")
 # 
 # # Construct member data
@@ -96,6 +62,34 @@ init_unrecReturns.unadj
 # load(paste0(dir_data, "Data_planInfo17.RData"))
 # load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
 # load(paste0(dir_data, "Data_ES2015.RData"))
+
+
+# init_amort_raw
+# init_unrecReturns.unadj
+
+
+#*********************************************************************************************************
+# 1.1 Load data (AV2016lag) ####
+#*********************************************************************************************************
+
+# Load plan information
+source("NYCTRS_Data_readPlanInfo17.R")
+ 
+# Load demographics data in CAFR 2017
+source("NYCTRS_Data_readMemberData_AV2016.R")
+ 
+# Load decrement tables and salary scales in Experience Study 2015
+source("NYCTRS_Data_readDecrements.R")
+ 
+# Construct member data
+source("NYCTRS_Data_memberData_spread_AV2016.R")
+
+# dir_data <- "Inputs_data/"
+ 
+load(paste0(dir_data, "Data_planInfo17.RData"))
+load(paste0(dir_data, "Data_ES2015.RData"))
+load(paste0(dir_data, "Data_memberData_spread_AV2016.RData"))
+
 
 
 
@@ -373,8 +367,6 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v", "AL
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
 var_display3 <- c("Tier", "sim", "year", "FR_MA", "PVFB.act.laca", "PVFB.act.v", "PVFB.act.disbRet", "PVFB.act.death")
-# "n.ca.R1", "n.ca.R0S1", "nterms",
-# "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
 
 
