@@ -29,7 +29,7 @@
 #*********************************************************************************************************
 
 dir_data  <- "Inputs_data/"
-file_name <- "RawMaterials/2015 FAA Experience Study Discussion through June 30, 2015_Part 3 of 3 TRS only converted by Nuance.xlsx" 
+file_name <- "NYCTRS_Decrements&SalaryScale_ES2015.xlsx" 
 file_path <- paste0(dir_data, file_name)
 file_path
 
@@ -354,6 +354,40 @@ df_salScale %>%
 	mutate(dif = salScale_total - salScale_merit)
 
 
+
+#*************************************************************************************************************
+#                               12. Loading MP2015 data                       #####                  
+#*************************************************************************************************************
+
+# Import projection scale (scale BB-2D)
+
+data_scale_M <- read_excel(file_path, sheet = "MP2015_Male", skip = 1) %>% 
+	filter(!is.na(Age)) %>% 
+	mutate(Age = 20:120, 
+				 gender = "male")
+names(data_scale_M) <- c("age",1951:2030,"gender")
+
+
+data_scale_F <- read_excel(file_path, sheet = "MP2015_Female", skip = 1) %>%
+	filter(!is.na(Age)) %>% 
+	mutate(Age = 20:120, 
+				 gender = "female")
+names(data_scale_F) <- c("age",1951:2030, "gender")
+
+
+
+# Transform data to long format
+data_scale_M %<>% gather(year_match, scale.M, -age, -gender) %>% mutate(year_match = as.numeric((year_match)))
+data_scale_F %<>% gather(year_match, scale.F, -age, -gender) %>% mutate(year_match = as.numeric((year_match)))
+
+
+
+# Expand the scales to 1915-2164
+# 1915: the year when a 120-year old retiree in 2015 was at age 20. 
+# 2235: the year when a 20-year old new entrant in 2115 will be at age 120.
+# The scale BB-2D covers year 1951-2030. Years before 1951 use the scale for 1951, and years after 2030 use the scale for 2030. 
+
+
 ## Review and save results ####
 
 df_qxm_servRet
@@ -369,6 +403,9 @@ df_qxd
 df_qxt
 df_salScale
 
+data_scale_M
+data_scale_F
+
 save(df_qxm_servRet,
 		 df_qxm_disbRet,
 		 df_qxm_actives,
@@ -381,6 +418,9 @@ save(df_qxm_servRet,
 		 
 		 df_qxt,
 		 df_salScale,
+		 
+		 data_scale_M,
+		 data_scale_F,
 		 
 		 file = paste0(dir_data, "Data_ES2015.RData")
 		 )
