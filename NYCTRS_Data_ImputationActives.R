@@ -88,9 +88,9 @@ scale_largePlans %<>%
 
 
 
-scale_largePlans %<>%
-	mutate_("scale_nact" = paramlist$scaleName_nact,
-				  "scale_sal"  = paramlist$scaleName_sal)
+# scale_largePlans %<>%
+# 	mutate_("scale_nact" = paramlist$scaleName_nact,
+# 				  "scale_sal"  = paramlist$scaleName_sal)
 
 
 

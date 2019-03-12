@@ -16,8 +16,6 @@ adj_type
 load("df_sensitivity.RData")
 
 
-
-
 if(paramlist$sensitivity_on){
 	adj_fct.act.laca    <- df_sensitivity[df_sensitivity$variable == "AL.act.laca",   paste0("ratio_", adj_type)] %>% unlist
 	adj_fct.act.v       <- df_sensitivity[df_sensitivity$variable == "AL.act.v",      paste0("ratio_", adj_type)] %>% unlist
@@ -35,8 +33,43 @@ adj_fct.act.laca
 adj_fct.act.v      
 adj_fct.act.death  
 adj_fct.act.disbRet
+
 #*********************************************************************************************************
-# 1.1 Load data ####
+# 1.1 Load data (CAFR2017) ####
+#*********************************************************************************************************
+
+# Load plan information
+source("NYCTRS_Data_readPlanInfo17.R")
+
+# Load demographics data in CAFR 2017
+source("NYCTRS_Data_readDemoCAFR17.R")
+
+# Load decrement tables and salary scales in Experience Study 2015
+source("NYCTRS_Data_readDecrements.R")
+
+# Load Large plans data for estimation of yos distributions
+source("NYCTRS_Data_demoLargePlans.R")
+
+
+# Imputation of yos distributions for CAFR 2017 active members data
+source("NYCTRS_Data_ImputationActives.R")
+
+# Construct member data
+source("NYCTRS_Data_memberData_CAFR2017.R")
+
+dir_data <- "Inputs_data/"
+
+load(paste0(dir_data, "Data_planInfo17.RData"))
+load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
+load(paste0(dir_data, "Data_ES2015.RData"))
+
+
+init_amort_raw
+init_unrecReturns.unadj
+
+
+#*********************************************************************************************************
+# 1.1 Load data (AV2016lag) ####
 #*********************************************************************************************************
 
 # Load plan information
@@ -53,16 +86,17 @@ adj_fct.act.disbRet
 # 
 # 
 # Imputation of yos distributions for CAFR 2017 active members data
-source("NYCTRS_Data_ImputationActives.R")
+# source("NYCTRS_Data_ImputationActives.R")
+# 
+# # Construct member data
+# source("NYCTRS_Data_memberData_CAFR2017.R")
+# 
+# dir_data <- "Inputs_data/"
+# 
+# load(paste0(dir_data, "Data_planInfo17.RData"))
+# load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
+# load(paste0(dir_data, "Data_ES2015.RData"))
 
-# Construct member data
-source("NYCTRS_Data_memberData_CAFR2017.R")
-
-dir_data <- "Inputs_data/"
-
-load(paste0(dir_data, "Data_planInfo17.RData"))
-load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
-load(paste0(dir_data, "Data_ES2015.RData"))
 
 
 
