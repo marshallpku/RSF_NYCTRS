@@ -38,7 +38,6 @@ source("Functions.R")
 # Three scenarios
 #  - no TDA
 #  - TDA payments are amortized
-#  - TDA payments are not amortized
 
 
 # Analysis 2: Impact of funcing policy 
@@ -162,7 +161,7 @@ runs_fPolicy_labels <- c("Open amort.",
 												 "no asset smoothing")
 
 
-runs_all <- c(runs_TDA, runs_TDA_OYLM, runs_RS, runs_DF, runs_fPolicy)
+runs_all        <- c(runs_TDA, runs_TDA_OYLM, runs_RS, runs_DF, runs_fPolicy)
 runs_all_labels <- c(runs_TDA_labels, runs_TDA_OYLM_labels, runs_RS_labels, runs_DF_labels, runs_fPolicy_labels)
 
 
@@ -171,7 +170,7 @@ runs_all_labels <- c(runs_TDA_labels, runs_TDA_OYLM_labels, runs_RS_labels, runs
 
 
 # in the past 5 years ERC rate
-#ERC_rate_5y <- data.frame(year = 2012:2016, ERC_rate_5y = c(0.0869,0.0915, 0.0915 ,0.0998, 0.1078))
+# ERC_rate_5y <- data.frame(year = 2012:2016, ERC_rate_5y = c(0.0869,0.0915, 0.0915 ,0.0998, 0.1078))
 # ERC_rate_5y <- c(8.69,9.15, 9.15 ,9.98, 10.78)
 
 
@@ -284,45 +283,45 @@ x$i.r %>% sd
 # Under immediate recognition and payment of TDA interests, risk measures are identical across
 # all test scenarios. 
 
-results_all %>% 
-  select(runname, sim, year, AL, NC_PR, ERC_PR, PVFB, B, PR) %>% 
-  mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>%
-  filter(sim == 0, year %in% c(2016))
-
-
-df_all.stch %>% 
-  select(runname, year, FR40less) %>% 
-  mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-  spread(runname, FR40less) %>% 
-  filter(year %in% c(2016, 2020, 2030, 2040, 2045))
-
-
-df_all.stch %>% 
-  select(runname, year, ERC_hike) %>% 
-  mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-  spread(runname, ERC_hike) %>% 
-  filter(year %in% c(2016, 2020, 2030, 2040, 2045))
-
-
-df_all.stch %>% 
-  select(runname, year, ERC_TDA_hike) %>% 
-  mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-  spread(runname, ERC_TDA_hike) %>% 
-  filter(year %in% c(2016, 2020, 2025, 2030, 2040, 2045))
-
-
-df_all.stch %>% 
-  select(runname, year, ERC_high) %>% 
-  mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-  spread(runname, ERC_high) %>% 
-  filter(year %in% c(2016, 2020, 2030, 2040, 2045))
-
-
-df_all.stch %>% 
-  select(runname, year, ERC_TDA_high) %>% 
-  mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-  spread(runname, ERC_TDA_high) %>% 
-  filter(year %in% c(2016, 2020, 2030, 2040, 2045))
+# results_all %>% 
+#   select(runname, sim, year, AL, NC_PR, ERC_PR, PVFB, B, PR) %>% 
+#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>%
+#   filter(sim == 0, year %in% c(2016))
+# 
+# 
+# df_all.stch %>% 
+#   select(runname, year, FR40less) %>% 
+#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
+#   spread(runname, FR40less) %>% 
+#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
+# 
+# 
+# df_all.stch %>% 
+#   select(runname, year, ERC_hike) %>% 
+#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
+#   spread(runname, ERC_hike) %>% 
+#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
+# 
+# 
+# df_all.stch %>% 
+#   select(runname, year, ERC_TDA_hike) %>% 
+#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
+#   spread(runname, ERC_TDA_hike) %>% 
+#   filter(year %in% c(2016, 2020, 2025, 2030, 2040, 2045))
+# 
+# 
+# df_all.stch %>% 
+#   select(runname, year, ERC_high) %>% 
+#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
+#   spread(runname, ERC_high) %>% 
+#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
+# 
+# 
+# df_all.stch %>% 
+#   select(runname, year, ERC_TDA_high) %>% 
+#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
+#   spread(runname, ERC_TDA_high) %>% 
+#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
 
 
 
