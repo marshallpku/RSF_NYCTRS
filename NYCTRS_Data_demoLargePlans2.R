@@ -24,13 +24,24 @@ dir_data  <- "Inputs_data/DataLargePlans/"
 #*********************************************************************************************************
 
 
+df_NYCTRS <- read_xlsx(paste0(dir_data, "NYCTRS_MemberData_AV2016.xlsx"), sheet = "Actives_AllTiers", range = "B7:M30")
 
-NYCTRS
-df_nactives_allTieres <- 
-	read_excel(file_path, sheet = "Actives_AllTiers", range = "B7:M30")
+df_NYCTRS %<>% 
+	filter(!is.na(type)) %>% 
+	#mutate(keyVar = paste0(type, age.cell)) %>% 
+	gather(yos.cell, value, -type, -age.cell, -agegrp)
 
+df_yosgrp <- df_NYCTRS %>% filter(type == "yosgrp") %>% select(yos.cell, yosgrp = value)
 
+df_NYCTRS %<>% 
+	filter(type != "yosgrp") %>% 
+	left_join(df_yosgrp) %>% 
+	mutate_at(vars(age.cell, yos.cell, value), funs(as.numeric)) %>% 
+	mutate(plan = "NYCTRS_FOIL") %>% 
+	select(plan, type, age.cell, agegrp, yos.cell, yosgrp, value) %>% 
+	arrange(type, age.cell, yos.cell)
 
+df_NYCTRS
 
 # NYSTRS 
 
@@ -141,7 +152,8 @@ df_CALSTRS
 
 
 df_largePlans <- 
-	bind_rows(df_NYSTRS,
+	bind_rows(df_NYCTRS,
+		        df_NYSTRS,
 						df_CALSTRS,
 						df_TXTRS,
 						df_OHSTRS,
@@ -329,7 +341,8 @@ df_salary_large %>%
    # 3. do sensitivity check
    # 4. summarize and better document
 
-df_large <- df_salary_large
+df_large       <- df_salary_large %>% filter(plan != "NYCTRS_FOIL")
+df_NYCTRS_FOIL <- df_salary_large %>% filter(plan == "NYCTRS_FOIL")
 
 # index tables for age cells and yos cells
 agecuts <- df_large %>% select(age.cell, agegrp) 
@@ -484,104 +497,49 @@ df_salary_large %>%
 
 
 
-#*********************************************************************************************************
-#           # 4. Summary and next steps   ####
-#*********************************************************************************************************
-
-# Outputs
-(scale_nactives_largePlans <- scale_nactives)
-(scale_salary_largePlans   <- scale_salary)
-
-save(scale_nactives_largePlans, scale_salary_largePlans, agecuts, yoscuts, 
-		 file = paste0(dir_data, "../Scales_largePlans.RData"))
-
-
-
-#1.Distributions of actives
-  # Two averaging approaches:
-    # 1. Weighted: sum up the number of actives of all plans in each age-yos cell, 
-    #    then calculate the share of each cell.
-    # 2. Simple average: Calcuate the share of each age-yos cell for every plan, 
-    #    then for each cell calcuate the simple average across all plans. 
-  
-  # Examining the results
-    # Plot and compare the scales by age group: very similar
-    # Compare the overal age distributions against TRS
-      # TRS has a younger age distribution than the estimated distributions
-      # Possible implications on the distributions of YOS by age?               **** 
-
-
-#2.Salary distribution
-  # Three averaing approaches
-    # 1. Weighted: For each age-yos, pool the members of all plans and calculate the average salaries, 
-    #    then calculate the ratio of the salary in each cell to overall average salary 
-    # 2. Simple average 1: For each plan, calculate the ratio of the salary in each cell to the overall salary,
-    #    then for each cell calculate the simple average across all plans. 
-    # 2' Simple average 2: For each plan, calculate the ratio of the salary in each cell to the average salary of the age group,
-    #     then for each cell calculate the simple average across all plans. 
-
-
-  # Examining the results 
-  	# Plot and compare the scales by age group: very similar 
-    # Compare the overall age distributions against TRS
-      # Average across yos for each age group calculated in the spirit of simple average 2 
-      # The average distribution is very similar to the TRS distribution. 
-      # Better to include GATRS
-
-
-# Todo :
-  # remove implausible age-yos combos
-  # standardize age-yos ranges across large plans
-
-
 
 
 #*********************************************************************************************************
-#  5. Preliminary Imputation    ####
+#           # 4. Compare average age-yos distribution with the actual NYCTRS distribution    ####
 #*********************************************************************************************************
-# 
-# df_NYCTRS <- 
-# 	df_nactives %>% 
-# 	mutate(plan = "NYCTRS",
-# 				 age.cell = age_lb + 2,
-# 				 nactives = nactives_male + nactives_female,
-# 				 salary  = (nactives_male * salary_male + nactives_female * salary_female) / (nactives_male + nactives_female),
-# 				 sal.avg = sum((nactives_male + nactives_female) * salary) / sum(nactives_male + nactives_female),
-# 				 sal.scale = salary/sal.avg
-# 	) %>% 
-# 	select(plan, age.cell, nactives, salary, sal.avg)
-# 
-# df_NYCTRS
-# 
-# 
-# scale_largePlans <- left_join(scale_nactives, scale_salary) %>% 
-# 	select(age.cell, yos.cell, scale_nact = nactives_share_s, scale_sal = sal.scale_s2)
-# 
-# 
-# df_NYCTRS_impt <- 
-# scale_largePlans %>% 
-# 	left_join(df_NYCTRS) %>% 
-# 	group_by(age.cell) %>% 
-# 	mutate(nactives_impt = nactives * scale_nact / sum(scale_nact, na.rm = TRUE),
-# 				 salary_impt   = scale_sal * salary * sum(nactives_impt) / sum(scale_sal * nactives_impt)
-# 				 )
-# 
-# df_NYCTRS_impt
-# 	
-# 
-# # Double check
-# df_NYCTRS_impt %>% # average salary by group
-# 	group_by(age.cell) %>% 
-# 	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt),
-# 						sal.TRS = unique(salary))
-# 
-# df_NYCTRS_impt %>% ungroup %>% # Overall average Target: 78038.98
-# 	summarize(sal.avg = sum(nactives_impt * salary_impt)/sum(nactives_impt))
-# 
+
+scale_nactives
+scale_salary
+
+df_NYCTRS_FOIL %<>% 
+	mutate(nactives_share_TRS = nactives/sum(nactives, na.rm = T),
+				 sal.scale_TRS      = salary / (sum(salary * nactives)/sum(nactives)))
+	
+df_NYCTRS_FOIL %>% head
 
 
+scale_nactives %<>% left_join(df_NYCTRS_FOIL %>% select(age.cell, yos.cell, nactives_share_TRS))
+scale_salary   %<>% left_join(df_NYCTRS_FOIL %>% select(age.cell, yos.cell, sal.scale_TRS))
 
 
+# Plot and compare the scales by age group: very similar 
+scale_nactives %>% 
+	gather(scaleType, value, -age.cell, -yos.cell) %>% 
+	ggplot(aes(x = yos.cell, y = value, color = scaleType)) + theme_bw() +
+	facet_wrap(~age.cell) + 
+	geom_line()+
+	geom_point()
+
+
+scale_salary %>% 
+	select(age.cell, yos.cell, sal.scale_s1, sal.scale_w, sal.scale_TRS) %>% 
+	gather(scaleType, value, -age.cell, -yos.cell) %>% 
+	group_by(scaleType, age.cell) %>% 
+	#mutate(value = value / mean(value, na.rm = T)) %>% # all values standardized by age group mean 
+	ggplot(aes(x = yos.cell, y = value, color = scaleType)) + theme_bw() +
+	facet_wrap(~age.cell) + 
+	geom_line()+
+	geom_point()
+
+# weighted method works better
+
+
+scale_salary
 
 
 

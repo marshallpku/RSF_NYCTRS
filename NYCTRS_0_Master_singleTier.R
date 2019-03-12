@@ -74,17 +74,18 @@ adj_fct.act.disbRet
 
 # Load plan information
 source("NYCTRS_Data_readPlanInfo17.R")
- 
-# Load demographics data in CAFR 2017
-source("NYCTRS_Data_readMemberData_AV2016.R")
- 
+
 # Load decrement tables and salary scales in Experience Study 2015
 source("NYCTRS_Data_readDecrements.R")
  
+# Load demographics data in CAFR 2017
+source("NYCTRS_Data_readMemberData_AV2016.R")
+
 # Construct member data
 source("NYCTRS_Data_memberData_spread_AV2016.R")
+ 
 
-# dir_data <- "Inputs_data/"
+dir_data <- "Inputs_data/"
  
 load(paste0(dir_data, "Data_planInfo17.RData"))
 load(paste0(dir_data, "Data_ES2015.RData"))
