@@ -366,7 +366,7 @@ run_sim <- function(tier_select_,
    
    UAAL.year1.model <- AL.year1.model - AA.year1.model
    
-   factor.initAmort <- UAAL.year1.model/ 1# 1983860720 # AV2016 page n3
+   factor.initAmort <- UAAL.year1.model/ 28249467000 # AV2016lag page n14, sum of outstanding amortization basis
    # Notes: Theoretically, the AV UAAL should be equal to the sum of outstanding amortization balance. Need to check the document
    
    if(useAVamort){

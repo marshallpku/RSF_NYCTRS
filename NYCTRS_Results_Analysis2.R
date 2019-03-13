@@ -249,6 +249,10 @@ df_all.stch %>%
 	filter(year %in% c(2016, seq(2020, 2045, 5)))
 
 
+df_all.stch %>% 
+	filter(runname %in% c("t4a_O15dA6")) %>% 
+	filter(year %in% c(2016, seq(2020, 2045, 5)))
+
 
 df_all.stch %>% 
   filter(year %in% 2045)
@@ -259,7 +263,11 @@ df_all.stch %>%
 
 results_all %>% 
 	select(runname, sim, year, AL, MA, AA, FR, SC, ERC,EEC,PR, Amort_basis) %>% 
-	filter(sim == 912, year %in% c(2016:2045), runname %in% "t4a_TDAamort")
+	filter(sim == 0, year %in% c(2016:2045), runname %in% "t4a_TDAamortAS")
+
+results_all %>% 
+	select(runname, sim, year, AL, MA, AA, FR, SC, ERC,EEC,PR, Amort_basis) %>% 
+	filter(sim == 0, year %in% c(2016:2045), runname %in% "t4a_O15dA6")
 
 x <- 
 results_all %>% filter(runname == "t4a_TDAamort") %>% 

@@ -118,7 +118,7 @@ for(runName in runList$runname ){
 # 	paramlist$EEC_fixed <- FALSE
 
 	source("NYCTRS_0_Master_singleTier.R")
-	# save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
+	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 
 }
 
