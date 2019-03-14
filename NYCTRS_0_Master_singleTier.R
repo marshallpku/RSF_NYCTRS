@@ -2,8 +2,8 @@
 
 suppressMessages(gc())
 
+cat(paramlist$runname, "\n")
 # tier_select <- paramlist$tier
-
 
 
 #*********************************************************************************************************
@@ -333,11 +333,11 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 # 6.  Simulation ####
 #*********************************************************************************************************
+# paramlist$OYLM <- FALSE
+# paramlist$OYLM_skipY1 <- TRUE
+# paramlist$corridor <- FALSE
 
-
-if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA.R")
-# if(paramlist$TDA_type == "payout") source("NYCTRS_Model_Sim_wTDA_payouts.R")
-
+if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA1.R")
 penSim_results <- run_sim(tier_select, AggLiab)
 
 
@@ -398,7 +398,7 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 
 
 
-penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == 0)  %>% select(one_of(var_display1))  %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 
