@@ -117,7 +117,7 @@ agecuts
 yoscuts
 
 
-# Reading data of actives by gender from CAFR2017
+# Reading data of actives by gender from CAFR2017 ####
 
 df_nactives_CAFR17 <- 
 	read_excel(file_path, sheet = "Actives_CAFR17", range = "C6:H17") %>% 
@@ -128,7 +128,7 @@ df_nactives_CAFR17 <-
 				 tier = "allTiers")
 
 df_nactives_CAFR17[1,                 c("age_lb", "age_ub")] <- c(20, 24)
-df_nactives_CAFR17[nrow(df_nactives_allTieres), c("age_lb", "age_ub")] <- c(70, 74)	
+df_nactives_CAFR17[nrow(df_nactives_CAFR17), c("age_lb", "age_ub")] <- c(70, 74)	
 df_nactives_CAFR17 
 
 

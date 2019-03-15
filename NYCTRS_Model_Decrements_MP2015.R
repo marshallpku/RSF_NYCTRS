@@ -71,7 +71,7 @@ dir_data <- "Inputs_data/"
 
 
 load(paste0(dir_data, "Data_ES2015.RData"))
-load(paste0(dir_data, "Data_initGenderRatios.RData"))
+load(paste0(dir_data, "Data_initGenderRatios_AV2016.RData"))
 
   
 gratio <- init_genderRatios %>% as.data.frame()

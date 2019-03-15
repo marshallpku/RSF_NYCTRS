@@ -7,34 +7,6 @@ cat(paramlist$runname, "\n")
 
 
 #*********************************************************************************************************
-#  parameters for sensitivity analysis ####
-#*********************************************************************************************************
-
-#runname = "t4a_LowYos_nUp"
-adj_type = str_replace(paramlist$runname, "t4a_", "")
-adj_type
-load("df_sensitivity.RData")
-
-
-if(paramlist$sensitivity_on){
-	adj_fct.act.laca    <- df_sensitivity[df_sensitivity$variable == "AL.act.laca",   paste0("ratio_", adj_type)] %>% unlist
-	adj_fct.act.v       <- df_sensitivity[df_sensitivity$variable == "AL.act.v",      paste0("ratio_", adj_type)] %>% unlist
-	adj_fct.act.death   <- df_sensitivity[df_sensitivity$variable == "AL.act.death",  paste0("ratio_", adj_type)] %>% unlist
-	adj_fct.act.disbRet <- df_sensitivity[df_sensitivity$variable == "AL.act.disbRet",paste0("ratio_", adj_type)] %>% unlist
-} else {
-	
-adj_fct.act.laca    <-    
-adj_fct.act.v       <- 
-adj_fct.act.death   <-   
-adj_fct.act.disbRet <- 1 	
-} 
-
-adj_fct.act.laca   
-adj_fct.act.v      
-adj_fct.act.death  
-adj_fct.act.disbRet
-
-#*********************************************************************************************************
 # 1.1 Load data (CAFR2017) ####
 #*********************************************************************************************************
 
@@ -137,6 +109,7 @@ decrement_model <- get_decrements(tier_select)
 # mortality.post.model <- list.decrements$mortality.post.model
 
 
+decrement_model
 
 #**********************************************
 ##   Modify initial data ####
@@ -333,11 +306,8 @@ AggLiab$term %<>%
 #*********************************************************************************************************
 # 6.  Simulation ####
 #*********************************************************************************************************
-# paramlist$OYLM <- FALSE
-# paramlist$OYLM_skipY1 <- TRUE
-# paramlist$corridor <- FALSE
 
-if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA1.R")
+if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA.R")
 penSim_results <- run_sim(tier_select, AggLiab)
 
 

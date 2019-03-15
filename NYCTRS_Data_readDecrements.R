@@ -425,7 +425,7 @@ save(df_qxm_servRet,
 		 file = paste0(dir_data, "Data_ES2015.RData")
 		 )
 
-
+df_qxt
 
 
 

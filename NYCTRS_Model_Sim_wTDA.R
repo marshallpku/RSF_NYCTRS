@@ -359,7 +359,7 @@ run_sim <- function(tier_select_,
    	ifelse(init_AA_type == "AL_pct",
    				 penSim0$AL[1] * AA_0_pct,         # Initial AA as a % of initial AL
    				 ifelse(init_AA_type == "AA0", AA_0,    # preset value of AA
-   				 			 with(penSim0, MA.year1))    # Assume inital AA equals inital liability.
+   				 			 with(penSim0, MA.year1.model))    # Assume inital AA equals inital liability.
    )
    
    AL.year1.model   <- penSim0$AL[1]
@@ -512,9 +512,11 @@ run_sim <- function(tier_select_,
       
     	
       ## Apply corridor for MA, MA must not deviate from AA by more than 20%.
-      penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], s.upper * MA[j], AA[j])) 
-      penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], s.lower * MA[j], AA[j]))
-    
+    	
+    	if(corridor){
+        penSim$AA[j] <- with(penSim, ifelse(AA[j] > s.upper * MA[j], s.upper * MA[j], AA[j])) 
+        penSim$AA[j] <- with(penSim, ifelse(AA[j] < s.lower * MA[j], s.lower * MA[j], AA[j]))
+    	}
 
       # UAAL(j)
       penSim$UAAL[j]    <- with(penSim, AL[j] - AA[j])
@@ -551,14 +553,14 @@ run_sim <- function(tier_select_,
       #if(j > 1){
       if(j > ifelse(useAVamort, 1, 0)){
         # if useAVamort is TRUE, AV amort will be used for j = 1, not the one calcuated from the model. This may cause inconsistency in the model results(?)
-        if(amort_type == "closed") SC_amort[nrow.initAmort + j - 1, j:(j + m - 1)] <- amort_LG(penSim$Amort_basis[j], i, m, salgrowth_amort, end = FALSE, method = amort_method)
+        if(amort_type == "closed") SC_amort[nrow.initAmort + j - 1, j:(j + m - 1)] <- amort_LG(penSim$Amort_basis[j], i, m, salgrowth_amort, end = FALSE, method = amort_method, skipY1 = OYLM_skipY1)
         }
       #}
       
       # Supplemental cost in j
       penSim$SC[j] <- switch(amort_type,
                              closed = sum(SC_amort[, j]),
-                             open   = amort_LG(penSim$UAAL[j], i, m, salgrowth_amort, end = FALSE, method = amort_method)[1])
+                             open   = amort_LG(penSim$UAAL[j], i, m, salgrowth_amort, end = FALSE, method = amort_method, skipY1 = FALSE)[1])
       
       
       
@@ -714,7 +716,8 @@ run_sim <- function(tier_select_,
     mutate(sim     = rep(-1:nsim, each = nyear),
            runname = runname,
            Tier    = tier_select_,
-    			 OYLM    = OYLM,
+    			 OYLM_on    = OYLM_on,
+    			 OYLM_skipY1 = OYLM_skipY1,
     			 TDA_policy = TDA_policy,
     			 return_scenario = return_scenario, 
            FR      = 100 * AA / exp(log(AL)),
@@ -747,7 +750,9 @@ run_sim <- function(tier_select_,
            PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA),
     			 
     			 MA.TDA_QPP = MA.TDA / MA,
-    			 i.leverage = i.r.wTDA - i.r
+    			 i.leverage = i.r.wTDA - i.r,
+    			 
+    			 termCost_UFT = MA.TDA * share_UFT * 0.0125
     			 
            ) %>%
     select(runname, sim, year, everything())
