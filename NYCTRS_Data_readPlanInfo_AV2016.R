@@ -20,7 +20,7 @@ dir_data  <- "Inputs_data/"
 #*********************************************************************************************************
 
 
-init_amort_raw <- read_xlsx(paste0(dir_data, "NYCTRS_Planinfo_AV2017.xlsx"), sheet = "Init_amort", range = "C7:L11")
+init_amort_raw <- read_xlsx(paste0(dir_data, "NYCTRS_Planinfo_AV2016.xlsx"), sheet = "Init_amort", range = "C7:M15")
 init_amort_raw
 
 
@@ -30,7 +30,7 @@ init_amort_raw
 #*********************************************************************************************************
 
 
-init_unrecReturns.unadj <- read_xlsx(paste0(dir_data, "NYCTRS_Planinfo_AV2017.xlsx"), sheet = "Init_unrecReturn", range = "C6:D11")
+init_unrecReturns.unadj <- read_xlsx(paste0(dir_data, "NYCTRS_Planinfo_AV2016.xlsx"), sheet = "Init_unrecReturn", range = "C6:D11")
 init_unrecReturns.unadj
 
 

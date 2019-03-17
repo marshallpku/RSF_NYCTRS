@@ -38,20 +38,20 @@ get_indivLab <- function(tier_select_,
                          Global_paramlist_ = Global_paramlist){
 
 # Inputs
-  decrement_model_ = decrement_model
-  salary_          = salary
-  benefit_servRet_ = benefit_servRet
-
-  #init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
-  tier_select_     = tier_select
-
-  benefit_disbRet_ = benefit_disbRet
-  #mortality.post.model_ = mortality.post.model
-  #liab.ca_         = liab.ca
-  #liab.disb.ca_ = liab.disb.ca
-
-  paramlist_       =  paramlist
-  Global_paramlist_ =  Global_paramlist
+  # decrement_model_ = decrement_model
+  # salary_          = salary
+  # benefit_servRet_ = benefit_servRet
+  # 
+  # #init_terms_      = initPop$terms # get_tierData(init_terms_all, Tier_select)
+  # tier_select_     = tier_select
+  # 
+  # benefit_disbRet_ = benefit_disbRet
+  # #mortality.post.model_ = mortality.post.model
+  # #liab.ca_         = liab.ca
+  # #liab.disb.ca_ = liab.disb.ca
+  # 
+  # paramlist_       =  paramlist
+  # Global_paramlist_ =  Global_paramlist
     
   # Tier_select_ = "tE"
   # decrement.model_ = decrement.model.tE
@@ -224,7 +224,7 @@ liab_active %<>%
 			as.logical(elig_early) ~ benReduction,
 			TRUE ~ 0),
 		
-		Bx.laca  = gx.laca * Bx * adj_fct.act.laca
+		Bx.laca  = gx.laca * Bx # * adj_fct.act.laca
 		)
 
 
@@ -570,7 +570,7 @@ liab_active %<>%
   			 							gx.v * Bx,  # For NYCTRS, deferred retirement benefits accrue the same way as the service retirement benefits
    			 							0),           # initial annuity amount when the vested term retires at age r.vben, when a employee is vested at a certain age. 
   			                            # May be unnecessary since we have set qxt = 0 for age>= age_vben. Left for safety. 
-         Bx.v = Bx.v * adj_fct.act.v,
+         # Bx.v = Bx.v * adj_fct.act.v,
   			 
          #TCx.v  = ifelse(ea < r.vben, Bx.v * qxt * lead(px_r.vben_m) * v^(r.vben - age) * ax.r.W[age == r.vben], 0),             # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
          TCx.v   = ifelse(ea < age_vben, qxt * lead(px_r.vben_m) * v^(age_vben - age) * (lead(Bx.v) * ax.terms[age == age_vben])  , 0), # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
@@ -593,9 +593,12 @@ liab_active %<>%
          ALx.EAN.CP.v = PVFBx.v - PVFNC.EAN.CP.v
   ) 
   
-# x <- liab.active %>% filter(start.year == 1, ea == 20)
+x <- liab_active %>% filter(start_year == 2017, ea == 20) %>% select(start_year, ea, age, gx.v, Bx.v, TCx.v, PVFBx.v,  NCx.EAN.CP.v, ALx.EAN.CD.v, px_r.vben_m, ax.terms, qxd)
+x$qxd
 
 cat("......DONE\n")
+
+
 
 #*************************************************************************************************************
 #                       3.2 AL for vested terminatede members                        #####
@@ -762,7 +765,7 @@ liab_active %<>%
           Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
           Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
   				
-  				Bx.death = Bx.death * adj_fct.act.death,
+  				# Bx.death = Bx.death * adj_fct.act.death,
   				   
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
           # For TRS: 1. Lump sum death benefit equal to PV of future benefit (Bx.death * ax.deathBen);
@@ -876,7 +879,7 @@ liab_active %<>%
   mutate( gx.disbRet  = yos >= v.year,
           Bx.disbRet  = gx.disbRet * pmax(1/3 * fas, 1/60 * yos * fas, na.rm = TRUE),
           
-  				Bx.disbRet = Bx.disbRet * adj_fct.act.disbRet,
+  				# Bx.disbRet = Bx.disbRet * adj_fct.act.disbRet,
   				 
           # This is the benefit level if the employee starts to CLAIM benefit at age x, not internally retire at age x.
   				TCx.disbRet = qxd * v * lead(Bx.disbRet) *  lead(ax.disbRet), 

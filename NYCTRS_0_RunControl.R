@@ -1,3 +1,4 @@
+# Final version of single tier model
 
 
 rm(list = ls())
@@ -103,10 +104,8 @@ for(runName in runList$runname ){
 	if(paramlist$nyear.override != 0) Global_paramlist$nyear <- paramlist$nyear.override
 	
 	
-
-	# Investment returns
-	paramlist$seed <- 1234
 	
+	paramlist$seed <- 1234 # For generating investment returns
 	
 	paramlist$v <- 1/(1 + paramlist$i)
 	
@@ -116,20 +115,10 @@ for(runName in runList$runname ){
 	Global_paramlist$tier_select = "t4a"
 	tier_select = "t4a"
 	
-#   paramlist$no_entrants <- TRUE
-# 	paramlist$EEC_fixed <- FALSE
-
-		
 	source("NYCTRS_0_Master_singleTier.R")
 	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 
-	
 }
-
-
-# 3949689/3945768
-
-
 
 
 

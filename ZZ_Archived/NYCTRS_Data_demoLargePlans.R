@@ -24,6 +24,14 @@ dir_data  <- "Inputs_data/DataLargePlans/"
 #*********************************************************************************************************
 
 
+
+NYCTRS
+df_nactives_allTieres <- 
+	read_excel(file_path, sheet = "Actives_AllTiers", range = "B7:M30")
+
+
+
+
 # NYSTRS 
 
 df_NYSTRS <- read_xlsx(paste0(dir_data, "78_NY_NY-NYSTRS.xlsx"), sheet = "ActivesSched", range = "B9:O33")

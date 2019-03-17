@@ -210,17 +210,18 @@ get_AL.PUC <- function(px, v, TC){
 #**************************************
 
 pmt <- function(p, i, n, end = FALSE){
-  # amortization function with constant payment at each period
-  # p = principle, i = interest rate, n = periods.
-  # end: , if TRUE, payment at the end of period.
+  # amortization function with constant payment at each period 
+  # p = principle, i = interest rate, n = periods. 
+  # end: , if TRUE, payment at the end of period. 
   if(end) p <- p*(1 + i)
   a_n <- (1 - (1 + i)^(-n))/(1 - 1/(1 + i))
   pmt <- p / a_n
-  return(pmt)
+  return(pmt)  
 }
 
-#pmt(100, 0.02, 10)
-
+ pmt(100, 0.02, 10)
+# pmt2(100, 0.08, 10, TRUE)
+# pmt2(-100, 0.08, 10)
 
 gaip <- function(p, i, n, g, end = FALSE){
   # p=principal, i=interest rate, n=periods, g=growth rate in payments
@@ -237,21 +238,12 @@ gaip <- function(p, i, n, g, end = FALSE){
 # gaip3(100, 0.08, 10, 0.02, end = TRUE)
 
 
+
 # Constant dollar amortization method
-amort_cd <- function(p, i, m, end = FALSE, skipY1 = FALSE){
-	# skipY1: if TRUE, payment of year 1 is skipped and then amort. basis is paid off in n-1 non-zero payments. 
-	
-	if(!skipY1) rep(pmt(p, i, m, end), m) 
-	else        c(0, rep(pmt(p*(1+i), i, m-1, end), m-1))
-} 
+amort_cd <- function(p, i, m, end = FALSE) rep(pmt(p, i, m, end), m)
 
 # Constant percent amortization method
-amort_cp <- function(p, i, m, g, end = FALSE, skipY1 = FALSE){
-	# skipY1: if TRUE, payment of year 1 is skipped and then amort. basis is paid off in n-1 non-zero payments. 
-	
-	if(!skipY1) gaip(p, i, m, g, end)*(g + 1)^(1:m - 1)
-	else        c(0, gaip(p*(1 + i), i, m-1, g, end)*(g + 1)^(1:(m-1) - 1))
-} 
+amort_cp <- function(p, i, m, g, end = FALSE) gaip(p, i, m, g, end)*(g + 1)^(1:m - 1)
 
 # Strait line method #
 amort_sl <- function(p, i, m, end = FALSE){
@@ -266,28 +258,20 @@ amort_sl <- function(p, i, m, end = FALSE){
   }
     
 # Test the functions
-#amort_cd(100, 0.02, 3, F, T)
-#amort_cp(100, 0.02, 3, 0.03, F, T)
+# amort_cd(100, 0.08, 10, F)
+# amort_cp(100, 0.08, 10, 0.05, F)
 # amort_sl(100, 0.08, 10, F)
-
-# amort_cp(100, 0.07, 15, 0.03, F, F) # %>% sum # 159.72   
-# amort_cp(100, 0.07, 15, 0.03, F, T) # %>% sum # 165.33 3.5% higher  
-# 
-# amort_cd(100, 0.07, 15, F, F) # %>% sum  # 153.92  
-# amort_cd(100, 0.07, 15, F, skipY1) # %>% sum  # 160.08 4% higher
 
 
 # Function for choosing amortization methods
-amort_LG <- function(p, i, m, g, end = FALSE, method = "cd", skipY1 = FALSE){
+amort_LG <- function(p, i, m, g, end = FALSE, method = "cd"){
   # amortize the gain/loss using specified amortization method
   switch(method,
-         cd = amort_cd(p, i ,m, end, skipY1),
-         cp = amort_cp(p, i, m, g, end, skipY1),
+         cd = amort_cd(p, i ,m, end),
+         cp = amort_cp(p, i, m, g, end),
          sl = amort_sl(p, i, m, end)
          )
   }
-
-# amort_LG(100, 0.07, 15, 0.03, F, "cp", T)
 
 
 #********************************

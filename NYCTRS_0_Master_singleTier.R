@@ -2,44 +2,15 @@
 
 suppressMessages(gc())
 
+cat(paramlist$runname, "\n")
 # tier_select <- paramlist$tier
 
 
-
 #*********************************************************************************************************
-#  parameters for sensitivity analysis ####
-#*********************************************************************************************************
-
-#runname = "t4a_LowYos_nUp"
-adj_type = str_replace(paramlist$runname, "t4a_", "")
-adj_type
-load("df_sensitivity.RData")
-
-
-
-
-if(paramlist$sensitivity_on){
-	adj_fct.act.laca    <- df_sensitivity[df_sensitivity$variable == "AL.act.laca",   paste0("ratio_", adj_type)] %>% unlist
-	adj_fct.act.v       <- df_sensitivity[df_sensitivity$variable == "AL.act.v",      paste0("ratio_", adj_type)] %>% unlist
-	adj_fct.act.death   <- df_sensitivity[df_sensitivity$variable == "AL.act.death",  paste0("ratio_", adj_type)] %>% unlist
-	adj_fct.act.disbRet <- df_sensitivity[df_sensitivity$variable == "AL.act.disbRet",paste0("ratio_", adj_type)] %>% unlist
-} else {
-	
-adj_fct.act.laca    <-    
-adj_fct.act.v       <- 
-adj_fct.act.death   <-   
-adj_fct.act.disbRet <- 1 	
-} 
-
-adj_fct.act.laca   
-adj_fct.act.v      
-adj_fct.act.death  
-adj_fct.act.disbRet
-#*********************************************************************************************************
-# 1.1 Load data ####
+# 1.1 Load data (CAFR2017) ####
 #*********************************************************************************************************
 
-# Load plan information
+# # Load plan information
 # source("NYCTRS_Data_readPlanInfo17.R")
 # 
 # # Load demographics data in CAFR 2017
@@ -52,17 +23,47 @@ adj_fct.act.disbRet
 # source("NYCTRS_Data_demoLargePlans.R")
 # 
 # 
-# Imputation of yos distributions for CAFR 2017 active members data
-source("NYCTRS_Data_ImputationActives.R")
+# # Imputation of yos distributions for CAFR 2017 active members data
+# source("NYCTRS_Data_ImputationActives.R")
+# 
+# # Construct member data
+# source("NYCTRS_Data_memberData_CAFR2017.R")
+# 
+# dir_data <- "Inputs_data/"
+# 
+# load(paste0(dir_data, "Data_planInfo17.RData"))
+# load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
+# load(paste0(dir_data, "Data_ES2015.RData"))
+
+
+# init_amort_raw
+# init_unrecReturns.unadj
+
+
+#*********************************************************************************************************
+# 1.1 Load data (AV2016lag) ####
+#*********************************************************************************************************
+
+# Load plan information
+source("NYCTRS_Data_readPlanInfo_AV2016.R")
+
+# Load decrement tables and salary scales in Experience Study 2015
+source("NYCTRS_Data_readDecrements.R")
+ 
+# Load demographics data in CAFR 2017
+source("NYCTRS_Data_readMemberData_AV2016.R")
 
 # Construct member data
-source("NYCTRS_Data_memberData_CAFR2017.R")
+source("NYCTRS_Data_memberData_spread_AV2016.R")
+ 
 
 dir_data <- "Inputs_data/"
-
+ 
 load(paste0(dir_data, "Data_planInfo17.RData"))
-load(paste0(dir_data, "Data_initDemographics_CAFR17.RData"))
 load(paste0(dir_data, "Data_ES2015.RData"))
+load(paste0(dir_data, "Data_memberData_spread_AV2016.RData"))
+
+
 
 
 
@@ -108,6 +109,7 @@ decrement_model <- get_decrements(tier_select)
 # mortality.post.model <- list.decrements$mortality.post.model
 
 
+decrement_model
 
 #**********************************************
 ##   Modify initial data ####
@@ -274,6 +276,7 @@ AggLiab$term %<>%
           B.v.yearsum   = B.v.yearsum + B.init.v.yearsum) %>%
    as.matrix
 }
+
 # 
 # if(!paramlist$SepNewHires){
 # 	
@@ -304,10 +307,7 @@ AggLiab$term %<>%
 # 6.  Simulation ####
 #*********************************************************************************************************
 
-
 if(paramlist$TDA_type == "income") source("NYCTRS_Model_Sim_wTDA.R")
-# if(paramlist$TDA_type == "payout") source("NYCTRS_Model_Sim_wTDA_payouts.R")
-
 penSim_results <- run_sim(tier_select, AggLiab)
 
 
@@ -339,8 +339,6 @@ var_display2 <- c("Tier", "sim", "year", "FR_MA", "AL.act.laca", "AL.act.v", "AL
                   # "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
 var_display3 <- c("Tier", "sim", "year", "FR_MA", "PVFB.act.laca", "PVFB.act.v", "PVFB.act.disbRet", "PVFB.act.death")
-# "n.ca.R1", "n.ca.R0S1", "nterms",
-# "ndisb.la", "ndisb.ca.R1", "ndisb.ca.R0S1" )
 
 
 
@@ -370,7 +368,7 @@ var_TDA <- c("Tier", "sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverag
 
 
 
-penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1)) %>% print
+penSim_results %>% filter(sim == 0)  %>% select(one_of(var_display1))  %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 
