@@ -29,11 +29,7 @@ get_indivLab <- function(tier_select_,
                          salary_          = salary,
                          benefit_servRet_ = benefit_servRet,
                          benefit_disbRet_ = benefit_disbRet,
-                         # bfactor_         = bfactor,
-                         # mortality.post.model_ = mortality.post.model,
-                         #liab.ca_ = liab.ca,
-                         #liab.disb.ca_ = liab.disb.ca,
-                         init_terms_ = initPop$terms,
+                         # init_terms_ = initPop$terms,
                          paramlist_ = paramlist,
                          Global_paramlist_ = Global_paramlist){
 
@@ -52,35 +48,21 @@ get_indivLab <- function(tier_select_,
   # 
   # paramlist_       =  paramlist
   # Global_paramlist_ =  Global_paramlist
-    
-  # Tier_select_ = "tE"
-  # decrement.model_ = decrement.model.tE
-  # salary_          = salary.tE
-  # benefit_         = benefit.tE
-  # benefit.disb_    = benefit.disb.tE
-  # #bfactor_         = bfactor.tE
-  # mortality.post.model_ = mortality.post.model.tE
-  # liab.ca_ = liab.ca.tE
-  # liab.disb.ca_ = liab.disb.ca.tE
-  # init_terms_all_  = init_terms_all
-  # paramlist_ = paramlist
-  # Global_paramlist_ = Global_paramlist
+   
+	##  Multiple tiers
+	# tier_select_     = "t4a"
+	# decrement_model_ = decrement_model_t4a
+	# salary_          = salary
+	# benefit_servRet_ = benefit_servRet_t4a
+	# benefit_disbRet_ = benefit_disbRet_t4a
+	# paramlist_       =  paramlist
+	# Global_paramlist_ =  Global_paramlist
+	
   
   assign_parmsList(Global_paramlist_, envir = environment()) # environment() returns the local environment of the function.
   assign_parmsList(paramlist_,        envir = environment())
   
 
-# Choosing tier specific parameters and data
-# fasyears <- tier.param[Tier_select_, "fasyears"]
-# r.vben   <- tier.param[Tier_select_, "r.vben"]
-# r.yos    <- tier.param[Tier_select_, "r.yos"]
-# r.age    <- tier.param[Tier_select_, "r.age"]
-# v.yos    <- tier.param[Tier_select_, "v.yos"]
-# EEC.rate <- tier.param[Tier_select_, "EEC.rate"]
-
-
-# init_terminated_ <-  get_tierData(init_terms_all_, Tier_select_)
-# init_terminated_ %<>% mutate(benefit = 0.75 * 0.42 * termCon) 
 
   
 #*************************************************************************************************************
@@ -154,9 +136,13 @@ liab_active %<>%
     
     # Accrued service retirement benefits for tier III/IV
     Bx = case_when(                                  # na2zero(bfactor * yos * fas), # accrued benefits, note that only Bx for ages above min retirement age are necessary under EAN.
-    	yos < 20       ~ na2zero(5/300 * yos * fas),
-    	yos %in% 20:29 ~ na2zero(0.02  * yos * fas),
-    	yos > 30	     ~ na2zero( (0.6 + (yos - 30) * 0.015) * fas),
+    	tier_select_ %in% c("t4a", "t4b") & yos < 20       ~ na2zero(5/300 * yos * fas),
+    	tier_select_ %in% c("t4a", "t4b") & yos %in% 20:29 ~ na2zero(0.02  * yos * fas),
+    	tier_select_ %in% c("t4a", "t4b") & yos > 30	     ~ na2zero( (0.6 + (yos - 30) * 0.015) * fas),
+    	
+    	tier_select_ %in% c("t6") & yos < 20               ~ na2zero(5/300 * yos * fas),
+    	tier_select_ %in% c("t6") & yos >= 20              ~ na2zero( (0.35 + (yos - 20) * 0.02) * fas),
+    	
     	TRUE           ~ 0),                        
     bx = lead(Bx) - Bx,                              # benefit accrual at age x
 
@@ -195,7 +181,20 @@ liab_active %<>%
     # 4.85% for yos <=10,
     # 1.85% for yos >= 10
     
-    EEC = ifelse(yos <= 10, 0.0485 * sx, 0.0185 * sx)
+    EEC = case_when(
+    	
+    	tier_select_ == "t4a" & yos <= 10 ~ 0.03 * sx, 
+    	tier_select_ == "t4a" & yos >  10 ~ 0 * sx,
+    	
+    	tier_select_ == "t4b" & yos <= 10 ~ 0.0485 * sx, 
+    	tier_select_ == "t4b" & yos >  10 ~ 0.0185 * sx,
+    	
+    	tier_select_ == "t6" & sx <= 45000                ~ 0.03 * sx, 
+    	tier_select_ == "t6" & sx >  45000 & sx <=  75000 ~ 45000 * 0.3 + 0.035 * (sx - 45000),
+    	tier_select_ == "t6" & sx >  75000 & sx <= 100000 ~ 45000 * 0.3 + 30000 * 0.35 +  0.045 * (sx - 75000), 
+    	tier_select_ == "t6" & sx > 100000                ~ 45000 * 0.3 + 30000 * 0.35 + 25000 * 0.45 + 0.06 * (sx - 100000),
+ 
+    	TRUE ~ 0)
   )
 cat("......DONE\n")
 
@@ -214,8 +213,9 @@ liab_active %<>%
 		
 		# Benefit reduction factor for Tier IV: 6% for 60-61, 3% for 55-59
 		benReduction = case_when(
-			age %in% 60:61 ~ 1 - (62 - age) * 0.06,
-			age %in% 55:59 ~ 0.88 - (60 - age) *  0.03,
+			tier_select_ %in% c("t4a", "t4b") & age %in% 60:61 ~ 1 - (62 - age) * 0.06,
+			tier_select_ %in% c("t4a", "t4b") & age %in% 55:59 ~ 0.88 - (60 - age) *  0.03,
+			tier_select_ %in% c("t6") & age %in% 55:62 ~ 1 - (63 - age) * 0.065,
 			TRUE ~ 1),
 		
 		# Retirement eligibility and % benefit can be claimed at retirement 

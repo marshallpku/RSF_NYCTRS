@@ -224,7 +224,7 @@ salgrowth.fn <- get_salgrowth()
 
 SS.all.fn    <- get_scale(salgrowth.fn)
 
-init_sal.fn  <- fill_startSal(init_actives)
+init_sal.fn  <- fill_startSal(init_actives_tiers %>% filter(tier == "allTiers"))
 
 salary.fn <- get_salary(SS.all.fn, init_sal.fn) %>% 
   mutate(sx = na2zero(sx))
@@ -252,12 +252,12 @@ get_benefit_servRet <- function(
   
   benefit <- 
     servRet_ %>% 
-    select(age, benefit_servRet) %>% 
+    select(tier, age, benefit_servRet) %>% 
     mutate(year       = init_year,
            ea         = min_age,
            age_servRet= age,
            start_year = year - (age - ea)) %>% 
-    select(start_year, ea, age, age_servRet, benefit_servRet)
+    select(tier, start_year, ea, age, age_servRet, benefit_servRet)
   # benefit %>% select(-year) %>% spread(age, benefit)
   
   return(benefit)
@@ -275,12 +275,12 @@ get_benefit_disbRet <- function(
   
   benefit <-
     disbRet_ %>% 
-    select(age, benefit_disbRet) %>%  
+    select(tier, age, benefit_disbRet) %>%  
     mutate(year       = init_year,
            ea         = min_age,
            age_disbRet= age,
            start_year = year - (age - ea)) %>% 
-    select(start_year, ea, age, age_disbRet, benefit_disbRet)
+    select(tier, start_year, ea, age, age_disbRet, benefit_disbRet)
 
   return(benefit)
 }
@@ -297,12 +297,12 @@ get_benefit_survivors <- function(
   
   benefit <-
     survivors_ %>% 
-    select(age, benefit_survivors) %>%  
+    select(tier, age, benefit_survivors) %>%  
     mutate(year       = init_year,
            ea         = min_age,
            # age_disb   = age,
            start_year = year - (age - ea)) %>% 
-    select(start_year, ea, age, benefit_survivors)
+    select(tier, start_year, ea, age, benefit_survivors)
   
   return(benefit)
 }
@@ -331,7 +331,7 @@ get_benefit_survivors <- function(
 get_initPop <- function (init_actives_ = init_actives,       
                          init_servRet_ = init_servRet,
                          init_disbRet_ = init_disbRet,
-                         init_survivors_ = init_survivors,
+                         # init_survivors_ = init_survivors,
                          init_terms_   = init_terms,
                          paramlist_        = paramlist,
                          Global_paramlist_ = Global_paramlist,
@@ -370,9 +370,9 @@ get_initPop <- function (init_actives_ = init_actives,
     spread(age, nservRet, fill = 0) %>% select(-ea) %>% as.matrix
   
   # Initial survivors
-  init_survivors_ <- init_survivors_ %>% select(age, nsurvivors) %>% mutate(ea = min_age) 
-  init_survivors_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_survivors_) %>% 
-    spread(age, nsurvivors, fill = 0) %>% select(-ea) %>% as.matrix
+  #init_survivors_ <- init_survivors_ %>% select(age, nsurvivors) %>% mutate(ea = min_age) 
+  #init_survivors_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_survivors_) %>% 
+  #  spread(age, nsurvivors, fill = 0) %>% select(-ea) %>% as.matrix
   
   # Intitial vested terminated workers 
   init_terms_ <- init_terms_ %>% select(age, nterms) %>% mutate(ea = min_age) 
@@ -383,17 +383,12 @@ get_initPop <- function (init_actives_ = init_actives,
   init_disbRet_ <- init_disbRet_ %>% select(age, ndisbRet) %>% mutate(ea = min_age) 
   init_disbRet_ <- expand.grid(ea = range_ea, age = range_age) %>% left_join(init_disbRet_) %>% 
     spread(age, ndisbRet, fill = 0) %>% select(-ea) %>% as.matrix
-  
-  # # Initial terminated vested 
-  # init_terms <- .terminated %>% select(ea, age, nterms)
-  # init_terms <-  expand.grid(ea = range_ea, age = range_age) %>% left_join(init_terms) %>% 
-  #   #mutate(nactives = n_init_actives * nactives/sum(nactives, na.rm = TRUE)) %>%
-  #   spread(age, nterms, fill = 0) %>% select(-ea) %>% as.matrix 
+
   
   return(list(actives = init_actives_, 
               servRet = init_servRet_, 
               disbRet = init_disbRet_,
-              survivors = init_survivors_,
+              # survivors = init_survivors_,
               terms = init_terms_
               ))
 }

@@ -1,7 +1,7 @@
 # This script conducts the simulation of the finance of NYCTRS
 
 
-run_sim <- function(tier_select_,
+run_sim <- function(
                     AggLiab_,
                     #PR.Tiers_ = PR.Tiers,
                     #DC.Tiers_ = DC.Tiers,
@@ -13,7 +13,7 @@ run_sim <- function(tier_select_,
                     Global_paramlist_ = Global_paramlist){
 
   # Run the section below when developing new features.
-      # tier_select_ =  "t4a" #  Tier_select
+      # # tier_select_ =  "t4a" #  Tier_select
       # i.r_ = i.r
       # #i.r_geoReturn_ = i.r_geoReturn
       # AggLiab_        = AggLiab
@@ -715,7 +715,8 @@ run_sim <- function(tier_select_,
   penSim_results <- bind_rows(penSim_results) %>% 
     mutate(sim     = rep(-1:nsim, each = nyear),
            runname = runname,
-           Tier    = tier_select_,
+           tier_Mode = tier_Mode,
+    			 singleTier_select = singleTier_select,
     			 OYLM_on    = OYLM_on,
     			 OYLM_skipY1 = OYLM_skipY1,
     			 TDA_policy = TDA_policy,

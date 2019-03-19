@@ -1,5 +1,5 @@
 # Construct decrement tables that will be used in the valuations. 
-# Model version 2.0
+# Model version 1.0
 
 
 # Inputs:
@@ -49,14 +49,13 @@ get_decrements <- function(Tier_select,
                            paramlist_ = paramlist){
 
   
-# Tier_select <- "t4a"
+# Tier_select <- paramlist$tier_select
 # Global_paramlist_ = Global_paramlist
 # paramlist_ = paramlist
 
 assign_parmsList(Global_paramlist_, envir = environment())
 assign_parmsList(paramlist_,        envir = environment())
 
-# if tier_Mode == "singleTier" Tier_select <- single_Tier_select
 
 
 #*************************************************************************************************************
@@ -385,16 +384,16 @@ retRates_model_tiers <-
 			   					 					 	   (age >= 55 & yos >= 30), 
 														      1, 0) %>% cumsum,
 		     
-		     elig_full_t4b = ifelse( #(age >= 62 & yos >= 5) | 
-		     												  age >= 55 & yos >= 25, 
+		     elig_full_t4b = ifelse( (age >= 62 & yos >= 5) | 
+		     												 (age >= 55 & yos >= 25), 
 		     												  1, 0) %>% cumsum,
 		    
-		     elig_full_t4c = ifelse( #(age >= 62 & yos >= 5) | 
-		     												 age >= 55 & yos >= 27, 
+		     elig_full_t4c = ifelse( (age >= 62 & yos >= 5) | 
+		     												 (age >= 55 & yos >= 27), 
 		     											  	1, 0) %>% cumsum,
 		     
-		     elig_full_t4d = ifelse( # (age >= 62 & yos >= 10) | 
-		     												 age >= 55 & yos >= 27, 
+		     elig_full_t4d = ifelse( (age >= 62 & yos >= 10) | 
+		     												 (age >= 55 & yos >= 27), 
 		     										   		1, 0) %>% cumsum,
 		     
 		     elig_full_t6  = ifelse( age >= 63 & yos >= 10,  
