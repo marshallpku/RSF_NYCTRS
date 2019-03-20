@@ -91,7 +91,8 @@ wf_dimnames.la <- list(range_ea,
 # The array of death beneficiaries has 4 dimensions: ea x age x year x year of death(of the active)
 wf_dim.deathBen      <- c(length(range_ea), length(range_age), nyear, nyear)
 wf_dimnames.deathBen <- list(range_ea, 
-                             range_age, init_year:(init_year + nyear - 1), 
+                             range_age, 
+														 init_year:(init_year + nyear - 1), 
                              init_year:(init_year + nyear - 1))
 
 # The array of disability retirees has 4 dimensions: ea x age x year x year of disability
@@ -838,12 +839,12 @@ get_df.wf_deathBen <- function(df){
 												 year = init_year:(init_year + nyear - 1), 
 												 year_death = (init_year):(init_year + nyear - 1)),
                          number.deathBen = as.vector(df)) %>%
-  filter(age >= ea)
+                         filter(age >= ea)
 }
 
-wf_deathBen_t4a <- get_df.wf_deathBen(wf_dead_t4a)
-wf_deathBen_t4b <- get_df.wf_deathBen(wf_dead_t4b)
-wf_deathBen_t6  <- get_df.wf_deathBen(wf_dead_t6)
+wf_deathBen_t4a  <- get_df.wf_deathBen(wf_deathBen_t4a)
+wf_deathBen_t4b  <- get_df.wf_deathBen(wf_deathBen_t4b)
+wf_deathBen_t6   <- get_df.wf_deathBen(wf_deathBen_t6)
 
 #wf_deathBen %>% filter(number.deathBen != 0) 
 

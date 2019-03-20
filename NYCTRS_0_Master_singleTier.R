@@ -209,6 +209,8 @@ entrants_dist <- get_entrantsDist(filter(init_actives_tiers, tier == "t6"))
 
 
 
+
+
 # Detective work
 # init_pop$actives[,c(1, 3:51) ] <- 0
 # init_pop$actives[,] <- 0
@@ -271,6 +273,8 @@ if(paramlist$tier_Mode == "singleTier"){
 		decrement_model_  = decrement_model_allTiers)
 }
 
+
+# pop_multiTier$pop_t4a$la %>% filter(number.la !=0) %>% head
 
 
 # #*********************************************************************************************************
@@ -365,7 +369,7 @@ if(paramlist$tier_Mode == "multiTier"){
 	
 	
 	AggLiab.sumTiers <- 
-		get_AggLiab_sumTiers(AggLiab_t4b, AggLiab_t4b, AggLiab_t6)
+		get_AggLiab_sumTiers(AggLiab_t4a, AggLiab_t4b, AggLiab_t6)
 	
 	
 }
@@ -459,11 +463,12 @@ outputs_list <- list(paramlist = paramlist,
 
 
 var_display1 <- c("sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR", "Amort_basis", "i.r")
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "C", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR", "Amort_basis", "i.r", 
+									"B.la", "B.death", "B.v", "B.disbRet")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
                   # # "B", "B.la", "B.ca", "B.v", "B.disb.la","B.disb.ca",
-                  # "PR", "NC_PR", "NC","ERC")
+                  # "PR", "NC_PR", "NC","ERC", "B.la")
 
 var_display2 <- c("sim", "year", "FR_MA", "AL.act.laca", "AL.act.v", "AL.act.disbRet", "nactives", "nla", "nterms", "ndisbRet")
                   # "n.ca.R1", "n.ca.R0S1", "nterms",
@@ -499,7 +504,7 @@ var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.
 
 
 
-penSim_results %>% filter(sim == 0)  %>% select(one_of(var_display1))  %>% print
+penSim_results %>% filter(sim == 0) %>% select(one_of(var_display1))  %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display2)) %>% print
 penSim_results %>% filter(sim == -1) %>% select(one_of(var_display3)) %>% print
 
