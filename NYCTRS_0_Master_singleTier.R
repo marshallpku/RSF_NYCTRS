@@ -102,22 +102,19 @@ load(paste0(dir_data, "Data_memberData_spread_wTiers_AV2016.RData"))
 # Decrement tables
 source("NYCTRS_Model_Decrements_MP2015.R")
 
-decrement_model_t4a <- get_decrements("t4a")
-decrement_model_t4b <- get_decrements("t4b")
-decrement_model_t6  <- get_decrements("t6")
+if(paramlist$tier_Mode == "multiTier"){
+	decrement_model_t4a <- get_decrements("t4a")
+	decrement_model_t4b <- get_decrements("t4b")
+	decrement_model_t6  <- get_decrements("t6")
+}
 
-
-# if(paramlist$tier_Mode == "singleTier"){
-     decrement_model_allTiers <- get_decrements(paramlist$singleTier_select)
-# } 
+if(paramlist$tier_Mode == "singleTier"){
+	decrement_model_allTiers <- get_decrements(paramlist$singleTier_select)
+} 
 
 # save results
 
-# decrement_model <- get_decrements(tier_select)
-# list.decrements      <- get_decrements(Tier_select)
-# decrement.model      <- list.decrements$decrement.model
-# mortality.post.model <- list.decrements$mortality.post.model
-# decrement_model
+
 
 #**********************************************
 ##   Modify initial data ####
@@ -156,47 +153,51 @@ i.r <- gen_returns()
 #*********************************************************************************************************
 source("NYCTRS_Model_PrepData.R")
 
+
+if(paramlist$tier_Mode == "multiTier"){
 # Tier 4 basic (t4a)
-benefit_servRet_t4a   <- get_benefit_servRet(filter(init_servRet_tiers, tier == "t4a") )
-benefit_disbRet_t4a   <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "t4a") )
-
-init_pop_t4a <- get_initPop(filter(init_actives_tiers, tier == "t4a"),
-                            filter(init_servRet_tiers, tier == "t4a"),
-											    	filter(init_disbRet_tiers, tier == "t4a"),
-											    	filter(init_terms_tiers,   tier == "t4a")
-				                )
-
-# Tier 5 55program (t4b)
-benefit_servRet_t4b   <- get_benefit_servRet(filter(init_servRet_tiers, tier == "t4b") )
-benefit_disbRet_t4b   <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "t4b") )
-
-init_pop_t4b <- get_initPop(filter(init_actives_tiers, tier == "t4b"),
-														filter(init_servRet_tiers, tier == "t4b"),
-														filter(init_disbRet_tiers, tier == "t4b"),
-														filter(init_terms_tiers,   tier == "t4b")
-)
-
-# Tier 6 (t6)
-benefit_servRet_t6   <- get_benefit_servRet(filter(init_servRet_tiers, tier == "t6") )
-benefit_disbRet_t6   <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "t6") )
-
-init_pop_t6 <-  get_initPop(filter(init_actives_tiers, tier == "t6"),
-														filter(init_servRet_tiers, tier == "t6"),
-														filter(init_disbRet_tiers, tier == "t6"),
-														filter(init_terms_tiers,   tier == "t6")
-)
+	benefit_servRet_t4a   <- get_benefit_servRet(filter(init_servRet_tiers, tier == "t4a") )
+	benefit_disbRet_t4a   <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "t4a") )
+	
+	init_pop_t4a <- get_initPop(filter(init_actives_tiers, tier == "t4a"),
+	                            filter(init_servRet_tiers, tier == "t4a"),
+												    	filter(init_disbRet_tiers, tier == "t4a"),
+												    	filter(init_terms_tiers,   tier == "t4a")
+					                )
+	
+	# Tier 5 55program (t4b)
+	benefit_servRet_t4b   <- get_benefit_servRet(filter(init_servRet_tiers, tier == "t4b") )
+	benefit_disbRet_t4b   <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "t4b") )
+	
+	init_pop_t4b <- get_initPop(filter(init_actives_tiers, tier == "t4b"),
+															filter(init_servRet_tiers, tier == "t4b"),
+															filter(init_disbRet_tiers, tier == "t4b"),
+															filter(init_terms_tiers,   tier == "t4b")
+	)
+	
+	# Tier 6 (t6)
+	benefit_servRet_t6   <- get_benefit_servRet(filter(init_servRet_tiers, tier == "t6") )
+	benefit_disbRet_t6   <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "t6") )
+	
+	init_pop_t6 <-  get_initPop(filter(init_actives_tiers, tier == "t6"),
+															filter(init_servRet_tiers, tier == "t6"),
+															filter(init_disbRet_tiers, tier == "t6"),
+															filter(init_terms_tiers,   tier == "t6")
+  )
+}
 
 
 # allTiers
-benefit_servRet_allTiers  <- get_benefit_servRet(filter(init_servRet_tiers, tier == "allTiers") )
-benefit_disbRet_allTiers  <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "allTiers") )
-
-init_pop_allTiers <-  get_initPop(filter(init_actives_tiers, tier == "allTiers"),
-													      	filter(init_servRet_tiers, tier == "allTiers"),
-													      	filter(init_disbRet_tiers, tier == "allTiers"),
-													      	filter(init_terms_tiers,   tier == "allTiers")
-)
-
+if(paramlist$tier_Mode == "singleTier"){
+	benefit_servRet_allTiers  <- get_benefit_servRet(filter(init_servRet_tiers, tier == "allTiers") )
+	benefit_disbRet_allTiers  <- get_benefit_disbRet(filter(init_disbRet_tiers, tier == "allTiers") )
+	
+	init_pop_allTiers <-  get_initPop(filter(init_actives_tiers, tier == "allTiers"),
+														      	filter(init_servRet_tiers, tier == "allTiers"),
+														      	filter(init_disbRet_tiers, tier == "allTiers"),
+														      	filter(init_terms_tiers,   tier == "allTiers")
+	)
+}
 
 # Salary scale
 salary <- get_salary_proc() # same for all tiers
@@ -235,31 +236,40 @@ entrants_dist <- get_entrantsDist(filter(init_actives_tiers, tier == "t6"))
 #*********************************************************************************************************
 # 2. Demographics ####
 #*********************************************************************************************************
-source("NYCTRS_Model_Demographics_singleTier.R")
+
 invisible(gc())
 
-# pop <- get_Population()
+
+newEnt_byTier <- c(t4a = 0, t4b = 0, t6 = 1)
 
 
-pop_allTiers <- get_Population(
-	init_pop_         = init_pop_allTiers,
-	entrants_dist_    = entrants_dist,
-	decrement_model_  = decrement_model_allTiers)
+if(paramlist$tier_Mode == "multiTier"){
+	source("NYCTRS_Model_Demographics_multiTier.R")
+	
+pop_multiTier <- get_Population(
+	init_pop_t4a_         = init_pop_t4a,
+	decrement_model_t4a_  = decrement_model_t4a,
+	
+	init_pop_t4b_         = init_pop_t4b,
+	decrement_model_t4b_  = decrement_model_t4b,
+	
+	init_pop_t6_         = init_pop_t6,
+	decrement_model_t6_  = decrement_model_t6,
+	
+	entrants_dist_    = entrants_dist)
 
-pop_t4a <- get_Population(
-	init_pop_         = init_pop_t4a,
-	entrants_dist_    = entrants_dist,
-	decrement_model_  = decrement_model_t4a)
+}
 
-pop_t4b <- get_Population(
-	init_pop_         = init_pop_t4b,
-	entrants_dist_    = entrants_dist,
-	decrement_model_  = decrement_model_t4b)
 
-pop_t6 <- get_Population(
-	init_pop_         = init_pop_t6,
-	entrants_dist_    = entrants_dist,
-	decrement_model_  = decrement_model_t6)
+if(paramlist$tier_Mode == "singleTier"){
+	
+	source("NYCTRS_Model_Demographics_singleTier.R")
+	
+	pop_allTiers <- get_Population(
+		init_pop_         = init_pop_allTiers,
+		entrants_dist_    = entrants_dist,
+		decrement_model_  = decrement_model_allTiers)
+}
 
 
 
@@ -292,37 +302,39 @@ pop_t6 <- get_Population(
 source("NYCTRS_Model_IndivLiab_FlexCOLA.R")
 invisible(gc())
 
+if(paramlist$tier_Mode == "multiTier"){
+	liab_t4a <- get_indivLab("t4a",
+													 decrement_model_ = decrement_model_t4a,
+													 salary_          = salary,
+													 benefit_servRet_ = benefit_servRet_t4a,
+													 benefit_disbRet_ = benefit_disbRet_t4a
+													 )
+	
+	
+	liab_t4b <- get_indivLab("t4b",
+													 decrement_model_ = decrement_model_t4b,
+													 salary_          = salary,
+													 benefit_servRet_ = benefit_servRet_t4b,
+													 benefit_disbRet_ = benefit_disbRet_t4b
+	)
+	
+	liab_t6 <- get_indivLab("t6",
+													 decrement_model_ = decrement_model_t6,
+													 salary_          = salary,
+													 benefit_servRet_ = benefit_servRet_t6,
+													 benefit_disbRet_ = benefit_disbRet_t6
+  )
+}
 
-liab_t4a <- get_indivLab("t4a",
-												 decrement_model_ = decrement_model_t4a,
-												 salary_          = salary,
-												 benefit_servRet_ = benefit_servRet_t4a,
-												 benefit_disbRet_ = benefit_disbRet_t4a
-												 )
 
-
-liab_t4b <- get_indivLab("t4b",
-												 decrement_model_ = decrement_model_t4b,
-												 salary_          = salary,
-												 benefit_servRet_ = benefit_servRet_t4b,
-												 benefit_disbRet_ = benefit_disbRet_t4b
-)
-
-liab_t6 <- get_indivLab("t6",
-												 decrement_model_ = decrement_model_t6,
-												 salary_          = salary,
-												 benefit_servRet_ = benefit_servRet_t6,
-												 benefit_disbRet_ = benefit_disbRet_t6
-)
-
-
-liab_allTiers <- get_indivLab(paramlist$singleTier_select,
-								 				 decrement_model_ = decrement_model_allTiers,
-								 				 salary_          = salary,
-								 				 benefit_servRet_ = benefit_servRet_allTiers,
-								 				 benefit_disbRet_ = benefit_disbRet_allTiers
-)
-
+if(paramlist$tier_Mode == "singleTier"){
+	liab_allTiers <- get_indivLab(paramlist$singleTier_select,
+									 				 decrement_model_ = decrement_model_allTiers,
+									 				 salary_          = salary,
+									 				 benefit_servRet_ = benefit_servRet_allTiers,
+									 				 benefit_disbRet_ = benefit_disbRet_allTiers
+	)
+}
 
 
 
@@ -332,24 +344,34 @@ liab_allTiers <- get_indivLab(paramlist$singleTier_select,
 source("NYCTRS_Model_AggLiab.R")
 invisible(gc())
 
-AggLiab_allTiers <- get_AggLiab(paramlist$singleTier_select,
-                                liab_allTiers,
-                                pop_allTiers)
+if(paramlist$tier_Mode == "singleTier"){
+  AggLiab_allTiers <- get_AggLiab(paramlist$singleTier_select,
+                                  liab_allTiers,
+                                  pop_allTiers)
+}
 
-
-# AggLiab_t4a <- get_AggLiab("t4a",
-# 													 liab_t4a,
-# 													 pop_t4a)
-# 
-# AggLiab_t4b <- get_AggLiab("t4b",
-# 													 liab_t4b,
-# 													 pop_t4b)
-# 
-# AggLiab_t6 <- get_AggLiab("t6",
-# 													 liab_t6,
-# 													 pop_t6)
+if(paramlist$tier_Mode == "multiTier"){
+	AggLiab_t4a <- get_AggLiab("t4a",
+														 liab_t4a,
+														 pop_multiTier$pop_t4a)
+	
+	AggLiab_t4b <- get_AggLiab("t4b",
+														 liab_t4b,
+														 pop_multiTier$pop_t4b)
+	
+	AggLiab_t6 <- get_AggLiab("t6",
+														 liab_t6,
+														 pop_multiTier$pop_t6)
+	
+	
+	AggLiab.sumTiers <- 
+		get_AggLiab_sumTiers(AggLiab_t4b, AggLiab_t4b, AggLiab_t6)
+	
+	
+}
 
 if(paramlist$tier_Mode == "singleTier") AggLiab <- AggLiab_allTiers
+if(paramlist$tier_Mode == "multiTier")  AggLiab <- AggLiab.sumTiers
 
 
 #***************************************************************
