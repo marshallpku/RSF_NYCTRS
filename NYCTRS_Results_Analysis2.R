@@ -237,7 +237,7 @@ df_all.stch <-
 
 df_all.stch <- 
 	df_all.stch %>%
-	select(runname, sim, OYLM, TDA_policy, return_scenario, year, AL, MA, PR, ERC_PR, ERC_PR_wtermCost, i.r, i.r.wTDA) %>%
+	select(runname, sim, OYLM_on, TDA_policy, return_scenario, year, AL, MA, PR, ERC_PR, ERC_PR_wtermCost, i.r, i.r.wTDA) %>%
 	group_by(runname, sim) %>%
 	mutate(FR_MA     = 100 * MA / AL,
 				 FR40less  = cumany(FR_MA <= 40),
@@ -252,7 +252,7 @@ df_all.stch <-
 	group_by(runname, year) %>%
 	summarize(
 		
-	         	OYLM = unique(OYLM),
+	         	OYLM = unique(OYLM_on),
 	         	TDA_policy = unique(TDA_policy),
 	        	return_scenario = unique(return_scenario),
 		
@@ -275,7 +275,7 @@ df_all.stch <-
 						ERC_PR.q75 = quantile(ERC_PR_wtermCost, 0.75, na.rm = T),
 						ERC_PR.q90 = quantile(ERC_PR_wtermCost, 0.9, na.rm = T),
 						
-						OYLM = unique(OYLM),
+						#OYLM = unique(OYLM),
 						TDA_policy = unique(TDA_policy),
 						return_scenario = unique(return_scenario)
 						
