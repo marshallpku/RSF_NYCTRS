@@ -244,8 +244,10 @@ run_sim <- function(
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.yearsum"]
   penSim0$AL.death <- AggLiab_$death[,"ALx.death.yearsum"]
   penSim0$AL.disbRet  <- AggLiab_$disbRet[, "ALx.disbRet.yearsum"]
+  penSim0$AL.loads    <- AggLiab_$loads[, "ALx.init.loads.yearsum"]
   
-  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term + AL.disbRet + AL.death)
+  
+  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term + AL.disbRet + AL.death + AL.loads)
   
   
   # NC(j)
@@ -277,7 +279,11 @@ run_sim <- function(
   penSim0$B.v     <- AggLiab_$term[, "B.v.yearsum"]
   penSim0$B.death <- AggLiab_$death[, "B.death.yearsum"]
   penSim0$B.disbRet  <- AggLiab_$disbRet[, "B.disbRet.yearsum"]
-  penSim0$B       <- with(penSim0, B.la + B.v + B.disbRet + B.death) 
+  penSim0$B.loads    <- AggLiab_$loads[, "B.init.loads.yearsum"]
+  
+  penSim0$B          <- with(penSim0, B.la + B.v + B.disbRet + B.death + B.loads) 
+  
+  
   
   # PR(j)
   penSim0$PR <- AggLiab_$active[, "PR.yearsum"]

@@ -145,7 +145,19 @@ liab_active %<>%
     	
     	TRUE           ~ 0),                        
     bx = lead(Bx) - Bx,                              # benefit accrual at age x
-
+    
+    # Vesting
+    v.year = case_when(                                  
+    	tier_select_ %in% c("t4a", "t4b") ~ 5,
+    	tier_select_ %in% c("t6")         ~ 10,
+    	TRUE           ~ 0),           
+    
+    age.vben = case_when(                                  
+    	tier_select_ %in% c("t4a", "t4b") ~ 62,
+    	tier_select_ %in% c("t6")         ~ 63,
+    	TRUE           ~ 0),   
+    
+    
     # ax.XXX: actuarial present value of future benefit, for $1's benefit in the initial year. 
       # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
     
@@ -253,7 +265,7 @@ liab_la_init <-
 				 COLA.scale = (1 + cola)^(age - min(age)), 
 				 # B.la   = ifelse(year_servRet <= init_year, benefit_servRet, Bx.laca),
 				 # B.la   = B.la[age == age_servRet] + 100 * (row_number() - 1),
-				 B.la   = benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet],
+				 B.la   = benefit_servRet[age == age_servRet] * COLA.scale / COLA.scale[age == age_servRet] * (1 + calib_g)^(year - init_year),
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)
 				  )
 	
@@ -570,12 +582,13 @@ liab_active %<>%
   			 							gx.v * Bx,  # For NYCTRS, deferred retirement benefits accrue the same way as the service retirement benefits
    			 							0),           # initial annuity amount when the vested term retires at age r.vben, when a employee is vested at a certain age. 
   			                            # May be unnecessary since we have set qxt = 0 for age>= age_vben. Left for safety. 
-         # Bx.v = Bx.v * adj_fct.act.v,
+  			 
+  			 Bx.v = Bx.v * 0.4,  # calibration
   			 
          #TCx.v  = ifelse(ea < r.vben, Bx.v * qxt * lead(px_r.vben_m) * v^(r.vben - age) * ax.r.W[age == r.vben], 0),             # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
          TCx.v   = ifelse(ea < age_vben, qxt * lead(px_r.vben_m) * v^(age_vben - age) * (lead(Bx.v) * ax.terms[age == age_vben])  , 0), # term cost of vested termination benefits. We assume term rates are 0 after r.vben.
          
-         PVFBx.v = ifelse(ea < age_vben, c(get_PVFB(pxT[age < age_vben], v, TCx.v[age < age_vben]), rep(0, max_age - age_vben + 1)), 0),  # To be compatible with the cases where workers enter after age age_vben, max_retAge is used instead of min_retAge, which is used in textbook formula(winklevoss p115).
+         PVFBx.v = ifelse(ea < age_vben, c(get_PVFB(pxT[age < age_vben], v, TCx.v[age < age_vben]), rep(0, max_age - unique(age_vben) + 1)), 0),  # To be compatible with the cases where workers enter after age age_vben, max_retAge is used instead of min_retAge, which is used in textbook formula(winklevoss p115).
          
          # # NC and AL of PUC
          # TCx.vPUC = TCx.v / (age - min(age)),
@@ -593,8 +606,9 @@ liab_active %<>%
          ALx.EAN.CP.v = PVFBx.v - PVFNC.EAN.CP.v
   ) 
   
-x <- liab_active %>% filter(start_year == 2017, ea == 20) %>% select(start_year, ea, age, gx.v, Bx.v, TCx.v, PVFBx.v,  NCx.EAN.CP.v, ALx.EAN.CD.v, px_r.vben_m, ax.terms, qxd)
-x$qxd
+
+# x <- liab_active %>% filter(start_year == 2017, ea == 20) %>% select(start_year, ea, age, gx.v, Bx.v, TCx.v, PVFBx.v,  NCx.EAN.CP.v, ALx.EAN.CD.v, px_r.vben_m, ax.terms, qxd)
+# x$qxd
 
 cat("......DONE\n")
 
@@ -762,8 +776,9 @@ cat("Death Benefits - actives")
 liab_active %<>%
   mutate( gx.death  = 1,
            
-          Bx.death = gx.death * sx/12 * pmin(36, yos), # annuity that would have been effective if the member retired on the
-          Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
+          Bx.death = gx.death * sx * pmin(3, yos), # annuity that would have been effective if the member retired on the
+          # Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca * ax.servRet, na.rm = TRUE), 
+  				Bx.death = gx.death * pmax(Bx.death, elig_full * Bx.laca, na.rm = TRUE), 
   				
   				# Bx.death = Bx.death * adj_fct.act.death,
   				   

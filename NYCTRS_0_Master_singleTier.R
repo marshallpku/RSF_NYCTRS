@@ -386,7 +386,7 @@ if(paramlist$tier_Mode == "multiTier")  AggLiab <- AggLiab.sumTiers
 # Based on method used in PSERS model. 
 
 if (paramlist$estInitTerm){
-AL.init.v <-  1500000000 # AV2016 pdf p17
+AL.init.v <-   1507893896 # AV2016 pdf p17
 
 
 df_init.vested <- data.frame(
@@ -411,6 +411,41 @@ AggLiab$term %<>%
           B.v.yearsum   = B.v.yearsum + B.init.v.yearsum) %>%
    as.matrix
 }
+
+
+
+# Assume the PVFB for initial loads are paid up through out the next 30 years. 
+# Based on method used in PSERS model. 
+
+
+AL.init.loads <- 3066827192 
+
+df_init.loads <- data.frame(
+	year = 1:41 + (Global_paramlist$init_year - 1),
+	B.init.loads.yearsum = c(0, amort_cd(AL.init.loads, paramlist$i, 40, TRUE))) %>% 
+	mutate(ALx.init.loads.yearsum = ifelse(year == Global_paramlist$init_year, AL.init.loads, 0))
+
+df_init.loads
+
+
+for(i_v in 2:nrow(df_init.loads)){
+	df_init.loads$ALx.init.loads.yearsum[i_v] <- 
+		with(df_init.loads, (ALx.init.loads.yearsum[i_v - 1] - B.init.loads.yearsum[i_v - 1]) * (1 + paramlist$i))
+}
+
+
+
+AggLiab$loads <- 
+	AggLiab$la %>% 
+	as.data.frame() %>%
+	left_join(df_init.loads, by = "year") %>%
+	mutate_all(funs(na2zero)) %>% 
+	select(-ALx.la.yearsum, -B.la.yearsum, -nla) %>% 
+	as.matrix
+
+AggLiab$loads
+
+
 
 # 
 # if(!paramlist$SepNewHires){
@@ -483,23 +518,50 @@ var_display3 <- c( "sim", "year", "FR_MA", "AL.act.death", "NC.death", "AL.death
 
 var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual", "I.r")
 
-# var_display.cali <- c("runname", "sim", "year", "FR","FR_MA", "MA", "AA", "AL",
-#                       "AL.act", "AL.disb.la", "AL.term",
-#                       "PVFB",
-#                       "B", # "B.la", "B.ca", "B.disb.la","B.disb.ca",
-#                       # "C",
-#                       "NC","SC", "ERC", "EEC",
-#                       "PR", "nactives", "nla",
-#                       "NC_PR", "SC_PR", # "ERC_PR",
-#                       "UAAL")
+
+penSim_results %>% 
+	filter(year == 2016, sim == 0) %>% 
+	mutate(PVFB.nonact = AL.la + AL.disbRet + AL.death, 
+				 PVFB.total  = PVFB + PVFB.nonact + AL.term + AL.loads,
+				 NC_ER = NC - EEC,
+				 NC_ER_PR =100 * NC_ER / PR) %>% 
+	select(year, 
+				 PVFB.act.laca = PVFB.laca, 
+				 PVFB.act.disbRet = PVFB.disbRet, 
+				 PVFB.act.death = PVFB.death, 
+				 PVFB.act.v = PVFB.v, 
+				 
+				 AL.la, 
+				 AL.disbRet, 
+				 AL.death,
+				 AL.term, 
+				 AL.loads,
+				 
+				 PVFB.act = PVFB,
+				 PVFB.nonact,
+				 PVFB.total,
+				 
+				 AL.act,
+				 
+				 AL,
+				 
+				 
+				 EEC,
+				 NC_ER,
+				 SC,
+				 ERC
+				 ,
+				 
+				 EEC_PR,
+				 NC_ER_PR,
+				 ERC_PR,
+				 
+				 PR,
+				 B
+				 )
 
 
-# penSim_results %>% filter(sim == -1) %>% select(year,FR_MA, MA, AL, AL.act.v, NC.v, AL.term, B.v, nterms, nactives) %>% 
-# 	mutate(x = B.v == 0,
-# 				 v1 = lag((AL.act.v + NC.v - B.v + AL.term) * 1.07),
-# 				 v2 = AL.act.v + AL.term,
-# 				 df = v1- v2
-# 				 ) %>% print
+
 
 
 
