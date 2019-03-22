@@ -520,7 +520,7 @@ var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.
 
 
 penSim_results %>% 
-	filter(year == 2016, sim == 0) %>% 
+	filter(year %in% 2016:2045, sim == 0) %>% 
 	mutate(PVFB.nonact = AL.la + AL.disbRet + AL.death, 
 				 PVFB.total  = PVFB + PVFB.nonact + AL.term + AL.loads,
 				 NC_ER = NC - EEC,
@@ -557,7 +557,10 @@ penSim_results %>%
 				 ERC_PR,
 				 
 				 PR,
-				 B
+				 B,
+				 
+				 MA,
+				 AA
 				 )
 
 

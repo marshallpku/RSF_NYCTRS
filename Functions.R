@@ -327,7 +327,10 @@ f2n <- function(x) {
   
 #f2n2 <- function(x) as.numeric(as.character(factor(x))) # much slower than f2n
 
-get_geoReturn <- function(x) prod(1 + x)^(1/length(x)) - 1
+get_geoReturn <- function(x) {
+	x <- x[!is.nan(x)]
+	x <- x[!is.na(x)]
+	prod(1 + x)^(1/length(x)) - 1}
 
 
 ## spline smoothing 
