@@ -189,23 +189,12 @@ run_sim <- function(
   s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
   
   s.vector.TDA <- s.vector
-  
-  
-  
-
-  
-  
-  
-  
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
   #*************************************************************************************************************
  
+  # Note that liability
   
- 
-  
-  # Note that liabilties and assets for variable annuity funds are modeled separately. 
-  # Following values are only for the DB portion of TRS. 
   
   # AL(j)
   penSim0$AL.act.laca   <- AggLiab_$active[, "ALx.laca.yearsum"]
@@ -219,9 +208,10 @@ run_sim <- function(
   penSim0$AL.term  <- AggLiab_$term[, "ALx.v.yearsum"]
   penSim0$AL.death <- AggLiab_$death[,"ALx.death.yearsum"]
   penSim0$AL.disbRet  <- AggLiab_$disbRet[, "ALx.disbRet.yearsum"]
- 
-
-  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term + AL.disbRet + AL.death) # + AL.loads)
+  penSim0$AL.loads    <- AggLiab_$loads[, "ALx.init.loads.yearsum"]
+  
+  
+  penSim0$AL       <- with(penSim0, AL.act + AL.la + AL.term + AL.disbRet + AL.death + AL.loads)
   
   
   # NC(j)
@@ -253,9 +243,10 @@ run_sim <- function(
   penSim0$B.v     <- AggLiab_$term[, "B.v.yearsum"]
   penSim0$B.death <- AggLiab_$death[, "B.death.yearsum"]
   penSim0$B.disbRet  <- AggLiab_$disbRet[, "B.disbRet.yearsum"]
+  penSim0$B.loads    <- AggLiab_$loads[, "B.init.loads.yearsum"]
   
+  penSim0$B          <- with(penSim0, B.la + B.v + B.disbRet + B.death + B.loads) 
   
-  penSim0$B          <- with(penSim0, B.la + B.v + B.disbRet + B.death)  # + B.loads) 
   
   
   # PR(j)
@@ -283,27 +274,6 @@ run_sim <- function(
   #penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
 
   
-  
-  
-  #*************************************************************************************************************
-  #                                 Setting up variable annuity  ####
-  #*************************************************************************************************************
-  
-  # Loads for variable annuity
-  penSim0$AL.loads <- AggLiab_$loads[, "ALx.init.loads.yearsum"]
-  penSim0$B.loads  <- AggLiab_$loads[, "B.init.loads.yearsum"]
-  
-  # Adjust for initial funded ratio
-  
-  MA_0_pct_DB <- ((penSim0$AL[1] + penSim0$AL.loads[1]) * MA_0_pct - penSim0$AL.loads[1]) / penSim0$AL[1]
-  AA_0_pct_DB <- ((penSim0$AL[1] + penSim0$AL.loads[1]) * AA_0_pct - penSim0$AL.loads[1]) / penSim0$AL[1]
-  
-  MA_0_DB <- MA_0 - penSim0$AL.loads[1]
-  AA_0_DB <- AA_0 - penSim0$AL.loads[1]
-  
-  
-  
-  
  
   #*************************************************************************************************************
   #                                 Calculating NC under One-Year-Lag-Method ####
@@ -323,13 +293,6 @@ run_sim <- function(
   
   
   penSim0 %>% as.data.frame
-  
-  
-  
-  
-
-  
-  
   
   
   
@@ -358,26 +321,20 @@ run_sim <- function(
       # WARNING: Does not work with "method 2" for AA.
 
    MA.year1.model <- switch(init_MA_type, 
-   									    MA = MA_0_DB,                         # Use preset value
+   									    MA = MA_0,                         # Use preset value
    									    AL = penSim0$AL[1],                # Assume inital fund equals inital liability.
-   									    AL_pct = penSim0$AL[1] * MA_0_pct_DB) # Inital MA is a proportion of inital AL
+   									    AL_pct = penSim0$AL[1] * MA_0_pct) # Inital MA is a proportion of inital AL
    
-   AA.year1.model <- switch(init_AA_type, 
-   												 AA0 = AA_0_DB,                         # Use preset value
-   												 nosmoothing = MA.year1.model,       # Assume inital fund equals inital liability.
-   												 AL_pct = penSim0$AL[1] * AA_0_pct_DB)  # Inital MA is a proportion of inital AL
-   
-   
-   # AA.year1.model  <-
-   # 	ifelse(init_AA_type == "AL_pct",
-   # 				 penSim0$AL[1] * AA_0_pct,         # Initial AA as a % of initial AL
-   # 				 ifelse(init_AA_type == "AA0", AA_0,    # preset value of AA
-   # 				 			 with(penSim0, MA.year1.model))    # Assume inital AA equals inital liability.
-   # )
+   AA.year1.model  <-
+   	ifelse(init_AA_type == "AL_pct",
+   				 penSim0$AL[1] * AA_0_pct,         # Initial AA as a % of initial AL
+   				 ifelse(init_AA_type == "AA0", AA_0,    # preset value of AA
+   				 			 with(penSim0, MA.year1.model))    # Assume inital AA equals inital liability.
+   )
    
    AL.year1.model   <- penSim0$AL[1]
    
-   UAAL.year1.model <- AL.year1.model - AA.year1.model  # Variable annuity funds does not affect this
+   UAAL.year1.model <- AL.year1.model - AA.year1.model
    
    factor.initAmort <- UAAL.year1.model/ 28249467000 # AV2016lag page n14, sum of outstanding amortization basis
    # Notes: Theoretically, the AV UAAL should be equal to the sum of outstanding amortization balance. Need to check the document
@@ -455,13 +412,13 @@ run_sim <- function(
     	# Year 1
     	if(j == 1) {penSim$MA[j]  <- ifelse(k == -1, penSim$AL[j],                   # k = -1 is for testing model consistency
                                           switch(init_MA_type, 
-                                                 MA0 = MA_0_DB,                       # Use preset value
+                                                 MA0 = MA_0,                       # Use preset value
                                                  AL  = penSim$AL[j],               # Assume inital fund equals inital liability.
-                                                 AL_pct = penSim$AL[j] * MA_0_pct_DB) # Inital MA is a proportion of inital AL
+                                                 AL_pct = penSim$AL[j] * MA_0_pct) # Inital MA is a proportion of inital AL
                                           )
     	
-                 penSim$AA[j]  <- ifelse(init_AA_type == "AL_pct" & k != -1, penSim$AL[j] * AA_0_pct_DB,  # Inital MA is a proportion of inital AL;  
-                                             ifelse(init_AA_type == "AA0" & k != -1, AA_0_DB,             # Use preset value 
+                 penSim$AA[j]  <- ifelse(init_AA_type == "AL_pct" & k != -1, penSim$AL[j] * AA_0_pct,  # Inital MA is a proportion of inital AL;  
+                                             ifelse(init_AA_type == "AA0" & k != -1, AA_0,             # Use preset value 
                                                     switch(smooth_method,
                                                            method1 =  with(penSim, MA[j]),             # AA = MA  (always true for if k == -1 regardless of the value of init_AA_type)
                                                            method2 =  with(penSim, MA[j])
@@ -708,19 +665,6 @@ run_sim <- function(
       penSim$I.dif[j] <- with(penSim, I.r[j] - I.e[j])
       
       
-      
-      
-      #**************************************************************
-      #   5. Variable annuity funds (DC-like annuity)            **
-      #**************************************************************
-    
-      
-      if(j >=2) {
-      	penSim$AL.loads[j] <- (penSim$AL.loads[j-1] - 	penSim$B.loads[j-1]) * (1 + penSim$i.r[j-1])
-      	penSim$B.loads[j]  <- amort_cd(penSim$AL.loads[j], i, 40 - j + 1, FALSE)[1]
-      }
-      
-      
        
     }
     
@@ -747,14 +691,7 @@ run_sim <- function(
     			 OYLM_skipY1 = OYLM_skipY1,
     			 TDA_policy = TDA_policy,
     			 return_scenario = return_scenario, 
-           
-    			 # Combining DB and DC components
-    			 AL = AL + AL.loads,
-    			 MA = MA + AL.loads,
-    			 AA = AA + AL.loads,
-    			 B  = B  + B.loads,
-    			
-    			 FR      = 100 * AA / exp(log(AL)),
+           FR      = 100 * AA / exp(log(AL)),
            FR_MA   = 100 * MA / exp(log(AL)),
            UAAL_PR = 100 * UAAL / PR,
            MA_PR   = 100 * MA / PR,

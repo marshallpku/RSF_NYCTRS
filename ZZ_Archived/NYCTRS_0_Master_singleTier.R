@@ -443,15 +443,18 @@ AL.init.loads <- 2659607405  # Table 1 variable funds: 2659607405  (footnote: in
 
 df_init.loads <- data.frame(
 	year = 1:nyear_loads + (Global_paramlist$init_year - 1),
-	# i.r  = rnorm(40, 0.07, 0.12),
-	B.init.loads.yearsum = 0
-	# B.init.loads.yearsum = amort_cp(AL.init.loads, paramlist$i, nyear_loads, 0, FALSE)
-	) %>% 
+	B.init.loads.yearsum = amort_cp(AL.init.loads, paramlist$i, nyear_loads, 0, FALSE)) %>% 
 	mutate(ALx.init.loads.yearsum = ifelse(year == Global_paramlist$init_year, AL.init.loads, 0))
 
-df_init.loads
+df_init.loads[2,2]/AL.init.loads
+df_init.loads %>% 
+	mutate(payoutRate = B.init.loads.yearsum / ALx.init.loads.yearsum)
 
-df_init.loads$B.init.loads.yearsum[1] <- amort_cd(df_init.loads$ALx.init.loads.yearsum[1], paramlist$i, nyear_loads, 0, FALSE)[1]
+
+for(i_v in 2:nrow(df_init.loads)){
+	df_init.loads$ALx.init.loads.yearsum[i_v] <- 
+		with(df_init.loads, (ALx.init.loads.yearsum[i_v - 1] - B.init.loads.yearsum[i_v - 1]) * (1 + paramlist$i))
+}
 
 
 
@@ -464,6 +467,31 @@ AggLiab$loads <-
 	as.matrix
 
 AggLiab$loads
+
+
+
+# 
+# if(!paramlist$SepNewHires){
+# 	
+# 	AggLiab.sumTiers$term %<>% 
+# 		as.data.frame() %>% 
+# 		left_join(df_init.vested) %>% 
+# 		mutate_each(funs(na2zero)) %>% 
+# 		mutate(ALx.v.sum = ALx.v.sum + ALx.init.v.sum,
+# 		       B.v.sum   = B.v.sum + B.init.v.sum) %>% 
+# 		as.matrix
+# 	
+# } else {
+# 	
+# 	AggLiab.sumTiers.xNew$term %<>% 
+# 		as.data.frame() %>% 
+# 		left_join(df_init.vested) %>% 
+# 		mutate_each(funs(na2zero)) %>% 
+# 		mutate(ALx.v.sum = ALx.v.sum + ALx.init.v.sum,
+# 		       B.v.sum   = B.v.sum + B.init.v.sum) %>% 
+# 		as.matrix
+# } 
+
 
 
 
