@@ -303,7 +303,8 @@ if(paramlist$tier_Mode == "singleTier"){
 # 4. Individual actuarial liabilities, normal costs and benenfits ####
 #*********************************************************************************************************
 
-source("NYCTRS_Model_IndivLiab_FlexCOLA.R")
+source("NYCTRS_Model_IndivLiab_FlexCOLA_calib.R")
+# source("NYCTRS_Model_IndivLiab_FlexCOLA.R")
 invisible(gc())
 
 if(paramlist$tier_Mode == "multiTier"){
@@ -378,6 +379,8 @@ if(paramlist$tier_Mode == "singleTier") AggLiab <- AggLiab_allTiers
 if(paramlist$tier_Mode == "multiTier")  AggLiab <- AggLiab.sumTiers
 
 
+AggLiab$active %>% as.data.frame %>% select(year, ALx.actAll.yearsum, NCx.actAll.yearsum, PVFBx.laca.yearsum, PVFBx.actAll.yearsum)
+
 #***************************************************************
 ## calibration: Initial vested who are not in pay status  
 #***************************************************************
@@ -386,7 +389,7 @@ if(paramlist$tier_Mode == "multiTier")  AggLiab <- AggLiab.sumTiers
 # Based on method used in PSERS model. 
 
 if (paramlist$estInitTerm){
-AL.init.v <-   1507893896 # AV2016 pdf p17
+AL.init.v <-  972023664  # 1507893896 # AV2016 pdf p17
 
 
 df_init.vested <- data.frame(
@@ -520,7 +523,7 @@ var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.
 
 
 penSim_results %>% 
-	filter(year %in% 2016:2045, sim == 0) %>% 
+	filter(year %in% 2016:2045, sim == 0, year == 2016) %>% 
 	mutate(PVFB.nonact = AL.la + AL.disbRet + AL.death, 
 				 PVFB.total  = PVFB + PVFB.nonact + AL.term + AL.loads,
 				 NC_ER = NC - EEC,
