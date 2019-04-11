@@ -25,6 +25,8 @@ library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had 
 # library(xlsx)
 library("btools")
 options(dplyr.print_min = 60) # default is 10
+library(scales)
+
 
 source("Functions.R")
 

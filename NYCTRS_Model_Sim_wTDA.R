@@ -717,7 +717,7 @@ run_sim <- function(
       
       if(j >=2) {
       	penSim$AL.loads[j] <- (penSim$AL.loads[j-1] - 	penSim$B.loads[j-1]) * (1 + penSim$i.r[j-1])
-      	penSim$B.loads[j]  <- amort_cd(penSim$AL.loads[j], i, 40 - j + 1, FALSE)[1]
+      	penSim$B.loads[j]  <- amort_cd(penSim$AL.loads[j], i, nyear_loads - j + 1, FALSE)[1]
       }
       
       

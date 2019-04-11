@@ -95,6 +95,48 @@ load(paste0(dir_data, "Data_memberData_spread_wTiers_AV2016.RData"))
 
 
 
+
+#**************************************************************************
+## calibration: Initial loads for variable annuity (variable funds) Part 1
+#**************************************************************************
+
+#  Variable annuity
+#    - PVB:  use loads in Table 1 of $2.66 billion
+#    - Benefit payments: 
+# 			§ Must be reasonable for the PVB
+# 			§ calibrate to make PVB of service retirees match AV value
+#    - Risk analysis
+# 			§ Set ALt = MAt for all t. so no investment risk  
+# 			§ MA follows MAt+1 = (MAt - Bt) * (1 + ractual,t)
+
+# nyear_loads <- 40
+
+AL.init.loads <- 2659607405  # Table 1 variable funds: 2659607405  (footnote: includes loads for annuitization factors for Variabel Funds) 
+                             # Table 2 Loads:          3066827192 
+
+df_init.loads <- data.frame(
+	year = 1:paramlist$nyear_loads + (Global_paramlist$init_year - 1),
+	# i.r  = rnorm(40, 0.07, 0.12),
+	B.init.loads.yearsum = 0
+	# B.init.loads.yearsum = amort_cp(AL.init.loads, paramlist$i, nyear_loads, 0, FALSE)
+) %>% 
+	mutate(ALx.init.loads.yearsum = ifelse(year == Global_paramlist$init_year, AL.init.loads, 0))
+
+df_init.loads
+df_init.loads$B.init.loads.yearsum[1] <- amort_cd(df_init.loads$ALx.init.loads.yearsum[1], paramlist$i, paramlist$nyear_loads, 0, FALSE)[1]
+
+
+## Adjust benefit payments for initial retirees
+
+ben_servRet_tot <- (filter(init_servRet_tiers, tier == "t4a") %>% mutate(benefit_tot = nservRet * benefit_servRet))$benefit_tot %>% sum
+adj_servRet <- (ben_servRet_tot - df_init.loads$B.init.loads.yearsum[1] )/ben_servRet_tot
+
+init_servRet_tiers %<>% 
+	mutate(benefit_servRet = benefit_servRet * adj_servRet)
+
+
+
+
 #*********************************************************************************************************
 # 1.2 Create decrement tables ####
 #*********************************************************************************************************
@@ -143,7 +185,7 @@ if(paramlist$tier_Mode == "singleTier"){
 source("NYCTRS_Model_InvReturns.R")
 i.r <- gen_returns()
 
-#i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
+# i.r[, 3] <-  c(paramlist$ir.mean, paramlist$ir.mean/2, rep(paramlist$ir.mean, Global_paramlist$nyear - 2))
 # i.r[1:5, 1:5]
 
 
@@ -423,36 +465,11 @@ AggLiab$term %<>%
 }
 
 
-#*******************************************************************
-## calibration: Initial loads for variable annuity (variable funds) 
-#*******************************************************************
 
-#  Variable annuity
-#    - PVB:  use loads in Table 1 of $2.66 billion
-#    - Benefit payments: 
-# 			§ Must be reasonable for the PVB
-# 			§ calibrate to make PVB of service retirees match AV value
-#    - Risk analysis
-# 			§ Set ALt = MAt for all t. so no investment risk  
-# 			§ MA follows MAt+1 = (MAt - Bt) * (1 + ractual,t)
 
-nyear_loads <- 40
-
-AL.init.loads <- 2659607405  # Table 1 variable funds: 2659607405  (footnote: includes loads for annuitization factors for Variabel Funds) 
-                             # Table 2 Loads:          3066827192 
-
-df_init.loads <- data.frame(
-	year = 1:nyear_loads + (Global_paramlist$init_year - 1),
-	# i.r  = rnorm(40, 0.07, 0.12),
-	B.init.loads.yearsum = 0
-	# B.init.loads.yearsum = amort_cp(AL.init.loads, paramlist$i, nyear_loads, 0, FALSE)
-	) %>% 
-	mutate(ALx.init.loads.yearsum = ifelse(year == Global_paramlist$init_year, AL.init.loads, 0))
-
-df_init.loads
-
-df_init.loads$B.init.loads.yearsum[1] <- amort_cd(df_init.loads$ALx.init.loads.yearsum[1], paramlist$i, nyear_loads, 0, FALSE)[1]
-
+#*************************************************************************
+## calibration: Initial loads for variable annuity (variable funds) Part 2
+#*************************************************************************
 
 
 AggLiab$loads <- 
@@ -514,32 +531,31 @@ var_display3 <- c( "sim", "year", "FR_MA", "AL.act.death", "NC.death", "AL.death
 var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual", "I.r")
 
 
-penSim_results %>% 
+calib <- penSim_results %>% 
 	filter(year %in% 2016:2045, sim == 0, year == 2016) %>% 
 	mutate(PVFB.nonact = AL.la + AL.disbRet + AL.death, 
 				 PVFB.total  = PVFB + PVFB.nonact + AL.term + AL.loads,
 				 NC_ER = NC - EEC,
 				 NC_ER_PR =100 * NC_ER / PR) %>% 
 	select(year, 
+				 
 				 PVFB.act.laca = PVFB.laca, 
 				 PVFB.act.disbRet = PVFB.disbRet, 
 				 PVFB.act.death = PVFB.death, 
 				 PVFB.act.v = PVFB.v, 
+				 PVFB.act = PVFB,
 				 
 				 AL.la, 
 				 AL.disbRet, 
 				 AL.death,
+				 
 				 AL.term, 
 				 AL.loads,
 				 
-				 PVFB.act = PVFB,
-				 PVFB.nonact,
-				 PVFB.total,
 				 
 				 AL.act,
-				 
 				 AL,
-				 
+				 PVFB.total,
 				 
 				 EEC,
 				 NC_ER,
@@ -556,8 +572,9 @@ penSim_results %>%
 				 
 				 MA,
 				 AA
-				 )
-
+				 ) %>% 
+	mutate_at(vars(-year, -EEC_PR, -NC_ER_PR, -ERC_PR), funs(./1e6))
+calib %>% t %>% format(scientific = F, digits = 2)
 
 
 
@@ -811,9 +828,9 @@ fig_FRdist
 
 
 
-x <- decrement_model_t6 %>%  filter(start_year == 1976, age >= 60, ea == 20) %>% select(age, ea, qxm_servRet)
-
-cumprod(1 - x$qxm_servRet)
+# x <- decrement_model_t6 %>%  filter(start_year == 1976, age >= 60, ea == 20) %>% select(age, ea, qxm_servRet)
+# 
+# cumprod(1 - x$qxm_servRet)
 
 
 
