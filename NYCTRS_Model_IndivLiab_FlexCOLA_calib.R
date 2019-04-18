@@ -4,6 +4,9 @@
 #  - simple COLA
 #  - service retirement benefit and deferred retirement benefit only
 
+
+# Mark for calibration: #calibration
+
 # Road map
 
 # 1.  Preparation
@@ -125,10 +128,10 @@ liab_active %<>%
   # Calculate salary and benefits
   mutate(
     
-  	# Calibration for salary history of initial active members
+  	# #calibration: Calibration for salary history of initial active members
   	
   	# sx = ifelse(start_year <= init_year & year < init_year, 1.1*sx, sx), # sx * (1 + 0.01)^(init_year - year)
-  	 sx = ifelse(start_year <= init_year & year < init_year, sx * (1 + 0.012)^(init_year - year), sx), 
+  	  sx = ifelse(start_year <= init_year & year < init_year, sx * (1 + 0.012)^(init_year - year), sx), 
   	
   	
     # Calculate Final Average Salary
@@ -142,7 +145,7 @@ liab_active %<>%
     
     # Accrued service retirement benefits for tier III/IV
     Bx = case_when(                                  # na2zero(bfactor * yos * fas), # accrued benefits, note that only Bx for ages above min retirement age are necessary under EAN.
-    	tier_select_ %in% c("t4a", "t4b") & yos < 20       ~ na2zero(5/300 * yos * fas),
+    	tier_select_ %in% c("t4a", "t4b") & yos < 20       ~ na2zero(5/300 * yos * fas),  # 1 2/3% * yos
     	tier_select_ %in% c("t4a", "t4b") & yos %in% 20:29 ~ na2zero(0.02  * yos * fas),
     	tier_select_ %in% c("t4a", "t4b") & yos > 30	     ~ na2zero( (0.6 + (yos - 30) * 0.015) * fas),
     	
@@ -170,7 +173,7 @@ liab_active %<>%
     # ax.XXX: actuarial present value of future benefit, for $1's benefit in the initial year. 
       # Since retirees die at max.age for sure, the life annuity with COLA is equivalent to temporary annuity with COLA up to age max.age. 
     
-    ax.servRet  = get_tla(pxm_servRet, i, COLA.scale),      # Service retirement benefit (will be replaced when contingent retirement beneift is added) ax.r
+    # ax.servRet  = get_tla(pxm_servRet, i, COLA.scale),    # Note: not needed after flexible benefits are modeled.  Service retirement benefit (will be replaced when contingent retirement beneift is added) ax.r
     ax.terms    = get_tla(pxm_terms,   i, COLA.scale),      # deferred retirement benefit (actually we only need the value at age_vben)
     ax.disbRet  = get_tla(pxm_disbRet, i, COLA.scale),      # disability retirement benefit
     # ax.r.W.ret is already in mortality.post.model_
@@ -216,14 +219,10 @@ liab_active %<>%
     	tier_select_ == "t6" & sx > 100000                ~ 45000 * 0.03 + 30000 * 0.035 + 25000 * 0.045 + 0.06 * (sx - 100000),
  
     	TRUE ~ 0)
-  	
-  	
-  	
   )
 cat("......DONE\n")
 
 # liab.active %>% select(ea, age, ax.disb.la, ax.vben)
-
 # liab.active %>% select(init_year, year, ea, age, PV)
 
 
@@ -280,8 +279,8 @@ liab_la_init <-
 				 
 				 
 				 # TRS COLA 
-				 COLA_elig1 = age >= 65,
-				 B.la    = benefit_servRet[age == age_servRet] + min(benefit_servRet[age == age_servRet], 18000) * ((1 + 0.015)^COLA_elig1 - 1),
+				 COLA_elig_serRet_init = cumsum(age >= 65) ,
+				 B.la    = benefit_servRet[age == age_servRet] + min(benefit_servRet[age == age_servRet], 18000) * ((1 + 0.015)^COLA_elig_serRet_init - 1),
 				 # B.la      = benefit_servRet[age == age_servRet] + min(benefit_servRet[age == age_servRet], 18000) * 0.015 * COLA_elig1,
 				 
 				 # Calibration
@@ -332,15 +331,16 @@ liab_la %<>%
 				 
 				 
 				 # TRS COLA
-				 COLA_elig2 = cumsum((age >= 62 & (age - age_servRet) >= 5) | (age >= 55 & (age - age_servRet) >= 10)),
-				 B.la      = B.la[age == age_servRet] + min(B.la[age == age_servRet], 18000) * ((1 + 0.015)^COLA_elig2 - 1),
-				 # B.la      = B.la[age == age_servRet] + min(B.la[age == age_servRet], 18000) * 0.015 * COLA_elig2,
+				 COLA_elig_servRet_new = cumsum((age >= 62 & (age - age_servRet) >= 5) | (age >= 55 & (age - age_servRet) >= 10)),
+				 B.la      = B.la[age == age_servRet] + min(B.la[age == age_servRet], 18000) * ((1 + 0.015)^COLA_elig_servRet_new - 1),
+				 # B.la      = B.la[age == age_servRet] + min(B.la[age == age_servRet], 18000) * 0.015 * COLA_elig_servRet_new,
 				 
 				 
-				 # Calibration
+				 # #calibration
+				   # calibration only applied to current active members
 				 
-				 #B.la = B.la * 1.17,
-				 #B.la = B.la * (1 + 0.01)^(age - age_servRet),
+				 B.la = ifelse(start_year > init_year & tier_select_ == "t6",B.la, B.la * 1.16),
+				 #B.la =  ifelse(start_year > init_year & tier_select_ == "t6", B.la, B.la * (1 + 0.02)^(age - age_servRet)),
 				 
 				 
 				 ALx.la  = get_tla_cashflow(pxm_servRet, i, B.la)

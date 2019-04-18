@@ -390,7 +390,6 @@ x$i.r %>% sd
 ## Analysis 1 Impact of Funding policy ####
 #*****************************************************
 
-
 runs_fPolicy1 <- c(
 	"multiTier_TDAamortAS_OYLM",
 	"multiTier_TDAamortAS",
@@ -686,7 +685,7 @@ df_singleRuns %>%
 			 color = NULL,
 			 x = NULL, y = "Rate of return (%)") +
 	RIG.theme()
-fig_TDA_effReturn
+fig_TDA_compareReturn
 
 
 fig_TDA_compareFR <- 
@@ -722,9 +721,9 @@ df_singleRuns %>%
 fig_TDA_compareERC 
 
 
-save_figure(fig_TDA_effReturn,  width = 2*5, height = 1*5)
-save_figure(fig_TDA_compareFR,  width = 2*5, height = 1*5)
-save_figure(fig_TDA_compareERC, width = 2*5, height = 1*5)
+save_figure(fig_TDA_compareReturn,  width = 2*5, height = 1*5)
+save_figure(fig_TDA_compareFR,      width = 2*5, height = 1*5)
+save_figure(fig_TDA_compareERC,     width = 2*5, height = 1*5)
 
 
 

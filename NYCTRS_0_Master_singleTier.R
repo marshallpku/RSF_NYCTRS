@@ -531,6 +531,46 @@ var_display3 <- c( "sim", "year", "FR_MA", "AL.act.death", "NC.death", "AL.death
 var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.TDA", "MA", "MA.TDA_QPP", "I.TDA.fixed", "I.TDA.actual", "I.r")
 
 
+
+
+{
+	calib_targets <- c(
+		year = 2016,
+		PVFB.act.laca = 37131, 
+		PVFB.act.disbRet = 1062, 
+		PVFB.act.death = 406, 
+		PVFB.act.v     = 1344, 
+		PVFB.act       = 39943,
+		
+		AL.la = 40802, 
+		AL.disbRet = 850, 
+		# AL.death   = 0,
+		
+		AL.term =  1508,
+		AL.loads = 2660,
+		
+		
+		AL.act = 23738,
+		AL     = 69557,
+		PVFB.total = 85762,
+		
+		EEC   = 174,
+		NC_ER = 1172,
+		SC    = 2663,
+		ERC   = 3890,
+		
+		
+		EEC_PR = 1.88,
+		NC_ER_PR = 12.7,
+		ERC_PR = 42.17,
+		
+		PR = 9224,
+		B  = 3955,
+		
+		MA = 43630,
+		AA = 41015
+	)
+}
 calib <- penSim_results %>% 
 	filter(year %in% 2016:2045, sim == 0, year == 2016) %>% 
 	mutate(PVFB.nonact = AL.la + AL.disbRet + AL.death, 
@@ -547,7 +587,7 @@ calib <- penSim_results %>%
 				 
 				 AL.la, 
 				 AL.disbRet, 
-				 AL.death,
+				 # AL.death,
 				 
 				 AL.term, 
 				 AL.loads,
@@ -574,10 +614,16 @@ calib <- penSim_results %>%
 				 AA
 				 ) %>% 
 	mutate_at(vars(-year, -EEC_PR, -NC_ER_PR, -ERC_PR), funs(./1e6))
-calib %>% t %>% format(scientific = F, digits = 2)
+calib %<>% t %>%  as.data.frame()
+calib_names <- rownames(calib)
 
-
-
+calib$targets <-  calib_targets
+calib$var <- calib_names
+calib %>% mutate(diff = round(100*targets/ V1 - 100,1),
+								 diff2 = round(100*V1/ targets - 100, 1)) %>% 
+	select(var, everything()) %>% 
+	format(scientific = F, digits = 2) %>% 
+	mutate(var = format(var, justify = "left"))
 
 
 
