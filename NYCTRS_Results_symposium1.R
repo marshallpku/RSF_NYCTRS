@@ -1,12 +1,10 @@
-# Risk measures for NYCTRS
+# Prepare figures for the first symposium 
 
 library(knitr)
 library(data.table)
 library(gdata) # read.xls
 library(plyr)
 library(dplyr)
-options(dplyr.print_min = 100) # default is 10
-options(dplyr.print_max = 100) # default is 20
 library(ggplot2)
 library(magrittr)
 library(tidyr) # gather, spread
@@ -26,6 +24,10 @@ library(grid)
 library(plotly)
 
 source("Functions.R")
+
+options(dplyr.print_min = 100) # default is 10
+options(dplyr.print_max = 100) # default is 20
+
 
 
 {
@@ -126,9 +128,8 @@ get_results <- function(IO_folder, Pattern = "^Outputs"){
 
 results_all <- get_results(IO_folder) %>% select(runname, sim, year, everything())
 
-results_all %>% head
-
-results_all$runname %>% unique
+#results_all %>% head
+#results_all$runname %>% unique
 
 
 #*****************************************************
@@ -296,93 +297,210 @@ df_all.stch <-
 
 	
 
-	
-df_all.stch %>% 
-	filter(runname %in% c("multiTier_noTDA", "multiTier_noTDA_OYLM")) %>% 
-	filter(year %in% c(2016, seq(2020, 2045, 5)))
+#***********************************************************************
+## Q1S1: Describe the problem of pension risks as you understand them ####
+#***********************************************************************
 
+# Illustration of single runs
+# Actual returns and effective returns: MA based
+# Actual returns and effective returns: AA based
+# Funded ratio
+# ERC
 
-df_all.stch %>% 
-	filter(runname %in% c("multiTier_TDAamortAS", "multiTier_TDAamortAS_OYLM")) %>% 
-	filter(year %in% c(2016, seq(2020, 2045, 5)))
-
-
-df_all.stch %>% 
-	filter(runname %in% c("multiTier_O15dA6")) %>% 
-	filter(year %in% c(2016, seq(2020, 2045, 5)))
-
-
-
-
-results_all %>% 
-	select(runname, sim, year, AL, MA, AA, FR, SC, ERC,EEC,PR, Amort_basis, termCost_UFT, MA.TDA) %>%
-	mutate(termCost_ERC = termCost_UFT/ERC,
-				 sizeTDA = MA.TDA / MA) %>% 
-	filter(sim == 0, year %in% c(2016:2045), runname %in% "multiTier_TDAamortAS")
-
-results_all %>% 
-	select(runname, sim, year, AL, MA, AA, FR, SC, ERC,EEC,PR, Amort_basis) %>% 
-	filter(sim == 0, year %in% c(2016:2045), runname %in% "t4a_O15dA6")
-
-x <- 
-results_all %>% filter(runname == "t4a_TDAamort") %>% 
+# Calculate geometric return for each sim
+geoR <- 
+	results_all %>%
+	filter(runname == "multiTier_TDAamortAS_OYLM") %>% 
+	filter(sim >= 1, year >= 2019) %>% 
 	group_by(sim) %>% 
-	summarise(SD = sd(i.r.wTDA),
-						SD.r = sd(i.r)) %>% 
-	summarise(SD.med = median(SD),
-						SD.r.med = median(SD.r))
+	summarise(geoR_noTDA = get_geoReturn(i.r),
+						geoR_TDA   = get_geoReturn(i.r.wTDA)) %>% 
+	arrange(geoR_noTDA)
 
-x$i.r.wTDA %>% sd
+geoR %>% filter(is.nan(geoR_TDA))
 
-x$i.r %>% sd
+# Volatility drag due to TDA
+geoR %>% 
+	summarise(geoR_noTDA = median(geoR_noTDA, na.rm = T),
+						geoR_TDA   = median(geoR_TDA,   na.rm = T))
 
-#*****************************************************
-## Compare key results  ####
-#*****************************************************
 
-# Risk of Low funded ratio: 
-# Under immediate recognition and payment of TDA interests, risk measures are identical across
-# all test scenarios. 
 
-# results_all %>% 
-#   select(runname, sim, year, AL, NC_PR, ERC_PR, PVFB, B, PR) %>% 
-#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>%
-#   filter(sim == 0, year %in% c(2016))
-# 
-# 
-# df_all.stch %>% 
-#   select(runname, year, FR40less) %>% 
-#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-#   spread(runname, FR40less) %>% 
-#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
-# 
-# 
-# df_all.stch %>% 
-#   select(runname, year, ERC_hike) %>% 
-#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-#   spread(runname, ERC_hike) %>% 
-#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
-# 
-# 
-# df_all.stch %>% 
-#   select(runname, year, ERC_TDA_hike) %>% 
-#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-#   spread(runname, ERC_TDA_hike) %>% 
-#   filter(year %in% c(2016, 2020, 2025, 2030, 2040, 2045))
-# 
-# 
-# df_all.stch %>% 
-#   select(runname, year, ERC_high) %>% 
-#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-#   spread(runname, ERC_high) %>% 
-#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
-# 
-# 
-# df_all.stch %>% 
-#   select(runname, year, ERC_TDA_high) %>% 
-#   mutate(runname = factor(runname, levels = runs_test, labels = runs_test_labels)) %>% 
-#   spread(runname, ERC_TDA_high) %>% 
-#   filter(year %in% c(2016, 2020, 2030, 2040, 2045))
+
+# pick two sims with geom return approx. equal to 7%  
+geoR %>% filter(geoR_noTDA > 0.0695, geoR_noTDA <= 0.0705) # 476
+
+# pick 4 sims with geom return 
+geoR_qtl <- 
+	geoR %>% 
+	summarise(geoR_q10 = quantile(geoR_noTDA, 0.1,  na.rm = T), 
+		        geoR_q25 = quantile(geoR_noTDA, 0.25, na.rm = T),
+						geoR_q75 = quantile(geoR_noTDA, 0.75, na.rm = T),
+						geoR_q90 = quantile(geoR_noTDA, 0.90, na.rm = T))
+
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q10-0.0003, geoR_noTDA <= geoR_qtl$geoR_q10+0.0003) # 
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q25-0.0003, geoR_noTDA <= geoR_qtl$geoR_q25+0.0003) # 
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q75-0.0003, geoR_noTDA <= geoR_qtl$geoR_q75+0.0003) # 
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q90-0.0003, geoR_noTDA <= geoR_qtl$geoR_q90+0.0003) # 
+
+
+
+# 23   912 0.06993192 0.06830289
+
+singleRuns1 <- c(0, 275, 476)
+# 424, 476, 275 
+# 149, 507
+
+df_singleRuns1 <- 
+	results_all %>% 
+	filter(runname %in% "multiTier_TDAamortAS_OYLM", sim %in% singleRuns1 ) %>% 
+	select(runname, sim, year, FR_MA, ERC_PR, i.r, i.r.wTDA) %>% 
+	mutate(runname.fct = factor(runname, levels = runs_TDA_OYLM[2], labels = runs_TDA_OYLM_labels[2])) 
+df_singleRuns1
+
+	# Actual return vs effective return with TDA
+	
+fig_singleReturns1 <- 
+	df_singleRuns1 %>% 
+	select(runname.fct, sim, year, i.r) %>% 
+	#gather(Var, value, -year,-runname.fct) %>% 
+	mutate(sim = factor(sim)) %>%
+	ggplot(aes(x = year, y = i.r*100, color = sim)) + theme_bw()+
+	geom_line() + 
+	geom_point() +
+	geom_hline(yintercept = 7, linetype = 2)+
+	scale_y_continuous(breaks = c(7, seq(-100,100, 5)) ) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	labs(title =    "Simulations with the 7% return assumption met",
+			 subtitle = "sim ; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, y = "Rate of return (%)") +
+	RIG.theme()
+fig_singleReturns1
+
+
+fig_TDA_singleReturns1_FR <- 
+	df_singleRuns1 %>% 
+	ggplot(aes(x = year, y = FR_MA, color = factor(sim))) + theme_bw()+
+	geom_line() + 
+	geom_point() + 
+	geom_hline(yintercept = 100, linetype = 2)+
+	coord_cartesian(ylim = c(0,150)) + 
+	scale_y_continuous(breaks = seq(0,200, 20)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	labs(title =    "Funded ratio",
+			 subtitle = "sim #424; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, 
+			 y = "Funded ratio (%)") +
+	RIG.theme()
+fig_TDA_singleReturns1_FR
+
+
+fig_TDA_singleReturns1_ERC <- 
+  df_singleRuns1 %>% 
+	ggplot(aes(x = year, y = ERC_PR, color = factor(sim))) + theme_bw()+
+	geom_line() + 
+	geom_point() + 
+	coord_cartesian(ylim = c(0,50)) + 
+	scale_y_continuous(breaks = seq(-100,200, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	labs(title =    "Employer contribution rate with different treatment of TDA",
+			 subtitle = "sim #424; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, y = "Employer contribution Rate (%)") +
+	RIG.theme()
+fig_TDA_singleReturns1_ERC 
+
+
+
+#***********************************************************************
+## Q1S2: Describe the problem of pension risks as you understand them ####
+#***********************************************************************
+
+	
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q10-0.0003, geoR_noTDA <= geoR_qtl$geoR_q10+0.0003) # 
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q25-0.0003, geoR_noTDA <= geoR_qtl$geoR_q25+0.0003) # 
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q75-0.0003, geoR_noTDA <= geoR_qtl$geoR_q75+0.0003) # 
+geoR %>% filter(geoR_noTDA > geoR_qtl$geoR_q90-0.0003, geoR_noTDA <= geoR_qtl$geoR_q90+0.0003) # 
+
+
+
+# 23   912 0.06993192 0.06830289
+
+singleRuns2 <- c(648, 458, 275, 1245, 1093)
+# q10
+# q25
+# q50: 476
+# q75
+# q90: 1093, 1577,752
+
+df_singleRuns2 <- 
+	results_all %>% 
+	filter(runname %in% "multiTier_TDAamortAS_OYLM", sim %in% singleRuns2 ) %>% 
+	select(runname, sim, year, FR_MA, ERC_PR, i.r, i.r.wTDA) %>% 
+	mutate(runname.fct = factor(runname, levels = runs_TDA_OYLM[2], labels = runs_TDA_OYLM_labels[2])) 
+# df_singleRuns2
+
+
+fig_TDA_singleReturns2_FR <- 
+	df_singleRuns2 %>% 
+	ggplot(aes(x = year, y = FR_MA, color = factor(sim))) + theme_bw()+
+	geom_line() + 
+	geom_point() + 
+	geom_hline(yintercept = 100, linetype = 2) +
+	coord_cartesian(ylim = c(0,250)) +  
+	scale_y_continuous(breaks = seq(0,300, 20)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	labs(title =    "Funded ratio",
+			 subtitle = "sim #424; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, 
+			 y = "Funded ratio (%)") +
+	RIG.theme()
+fig_TDA_singleReturns2_FR
+
+
+fig_TDA_singleReturns2_ERC <- 
+	df_singleRuns2 %>% 
+	ggplot(aes(x = year, y = ERC_PR, color = factor(sim))) + theme_bw()+
+	geom_line() + 
+	geom_point() + 
+	coord_cartesian(ylim = c(0,70)) + 
+	scale_y_continuous(breaks = seq(-100,200, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	labs(title =    "Employer contribution rate with different treatment of TDA",
+			 subtitle = "sim #424; 30-year geometric return = 7.0%",
+			 color = NULL,
+			 x = NULL, y = "Employer contribution Rate (%)") +
+	RIG.theme()
+fig_TDA_singleReturns2_ERC 
+
+
+
+	
+#***********************************************************************
+## Q4S1: Current policy: percentile figures for current policy ####
+#***********************************************************************
+
+
+
+#***********************************************************************
+## Q4S2: Impact of TDA: Deterministic asset shock  ####
+#***********************************************************************
+
+
+
+
+#***********************************************************************
+## Q4S3: Impact of TDA: Risk measures  ####
+#***********************************************************************
+
+
+
+#***********************************************************************
+## Q4S4: Funding policies   ####
+#***********************************************************************
 
 
 
