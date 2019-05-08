@@ -115,8 +115,8 @@ for(runName in runList$runname ){
 	Global_paramlist$tier_select = "t4a"
 	tier_select = "t4a"
 	
-	source("NYCTRS_0_Master_singleTier.R")
-	save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
+	# source("NYCTRS_0_Master_singleTier.R")
+	#save(outputs_list, file = paste0(folder_save, "Outputs_",  paramlist$tier,"_", runName, ".RData"))
 
 }
 

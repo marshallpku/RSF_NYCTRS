@@ -100,7 +100,7 @@ load(paste0(dir_data, "Data_memberData_spread_AV2016.RData"))
 #*********************************************************************************************************
 
 # Decrement tables
-source("NYCTRS_Model_Decrements_MP2015.R")
+source("NYCTRS_Model_Decrements_MP2015_fixedRetage.R")
 
 decrement_model <- get_decrements(tier_select)
 
@@ -189,6 +189,29 @@ entrants_dist <- get_entrantsDist(init_actives)
 source("NYCTRS_Model_Demographics_singleTier.R")
 invisible(gc())
 pop <- get_Population()
+
+year1 <- 2155
+left_join(
+pop$active %>% filter(year ==year1,     ea == 20, age <70) %>% rename(number.a1 = number.a),
+pop$active %>% filter(year ==(year1+1), ea == 20, age <70) %>% rename(number.a2 = number.a),
+by = c("ea", "age")
+) %>% 
+select(year.x, year.y, everything()) %>% 
+	mutate(diff = (number.a2/ number.a1) )
+
+
+la_byAge <- 
+pop$la %>% group_by(year, age) %>% 
+	summarise(number.la = sum(number.la))
+
+year1 <- 2160
+left_join(
+	la_byAge %>% filter(year ==year1,     age >= 55) %>% rename(number.la1 = number.la),
+	la_byAge %>% filter(year ==(year1+1), age >= 55) %>% rename(number.la2 = number.la),
+	by = c("age")
+) %>% 
+	select(year.x, year.y, everything()) %>% 
+	mutate(diff = number.la2 /number.la1)
 
 
 
