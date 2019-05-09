@@ -61,6 +61,20 @@ options(dplyr.print_max = 100) # default is 20
 }
 
 
+get_cumGeoReturn <- function(x) cumprod(1 + x)^(1/(1:length(x)) ) - 1
+
+
+
+IO_folder       <- "Results/"
+Outputs_folder  <- "Outputs_figures/Symposium1/"
+
+
+save_figure <- function(fig_ob, fig_folder = Outputs_folder,  fig_type = "png", ...){
+	figure_name <- deparse(substitute(fig_ob))
+	ggsave(paste0(fig_folder, figure_name, ".", fig_type ), fig_ob, ... )
+	
+}
+
 
 
 
@@ -355,15 +369,25 @@ singleRuns1 <- c(0, 275, 476)
 
 df_singleRuns1 <- 
 	results_all %>% 
-	filter(runname %in% "multiTier_TDAamortAS_OYLM", sim %in% singleRuns1 ) %>% 
+	filter(runname %in% "multiTier_TDAamortAS_OYLM", sim %in% singleRuns1, year >=2019) %>% 
+	group_by(sim) %>%
 	select(runname, sim, year, FR_MA, ERC_PR, i.r, i.r.wTDA) %>% 
-	mutate(runname.fct = factor(runname, levels = runs_TDA_OYLM[2], labels = runs_TDA_OYLM_labels[2])) 
-df_singleRuns1
+	mutate(runname.fct = factor(runname, levels = runs_TDA_OYLM[2], labels = runs_TDA_OYLM_labels[2]),
+				 i.r_cumGeoMean = get_cumGeoReturn(i.r)) %>% 
+	ungroup
+
+df_singleRuns1 %>% filter(sim ==  275)
+(df_singleRuns1 %>% filter(sim ==  275))$i.r[1:4] %>% get_geoReturn()
+
+1- ((1-0.0101)*(1-0.0133))^(1/2)
+
+
+get_geoReturn
 
 	# Actual return vs effective return with TDA
 
 
-fig.title    <- "Investment returns in three single simulation runs "
+fig.title    <- "Annual investment returns in three single simulation runs "
 fig.subtitle <- " All three runs have the same 30-year geometric return of 7.0%"
 fig_singleReturns1 <- 
 	df_singleRuns1 %>% 
@@ -388,6 +412,33 @@ fig_singleReturns1 <-
 
 	fig_singleReturns1
 
+	
+	fig.title    <- "Cumulative geometric mean returns in three single simulation runs "
+	fig.subtitle <- " All three runs have the same 30-year geometric return of 7.0%"
+	fig_singleReturns1_cumGeoMean <- 
+		df_singleRuns1 %>% 
+		filter(year >= 2018) %>% 
+		select(runname.fct, sim, year, i.r_cumGeoMean) %>% 
+		#gather(Var, value, -year,-runname.fct) %>% 
+		mutate(sim = factor(sim, levels = singleRuns1, 
+												labels = c("Constant return", paste0("Sim ", singleRuns1[2]), paste0("Sim ", singleRuns1[3])))) %>%
+		ggplot(aes(x = year, y = i.r_cumGeoMean*100, color = sim)) + theme_bw()+
+		geom_line() + 
+		geom_point() +
+		geom_hline(yintercept = 7, linetype = 2)+
+		scale_y_continuous(breaks = c(7, seq(-100,100, 5)) ) +
+		scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+		scale_color_manual(values = c("black", "deepskyblue1", "firebrick1")) + 
+		labs(title = fig.title   ,
+				 subtitle = fig.subtitle,
+				 color = NULL,
+				 x = NULL, y = "Rate of return (%)") +
+		RIG.theme() +
+		theme(legend.position = "bottom")
+	
+	fig_singleReturns1_cumGeoMean
+	
+	
 
 
 	
@@ -441,6 +492,14 @@ fig_TDA_singleReturns1_ERC <-
 	RIG.theme()
 fig_TDA_singleReturns1_ERC 
 
+
+save_figure(fig_singleReturns1,     w = 1.7*4.5, h = 1*4.5 )
+
+save_figure(fig_singleReturns1,               w = 1.3*4.5, h = 1*4.5 )
+save_figure(fig_singleReturns1_cumGeoMean,    w = 1.3*4.5, h = 1*4.5 )
+
+save_figure(fig_TDA_singleReturns1_FR,  w = 1.45*5, h = 1*5 )
+save_figure(fig_TDA_singleReturns1_ERC, w = 1.45*5, h = 1*5 )
 
 
 #***********************************************************************
@@ -532,6 +591,10 @@ fig_TDA_singleReturns2_ERC
 
 
 
+save_figure(fig_TDA_singleReturns2_FR,  w = 1.45*4.5, h = 1*4.5 )
+save_figure(fig_TDA_singleReturns2_ERC, w = 1.45*4.5, h = 1*4.5 )
+
+
 	
 #***********************************************************************
 ## Q4S1: Current policy: percentile figures for current policy ####
@@ -540,7 +603,8 @@ fig_TDA_singleReturns2_ERC
 # Distribution of funded ratio
 df_FR_q <- 
 	df_all.stch %>%
-	filter(runname %in% "multiTier_TDAamortAS_OYLM", year >= 2019) %>%
+	filter(runname %in% "multiTier_TDAamortAS_OYLM") %>%  
+	filter(year >= 2019) %>%
 	select(runname.fct, year,
 				 FR.q10,
 				 FR.q25,
@@ -555,6 +619,7 @@ df_FR_q <-
 
 fig.title    <- "Distribution of funded ratios across simulations"
 fig.subtitle <- "Assumption achieved: expected compound return = 7% (before TDA transfer)"
+fig_FRdisb <- 
 results_all %>% 
 	filter(runname %in% "multiTier_TDAamortAS_OYLM", year >= 2019, sim > 0) %>%
 	select(year, sim, FR_MA) %>% 
@@ -582,6 +647,7 @@ results_all %>%
 	guides(fill = FALSE) + 
 	theme_bw() +
 	RIG.theme()
+fig_FRdisb
 
 
 
@@ -608,6 +674,7 @@ df_ERC_q <-
 
 fig.title    <- "Distribution of employer contribution rates across simulations"
 fig.subtitle <- "Assumption achieved: expected compound return = 7% (before TDA transfer)"
+fig_ERCdist <- 
 results_all %>% 
 	filter(runname %in% "multiTier_TDAamortAS_OYLM", year >= 2019, sim > 0) %>%
 	select(year, sim, ERC_PR_wtermCost) %>% 
@@ -635,6 +702,11 @@ results_all %>%
 	guides(fill = FALSE) + 
 	theme_bw() +
 	RIG.theme()
+fig_ERCdist
+
+
+save_figure(fig_FRdisb,   w = 1.8*4, h = 1.3*4 )
+save_figure(fig_ERCdist,  w = 1.8*4, h = 1.3*4 )
 
 
 
@@ -707,6 +779,9 @@ fig_shock1_ERC
 
 
 
+save_figure(fig_shock1_ERC, w = 1.2*4.5, h = 1*4.5 )
+save_figure(fig_shock1_FR,  w = 1.2*4.5, h = 1*4.5 )
+
 
 
 #***********************************************************************
@@ -735,7 +810,7 @@ runs_RS1_label <- c("t4a_noTDA_OYLM",
 fig.title <- "Probability of funded ratio below 40% in any year up to the given year\nunder alternative return scenarios"
 fig.subtitle <- NULL#"Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
 fig_TDA_FR40less_2fig <- df_all.stch %>% 
-	filter(runname %in% runs_RS1) %>% 
+	filter(runname %in% runs_RS1, year >=2018) %>% 
 	# mutate(runname = factor(runname, labels = c(lab_s1, lab_s2))) %>%  
 	select(runname.fct, TDA_policy, return_scenario, year, FR40less, FR50less) %>% 
 	#mutate(FR40less.det = 0) %>% 
@@ -767,6 +842,77 @@ fig_TDA_FR40less_2fig <- df_all.stch %>%
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
 	RIG.theme()
 fig_TDA_FR40less_2fig
+
+
+
+# Figure: Risk of ERC hike (3 lines in a single graph)
+
+fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year\nunder alternative return scenarios"
+fig.subtitle <- NULL# "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
+fig_TDA_ERChike <- df_all.stch %>% 
+	filter(runname %in% runs_RS1, year >=2018) %>% 
+	select(runname.fct, TDA_policy, return_scenario, year, ERC_hike) %>% 
+	mutate(
+		return_scenario = factor(return_scenario, 
+														 levels = c("RS1", "RS_15low"),
+														 labels = c("Baseline: Expected return = 7% ", "15 years of low returns")),
+		TDA_policy = factor(TDA_policy, 
+												levels = c("noTDA", "TDAamortAS"),
+												labels = c("Without TDA", "With TDA"))) %>% 
+	#mutate(ERChike.det = 0) %>% 
+	# gather(type, value, -year, -runname) %>% 
+	ggplot(aes(x = year, y = ERC_hike, color = TDA_policy, shape = TDA_policy)) + theme_bw() + 
+	facet_grid(.~return_scenario) + 
+	geom_point(size = 2) + geom_line() +  
+	coord_cartesian(ylim = c(0,100)) + 
+	scale_y_continuous(breaks = seq(0,200, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	scale_color_manual(values = c("black",RIG.blue, RIG.red),  name = "") + 
+	scale_shape_manual(values = c(17,16, 15),  name = "") +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "Probability (%)") + 
+	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	RIG.theme()
+fig_TDA_ERChike
+
+
+# Figure: Risk of high ERC (3 lines in a single graph)
+
+fig.title <- "Probability of employer contribution rising above 60% of payroll \nat any time prior to and including the given year\nunder alternative return scenarios"
+fig.subtitle <- NULL #"Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
+fig_TDA_ERChigh <- df_all.stch %>% 
+	filter(runname %in% runs_RS1, year >=2018) %>% 
+	select(runname.fct, year, TDA_policy, return_scenario, ERC_high) %>% 
+	mutate(
+		return_scenario = factor(return_scenario, 
+														 levels = c("RS1", "RS_15low"),
+														 labels = c("Baseline: Expected return = 7% ", "15 years of low returns")),
+		TDA_policy = factor(TDA_policy, 
+												levels = c("noTDA", "TDAamortAS"),
+												labels = c("Without TDA", "With TDA"))) %>% 
+	#mutate(ERChike.det = 0) %>% 
+	# gather(type, value, -year, -runname) %>% 
+	ggplot(aes(x = year, y = ERC_high, color = TDA_policy, shape = TDA_policy )) + theme_bw() + 
+	facet_grid(.~return_scenario) + 
+	geom_point(size = 2) + geom_line() + 
+	coord_cartesian(ylim = c(0,100)) + 
+	scale_y_continuous(breaks = seq(0,200, 10)) +
+	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
+	scale_color_manual(values = c("black",RIG.blue, RIG.red),  name = "") + 
+	scale_shape_manual(values = c(17,16, 15),  name = "") +
+	labs(title = fig.title,
+			 subtitle = fig.subtitle,
+			 x = NULL, y = "Probability (%)") + 
+	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	RIG.theme()
+fig_TDA_ERChigh
+
+
+
+save_figure(fig_TDA_FR40less_2fig, w = 2*4.5, h = 1*4.5 )
+save_figure(fig_TDA_ERChike,       w = 2*4.5, h = 1*4.5 )
+save_figure(fig_TDA_ERChigh,       w = 2*4.5, h = 1*4.5 )
 
 
 
@@ -803,43 +949,54 @@ runs_fPolicy_labels1 <- c("TRS policy",
 													"No TDA"
 )
 
-
-fig.title <- "Probability of funded ratio below 40% or 50% in any year up to the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
-fig_policy_lowFR <- 
+fig.title <- "Probability of funded ratio below 40% \nin any year up to the given year"
+fig.subtitle <- "Assumption achieved; expected compound return = 7% (before TDA transfer)"
+fig_lowFR.fPolicy <- 
 	df_all.stch %>% 
-	filter(runname %in% runs_fPolicy1[1:7]) %>% 
-	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:7], labels = runs_fPolicy_labels1[1:7])) %>% 
+	filter(runname %in% runs_fPolicy1[c(1, 8, 11)], year >=2018) %>% 
+	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[c(8, 11, 1)], 
+															labels = c("No TDA,\n Open 30-year amort.",
+																				 "No TDA,\n Closed 15-year amort.",
+																				 "TDA, \nClosed 15-year amort. \n(TRS policy)"))) %>% 
 	select(runname.fct, year, FR40less, FR50less) %>% 
 	#mutate(FR40less.det = 0) %>% 
-	gather(variable, value, -year, -runname.fct) %>% 
-	mutate(variable = factor(variable, 
-													 levels = c("FR40less", "FR50less"),
-													 labels = c("Funded ratio below 40%", "Funded ratio below 50%"))) %>% 
-	ggplot(aes(x = year, y = value, color = runname.fct, shape = runname.fct)) + theme_bw() + 
-	facet_grid(.~ variable) + 
-	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,65)) + 
+	# gather(variable, value, -year, -runname.fct) %>% 
+	# mutate(variable = factor(variable, 
+	# 												 levels = c("FR40less", "FR50less"),
+	# 												 labels = c("Funded ratio below 40%", "Funded ratio below 50%"))) %>% 
+	ggplot(aes(x = year, y = FR40less, color = runname.fct, shape = runname.fct)) + theme_bw() + 
+	#facet_grid(.~ variable) + 
+	geom_point(size = 1.9) + geom_line() + 
+	coord_cartesian(ylim = c(0,35)) + 
 	scale_y_continuous(breaks = seq(0,200, 5)) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_color_manual(values = c("black", "grey40",  "grey70", "grey60",  RIG.blue, RIG.red, RIG.green),  name = "") + 
-	scale_shape_manual(values = c(17,16, 15, 21, 18, 19, 20),  name = "") +
+	scale_color_manual(values = c("black", "grey40",  "black", "grey60",  RIG.blue, RIG.red, RIG.green)) + 
+	scale_shape_manual(values = c(1,16, 15, 21, 18, 19, 20)) +
 	labs(title = fig.title,
 			 subtitle = fig.subtitle,
-			 x = NULL, y = "Probability (%)") + 
+			 x = NULL, 
+			 y = "Probability (%)",
+			 color = NULL,
+			 shape = NULL) + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	theme(legend.position = c(0.01,0.99),
+				legend.justification = c(0,1),
+				legend.background = element_rect(fill="white", 
+																				 size=0.5, linetype="solid", color = "grey70") ) + 
 	RIG.theme()
-fig_policy_lowFR 
+fig_lowFR.fPolicy
 
 
 # Figure: Risk of ERC hike (3 lines in a single graph)
 
 fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
-fig_policy_ERChike <- df_all.stch %>% 
-	filter(runname %in% runs_fPolicy1[1:7]) %>% 
-	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:7], labels = runs_fPolicy_labels1[1:7])) %>% 
-	select(runname.fct, year, ERC_hike) %>% 
+fig.subtitle <- "Assumption achieved; expected compound return = 7% (before TDA transfer)"
+fig_ERChike.fPolicy <- df_all.stch %>% 
+	filter(runname %in% runs_fPolicy1[c(1, 8, 11)], year >= 2018) %>% 
+	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[c(8, 11, 1)], 
+															labels = c("No TDA,\n Open 30-year amort.",
+																				 "No TDA,\n Closed 15-year amort.",
+																				 "TDA, \nClosed 15-year amort. \n(TRS policy)"))) %>%	select(runname.fct, year, ERC_hike) %>% 
 	#mutate(ERChike.det = 0) %>% 
 	# gather(type, value, -year, -runname) %>% 
 	ggplot(aes(x = year, y = ERC_hike, color = runname.fct, shape = runname.fct)) + theme_bw() + 
@@ -847,89 +1004,51 @@ fig_policy_ERChike <- df_all.stch %>%
 	coord_cartesian(ylim = c(0,100)) + 
 	scale_y_continuous(breaks = seq(0,200, 10)) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_color_manual(values = c("black", "grey40",  "grey70", "grey60",  RIG.blue, RIG.red, RIG.green),  name = "") + 
-	scale_shape_manual(values = c(17,16,15, 21, 18, 19, 20),  name = "") +
+	scale_color_manual(values = c("black", "grey40",  "black", "grey60",  RIG.blue, RIG.red, RIG.green)) + 
+	scale_shape_manual(values = c(1,16, 15, 21, 18, 19, 20)) +
 	labs(title = fig.title,
 			 subtitle = fig.subtitle,
-			 x = NULL, y = "Probability (%)") + 
+			 x = NULL, 
+			 y = "Probability (%)",
+			 color = NULL,
+			 shape = NULL) + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
+	theme(legend.position = c(0.01,0.99),
+				legend.justification = c(0,1),
+				legend.background = element_rect(fill="white", 
+																				 size=0.5, linetype="solid", color = "grey70") ) + 
 	RIG.theme()
-fig_policy_ERChike
+fig_ERChike.fPolicy
 
 
-# Figure: Risk of high ERC (3 lines in a single graph)
+save_figure(fig_lowFR.fPolicy,   w = 1.65*4, h = 1.3*4 )
+save_figure(fig_ERChike.fPolicy, w = 1.65*4, h = 1.3*4 )
 
-fig.title <- "Probability of employer contribution rising above 60% of payroll \nat any time prior to and including the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
-fig_policy_ERChigh <- df_all.stch %>% 
-	filter(runname %in% runs_fPolicy1[1:7]) %>% 
-	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:7], labels = runs_fPolicy_labels1[1:7])) %>% 
-	select(runname.fct, year, ERC_high) %>% 
-	#mutate(ERChike.det = 0) %>% 
-	# gather(type, value, -year, -runname) %>% 
-	ggplot(aes(x = year, y = ERC_high, color = runname.fct, shape = runname.fct)) + theme_bw() + 
-	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,50)) + 
-	scale_y_continuous(breaks = seq(0,200, 10)) +
-	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
-	scale_color_manual(values = c("black", "grey40", "grey70", "grey60",  RIG.blue, RIG.red, RIG.green),  name = "") + 
-	scale_shape_manual(values = c(17,16,15, 21, 18, 19, 20),  name = "") +
-	labs(title = fig.title,
-			 subtitle = fig.subtitle,
-			 x = NULL, y = "Probability (%)") + 
-	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
-	RIG.theme()
-fig_policy_ERChigh 
+
+
+
+
 
 
 
 #*****************************************************
-## Analysis 1 Impact of Funding policy ####
+# Appendix More funding policies  ####
 #*****************************************************
 
-runs_fPolicy1 <- c(
-	"multiTier_TDAamortAS_OYLM",
-	"multiTier_TDAamortAS",
-	"multiTier_C15dA0",
-	"multiTier_C15dA6noCorridor",
-	"multiTier_O15dA6",
-	"multiTier_O15pA6",
-	"multiTier_O30pA6",
-	"multiTier_O30pA6_noTDA",
-	"multiTier_C30dA6",
-	"multiTier_C15pA6",
-	"multiTier_noTDA_OYLM"
-	
-)
-
-runs_fPolicy_labels1 <- c("TRS policy",
-												 "No One-Year-Lag-Method",
-												 "No asset smoothing",
-												 "No corridor",
-	                       "Open amort.",
-												 "Open level pct amort.",
-												 "Open level pct 30-year amort.",
-												 "Open level pct 30-year amort; noTDA",
-												 "30-year amort.",
-												 "Level percent amort.",
-												 "No TDA"
-												 )
-
-
-fig.title <- "Probability of funded ratio below 40% or 50% in any year up to the given year"
-fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
-fig_policy_lowFR <- 
+fig.title <- "Probability of funded ratio below 40% \nin any year up to the given year"
+fig.subtitle <- "Assumption achieved; expected compound return = 7% (before TDA transfer)"
+fig_lowFR_allpolicies <- 
 df_all.stch %>% 
-	filter(runname %in% runs_fPolicy1[1:7]) %>% 
+	filter(runname %in% runs_fPolicy1[1:7], year >=2018) %>% 
 	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:7], labels = runs_fPolicy_labels1[1:7])) %>% 
-	select(runname.fct, year, FR40less, FR50less) %>% 
+	select(runname.fct, year, FR40less) %>% 
 	#mutate(FR40less.det = 0) %>% 
-	gather(variable, value, -year, -runname.fct) %>% 
-	mutate(variable = factor(variable, 
-													 levels = c("FR40less", "FR50less"),
-													 labels = c("Funded ratio below 40%", "Funded ratio below 50%"))) %>% 
-	ggplot(aes(x = year, y = value, color = runname.fct, shape = runname.fct)) + theme_bw() + 
-	facet_grid(.~ variable) + 
+	# gather(variable, value, -year, -runname.fct) %>% 
+	# mutate(variable = factor(variable, 
+	# 												 levels = c("FR40less", "FR50less"),
+	# 												 labels = c("Funded ratio below 40%", "Funded ratio below 50%"))) %>% 
+	ggplot(aes(x = year, y = FR40less, color = runname.fct, shape = runname.fct)) + theme_bw() + 
+	#facet_grid(.~ variable) + 
 	geom_point(size = 2) + geom_line() + 
 	coord_cartesian(ylim = c(0,65)) + 
 	scale_y_continuous(breaks = seq(0,200, 5)) +
@@ -941,14 +1060,14 @@ df_all.stch %>%
 			 x = NULL, y = "Probability (%)") + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
 	RIG.theme()
-fig_policy_lowFR 
+fig_lowFR_allpolicies 
 
 
 # Figure: Risk of ERC hike (3 lines in a single graph)
 
 fig.title <- "Probability of employer contribution rising more than 10% of payroll \nin a 5-year period at any time prior to and including the given year"
 fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
-fig_policy_ERChike <- df_all.stch %>% 
+fig_ERChike_allpolicies <- df_all.stch %>% 
 	filter(runname %in% runs_fPolicy1[1:7]) %>% 
 	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:7], labels = runs_fPolicy_labels1[1:7])) %>% 
 	select(runname.fct, year, ERC_hike) %>% 
@@ -966,14 +1085,14 @@ fig_policy_ERChike <- df_all.stch %>%
 			 x = NULL, y = "Probability (%)") + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
 	RIG.theme()
-fig_policy_ERChike
+fig_ERChike_allpolicies
 
 
 # Figure: Risk of high ERC (3 lines in a single graph)
 
 fig.title <- "Probability of employer contribution rising above 60% of payroll \nat any time prior to and including the given year"
 fig.subtitle <- "Assumption achieved; expected compound return = 7% (w/o TDA transfer)"
-fig_policy_ERChigh <- df_all.stch %>% 
+fig_ERChigh_allpolicies <- df_all.stch %>% 
 	filter(runname %in% runs_fPolicy1[1:7]) %>% 
 	mutate(runname.fct = factor(runname, levels = runs_fPolicy1[1:7], labels = runs_fPolicy_labels1[1:7])) %>% 
 	select(runname.fct, year, ERC_high) %>% 
@@ -991,13 +1110,13 @@ fig_policy_ERChigh <- df_all.stch %>%
 			 x = NULL, y = "Probability (%)") + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
 	RIG.theme()
-fig_policy_ERChigh 
+fig_ERChigh_allpolicies 
 
 
 
-save_figure(fig_policy_lowFR,   w = 2*6, h = 0.85*6)
-save_figure(fig_policy_ERChike, w = 2*4.5, h = 1.3*4.5 )
-save_figure(fig_policy_ERChigh, w = 2*4.5, h = 1.3*4.5 )
+save_figure(fig_lowFR_allpolicies,   w = 2*4, h = 1.3*4 )
+save_figure(fig_ERChike_allpolicies, w = 2*4, h = 1.3*4 )
+save_figure(fig_ERChigh_allpolicies, w = 2*4, h = 1.3*4 )
 
 
 
@@ -1025,6 +1144,15 @@ df_all.stch %>%
 	select(runname.fct, year, FR40less) %>% 
 	ggplot(aes(x = runname.fct, y = FR40less)) + 
 	geom_bar(stat = "identity")
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1752,6 +1880,13 @@ results_all %>%
 # 
 # fig_singleReturns1
 
+
+
+
+my_fn = function(x) sum(x)
+Reduce(function(x, y) my_fn(c(x, y)), 1:10, accumulate = TRUE)
+
+Reduce(get_geoReturn, c(0.05, 0.07, 0.07), accumulate = F)
 
 
 
