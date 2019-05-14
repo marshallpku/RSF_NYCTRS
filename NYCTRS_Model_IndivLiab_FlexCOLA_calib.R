@@ -339,7 +339,7 @@ liab_la %<>%
 				 # #calibration
 				   # calibration only applied to current active members
 				 
-				 B.la = ifelse(start_year > init_year & tier_select_ == "t6",B.la, B.la * 1.16),
+				 B.la = ifelse(start_year > init_year & tier_select_ == "t6",B.la, B.la * 1.17),
 				 #B.la =  ifelse(start_year > init_year & tier_select_ == "t6", B.la, B.la * (1 + 0.02)^(age - age_servRet)),
 				 
 				 

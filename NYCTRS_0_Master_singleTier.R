@@ -507,10 +507,16 @@ outputs_list <- list(paramlist = paramlist,
 # #*********************************************************************************************************
 # # 8. Showing results ####
 # #*********************************************************************************************************
+penSim_results %<>% 
+mutate(NC_wtermCost  = NC  + termCost_UFT,
+			 ERC_wtermCost = ERC + termCost_UFT,
+			 NC_PR_wtermCost    = 100 * NC_wtermCost / PR,
+			 ERC_PR_wtermCost   = 100 * ERC_wtermCost / PR
+)
 
 
 var_display1 <- c("sim", "year", "FR_MA", "MA", "AA", "AL",
-                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "SC", "ADC", "C", "ERC", "EEC", "NC_PR", "ERC_PR", "EEC_PR", "PR", "Amort_basis", "i.r", 
+                  "AL.act", "AL.la", "AL.term", "AL.disbRet", "AL.death", "PVFB", "B", "NC", "NC_wtermCost", "SC", "ADC", "C", "ERC_wtermCost", "EEC", "NC_PR_wtermCost", "ERC_PR_wtermCost", "EEC_PR", "PR", "Amort_basis", "i.r", 
 									"B.la", "B.death", "B.v", "B.disbRet")
                   # # "AL.disb.la", "AL.disb.ca", "AL.death", "PVFB",
                   # #"PVFB.laca", "PVFB.LSC", "PVFB.v", "PVFB",
@@ -557,7 +563,7 @@ var_TDA <- c("sim", "year", "TDA_on", "i", "i.r", "i.r.wTDA", "i.leverage", "MA.
 		EEC   = 174,
 		NC_ER = 1172,
 		SC    = 2663,
-		ERC   = 3890,
+		ERC   = 3835, #3890 
 		
 		
 		EEC_PR = 1.88,
@@ -575,7 +581,8 @@ calib <- penSim_results %>%
 	filter(year %in% 2016:2045, sim == 0, year == 2016) %>% 
 	mutate(PVFB.nonact = AL.la + AL.disbRet + AL.death, 
 				 PVFB.total  = PVFB + PVFB.nonact + AL.term + AL.loads,
-				 NC_ER = NC - EEC,
+				 ERC = ERC_wtermCost,
+				 NC_ER = NC_wtermCost - EEC,
 				 NC_ER_PR =100 * NC_ER / PR) %>% 
 	select(year, 
 				 

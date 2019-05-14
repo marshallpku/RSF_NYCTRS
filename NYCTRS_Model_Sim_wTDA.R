@@ -363,9 +363,9 @@ run_sim <- function(
    									    AL_pct = penSim0$AL[1] * MA_0_pct_DB) # Inital MA is a proportion of inital AL
    
    AA.year1.model <- switch(init_AA_type, 
-   												 AA0 = AA_0_DB,                         # Use preset value
-   												 nosmoothing = MA.year1.model,       # Assume inital fund equals inital liability.
-   												 AL_pct = penSim0$AL[1] * AA_0_pct_DB)  # Inital MA is a proportion of inital AL
+   												 AA0         = AA_0_DB,                         # Use preset value
+   												 noSmoothing = MA.year1.model,       # Assume inital fund equals inital liability.
+   												 AL_pct      = penSim0$AL[1] * AA_0_pct_DB)  # Inital MA is a proportion of inital AL
    
    
    # AA.year1.model  <-
