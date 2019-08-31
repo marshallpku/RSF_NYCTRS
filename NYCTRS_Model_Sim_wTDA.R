@@ -36,41 +36,7 @@ run_sim <- function(
 
   assign_parmsList(Global_paramlist_, envir = environment())
   assign_parmsList(paramlist_,        envir = environment())
-  
-  # if(Tier_select_ != "sumTiers") init_amort_raw_ %<>% filter(tier == Tier_select_) 
 
-  # if(Tier_select_ != "sumTiers"){
-  #   if(!DC_reform) EEC_rate <- tier.param[Tier_select_, "EEC_rate"]
-  #   if(DC_reform)  EEC_rate <- tier.param[Tier_select_, "ScnDC_EEC_DB.rate"]
-  # } 
-  # 
-  # if(Tier_select_ == "sumTiers"){
-  #   
-  #   if(!DC_reform){
-  #   EEC_baseRate_tCD <- tier.param["tCD", "EEC_rate"]
-  #   EEC_baseRate_tE  <- tier.param["tE", "EEC_rate"]
-  #   EEC_baseRate_tF  <- tier.param["tF", "EEC_rate"]
-  #   }
-  #   
-  #   if(DC_reform){
-  #     EEC_baseRate_tCD <- tier.param["tCD", "ScnDC_EEC_DB.rate"]
-  #     EEC_baseRate_tE  <- tier.param["tE",  "ScnDC_EEC_DB.rate"]
-  #     EEC_baseRate_tF  <- tier.param["tF",  "ScnDC_EEC_DB.rate"]
-  #   }
-  #   
-  # } 
-  
-  # if(Tier_select_ != "sumTiers") EEC_rate <- tier.param[Tier_select_, "EEC_rate"]
-  # 
-  # if(Tier_select_ == "sumTiers"){
-  #   
-  #   EEC_baseRate_tCD <- tier.param["tCD", "EEC_rate"]
-  #   EEC_baseRate_tE  <- tier.param["tE", "EEC_rate"]
-  #   EEC_baseRate_tF  <- tier.param["tF", "EEC_rate"]
-  #   
-  # } 
-  
-  
   #*************************************************************************************************************
   #                                     Defining variables in simulation ####
   #*************************************************************************************************************  
@@ -126,7 +92,6 @@ run_sim <- function(
   # which will make I(t) != Ia(t) + Ic(t) - Ib(t)
   
   
-  
   # Set up data frame
   penSim0 <- data.frame(year = init_year:(init_year + nyear - 1)) %>%
     mutate(AL   = 0, #
@@ -142,6 +107,8 @@ run_sim <- function(
            # Switch_amort = 0, 
            NC   = 0, #
            SC   = 0, #
+    			 SC_init = 0,
+    			 SC_new  = 0,
            EEC  = 0, #
            ERC  = 0, #
            ADC  = 0, #
@@ -184,26 +151,17 @@ run_sim <- function(
   
   # Vector used in asset smoothing
   # s.vector <- seq(0,1,length = s.year + 1)[-(s.year+1)]; s.vector  # a vector containing the porportion of 
-  #s.vector.TDA <- seq(0,1,length = s.year.TDA + 1)[-(s.year.TDA+1)]; s.vector.TDA  # a vector containing the porportion of 
+  # s.vector.TDA <- seq(0,1,length = s.year.TDA + 1)[-(s.year.TDA+1)]; s.vector.TDA  # a vector containing the porportion of 
   # s.vector <- c(0, 0.15, 0.3, 0.45, 0.6, 0.8)
-  s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
   
+  s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
   s.vector.TDA <- s.vector
   
-  
-  
 
-  
-  
-  
-  
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
   #*************************************************************************************************************
  
-  
- 
-  
   # Note that liabilties and assets for variable annuity funds are modeled separately. 
   # Following values are only for the DB portion of TRS. 
   
@@ -282,9 +240,7 @@ run_sim <- function(
   penSim0$ndisbRet   <- AggLiab_$disbRet[,  "ndisbRet"]
   #penSim0$ndisb.ca.R0S1 <- AggLiab_$disb.ca[,  "n.disb.R0S1"]
 
-  
-  
-  
+
   #*************************************************************************************************************
   #                                 Setting up variable annuity  ####
   #*************************************************************************************************************
@@ -301,38 +257,20 @@ run_sim <- function(
   MA_0_DB <- MA_0 - penSim0$AL.loads[1]
   AA_0_DB <- AA_0 - penSim0$AL.loads[1]
   
-  
-  
-  
- 
+
   #*************************************************************************************************************
   #                                 Calculating NC under One-Year-Lag-Method ####
   #*************************************************************************************************************  
-  # 
+  
+  # Preliminary method of calculating normal cost using the aggregate method. 
   # penSim0 %>% select(year, NC, EEC, PVFNC, PVFEEC, PVFS, PR) %>% 
   # 	mutate(PVFNC_ER = PVFNC - PVFEEC,
   # 				 NC_PR_indiv = NC / PR,
   # 				 NC_PR_agg   = PVFNC / PVFS)
-  # 
-  # 
-  
-  
-  	
-  	
-  penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
-  
-  
-  penSim0 %>% as.data.frame
-  
-  
-  
-  
 
-  
-  
-  
-  
-  
+  penSim0 <- as.list(penSim0) # Faster to extract elements from lists than frame data frames.
+
+ 
   
   #*************************************************************************************************************
   #                                  Setting up initial amortization payments ####
@@ -375,7 +313,7 @@ run_sim <- function(
    # 				 			 with(penSim0, MA.year1.model))    # Assume inital AA equals inital liability.
    # )
    
-   AL.year1.model   <- penSim0$AL[1]
+   AL.year1.model <- penSim0$AL[1]
    
    UAAL.year1.model <- AL.year1.model - AA.year1.model  # Variable annuity funds does not affect this
    
@@ -396,10 +334,14 @@ run_sim <- function(
    }
    
   # SC_amort.init
+  
    
+  # Calculate amortization cost for initital unfunded liability. 
+  penSim0$SC_init <- colSums(SC_amort.init)[1:nyear]
    
+  
+  # Comibining matrices of initial amortization and new amortization
   nrow.initAmort <- nrow(SC_amort.init)
-
   SC_amort0 <- rbind(SC_amort.init, SC_amort0)
   # Notes:
   #   The amortization basis of year j should be placed in row nrow.initAmort + j - 1. 
@@ -418,9 +360,7 @@ run_sim <- function(
   														preset = init_MA_TDA_preset)
   
   
-  
-  
-  
+ 
   #*************************************************************************************************************
   #                                       Simuation  ####
   #*************************************************************************************************************
@@ -491,7 +431,7 @@ run_sim <- function(
 
     	if(j > 1){
     		
-    		penSim$MA.TDA[j] <- with(penSim, MA.TDA[j - 1] + I.TDA.fixed[j - 1])
+    		penSim$MA.TDA[j] <- with(penSim, MA.TDA[j - 1] + I.TDA.fixed[j - 1] + TDA_netCF_PR * PR[j-1] + TDA_netCF_MA * MA.TDA[j-1])
     		# 
     		# if(TDA_on & k != -1){
     		# penSim$MA[j]  <- with(penSim, MA[j] + I.dif.TDA[j - 1])  
@@ -786,7 +726,9 @@ run_sim <- function(
     			 MA.TDA_QPP = MA.TDA / MA,
     			 i.leverage = i.r.wTDA - i.r,
     			 
-    			 termCost_UFT = MA.TDA * share_UFT * 0.0125
+    			 termCost_UFT = MA.TDA * share_UFT * 0.0125,
+    			 
+    			 SC_new = SC- SC_init
     			 
            ) %>%
     select(runname, sim, year, everything())
