@@ -248,8 +248,8 @@ runs_all_labels <- c(runs_TDA_labels, runs_TDA_OYLM_labels, runs_TDA_alt_labels,
 # - The term cost is added to added to NC and ERC. 
 
 results_all %<>% 
-	mutate(NC_wtermCost  = NC  + termCost_UFT,
-				 ERC_wtermCost = ERC + termCost_UFT,
+	mutate(NC_wtermCost  = ifelse(str_detect(runname, "noTDA"), NC, NC  + termCost_UFT),
+				 ERC_wtermCost = ifelse(str_detect(runname, "noTDA"), ERC, ERC + termCost_UFT),
 				 NC_PR_wtermCost    = 100 * NC_wtermCost / PR,
 				 ERC_PR_wtermCost   = 100 * ERC_wtermCost / PR
 				 )
@@ -869,7 +869,7 @@ fig_TDA_FR40less_2fig <- df_all.stch %>%
 	facet_grid(.~ return_scenario) + 
 	geom_point(size = 2) + geom_line() + 
 	coord_cartesian(ylim = c(0,0.60)) + 
-	scale_y_continuous(breaks = seq(0,2, 0.05)) +
+	scale_y_continuous(breaks = seq(0,2, 0.05), labels = percent) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
 	scale_color_manual(values = c("black",RIG.blue, RIG.red),  name = "") + 
 	scale_shape_manual(values = c(17,16,15),  name = "") +
@@ -935,7 +935,7 @@ fig_TDA_ERChigh <- df_all.stch %>%
 	facet_grid(.~return_scenario) + 
 	geom_point(size = 2) + geom_line() + 
 	coord_cartesian(ylim = c(0,1)) + 
-	scale_y_continuous(breaks = seq(0,2, 0.10)) +
+	scale_y_continuous(breaks = seq(0,2, 0.10), labels = percent) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
 	scale_color_manual(values = c("black",RIG.blue, RIG.red),  name = "") + 
 	scale_shape_manual(values = c(17,16, 15),  name = "") +
@@ -1046,20 +1046,20 @@ results_all %>%
 	select(runname, year, FR_MA) %>% 
 	mutate(runname.fct = factor(runname, levels = runs_DF[1:2], labels = runs_DF_labels[1:2])) %>% 
 	ggplot(aes(x = year,
-						 y = FR_MA,
+						 y = FR_MA/100,
 						 color = runname.fct,
 				     shape = runname.fct)) + theme_bw() +
 	geom_line() +
 	geom_point(size = 2) +
-	geom_hline(yintercept = 100, linetype = 2, size = 1) +
-	coord_cartesian(ylim = c(0,100)) +
+	geom_hline(yintercept = 1, linetype = 2, size = 1) +
+	coord_cartesian(ylim = c(0,1)) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) +
-	scale_y_continuous(breaks = seq(0, 500, 20)) +
+	scale_y_continuous(breaks = seq(0, 5, 0.2), labels = percent) +
 	scale_color_manual(values = c("black", RIG.blue, RIG.red, "red"),  name = NULL) +
 	scale_shape_manual(values = c(15, 16, 17, 18),  name = NULL) +
 	labs(title = fig.title,
 			 subtitle = fig.subtitle,
-			 x = NULL, y = "Funded ratio (%)") +
+			 x = NULL, y = "Funded ratio") +
 	theme(axis.text.x = element_text(size = 8),
 				legend.position = "bottom",
 				legend.key.width = unit(0.5, "inch" )) +
@@ -1071,18 +1071,18 @@ fig.title <- "TRS employer contribution rate under hypothetical asset shock scen
 fig.subtitle <- NULL
 fig_shock1_ERC <- 
 	results_all %>% 
-	filter(runname %in% runs_DF[1:2], sim == 1) %>% 
+	filter(runname %in% runs_DF[1:2], sim == 1, year >= 2018) %>% 
 	select(runname, year, ERC_PR) %>% 
 	mutate(runname.fct = factor(runname, levels = runs_DF[1:2], labels = runs_DF_labels[1:2])) %>% 
 	ggplot(aes(x = year,
-						 y = ERC_PR,
+						 y = ERC_PR/100,
 						 color = runname.fct,
 						 shape = runname.fct)) + theme_bw() +
 	geom_line() +
 	geom_point(size = 2) +
-	coord_cartesian(ylim = c(0,60)) +
+	coord_cartesian(ylim = c(0,0.6)) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) +
-	scale_y_continuous(breaks = seq(0, 500, 10)) +
+	scale_y_continuous(breaks = seq(0, 5, 0.10), labels = percent) +
 	scale_color_manual(values = c("black", RIG.blue, RIG.red, "red"),  name = NULL) +
 	scale_shape_manual(values = c(15, 16, 17, 18),  name = NULL) +
 	labs(title = fig.title,
@@ -1095,8 +1095,8 @@ fig_shock1_ERC <-
 fig_shock1_ERC
 
 
-save_figure(fig_shock1_ERC, w = 1.6*5, h = 1*5 )
-save_figure(fig_shock1_FR,  w = 1.6*5, h = 1*5 )
+save_figure(fig_shock1_ERC, w = 1.6*4.5, h = 1*4.5 )
+save_figure(fig_shock1_FR,  w = 1.6*4.5, h = 1*4.5 )
 
 
 #***********************************************************************
@@ -1247,6 +1247,30 @@ fig_TDA_alt_ERChike$data %>% filter(year == 2048)
 fig_TDA_alt_FR40less$data %>% filter(year == 2048)
 
 
+
+#***********************************************************************
+## Analysis 5 Decompostion of contribution         ####
+#***********************************************************************
+
+df_decomp <- 
+left_join(
+	results_all %>% 
+	filter(runname %in% c("multiTier_noTDA_OYLM")) %>% 
+  select(sim, year, NC, SC_init, SC_new_noTDA = SC_new, termCost_UFT, EEC, PR, AL, MA.QPP = MA, MA.TDA = MA.TDA),
+	
+	results_all %>% 
+	filter(runname %in% c("multiTier_TDAamortAS_OYLM")) %>% 
+	select(sim, year, SC_new_wTDA = SC_new),
+	
+	by = c("sim", "year")) %>% 
+	mutate(SC_TDA  = SC_new_wTDA - SC_new_noTDA,
+				 runname = "multiTier_OYLM" ) %>% 
+	select(runname, sim, year, NC, SC_init, SC_new_noTDA, SC_new_wTDA, SC_TDA, termCost_UFT, EEC, PR, AL, MA.QPP, MA.TDA)
+  
+
+df_decomp %>% filter(sim == 1)
+
+save(df_decomp, file = "Decomposition.rda")
 
 
 

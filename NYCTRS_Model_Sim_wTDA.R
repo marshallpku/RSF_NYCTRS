@@ -143,7 +143,10 @@ run_sim <- function(
     			 I.TDA.fixed  = 0, # fixed TDA return
     			 I.TDA.actual = 0, # actual TDA return
     			 I.dif.TDA    = 0, # investment losses/gains due to TDA
-    			 i.r.wTDA     = 0 # effective QPP investment returns after accounting for TDA
+    			 i.r.wTDA     = 0, # effective QPP investment returns after accounting for TDA
+    			 
+    			 termCost_UFT = 0
+    			 
     			    			 )
   # penSim0 <- as.list(penSim0)
   
@@ -431,7 +434,7 @@ run_sim <- function(
 
     	if(j > 1){
     		
-    		penSim$MA.TDA[j] <- with(penSim, MA.TDA[j - 1] + I.TDA.fixed[j - 1] + TDA_netCF_PR * PR[j-1] + TDA_netCF_MA * MA.TDA[j-1])
+    		penSim$MA.TDA[j] <- with(penSim, MA.TDA[j - 1] + I.TDA.fixed[j - 1] + TDA_netCF_PR * PR[j-1] + TDA_netCF_MA * MA.TDA[j-1] + termCost_UFT[j-1])
     		# 
     		# if(TDA_on & k != -1){
     		# penSim$MA[j]  <- with(penSim, MA[j] + I.dif.TDA[j - 1])  
@@ -641,6 +644,7 @@ run_sim <- function(
       penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
       penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
      
+      penSim$termCost_UFT[j] = with(penSim, MA.TDA[j] * share_UFT * 0.0125)
       
       if(TDA_on & k != -1) penSim$I.r[j] <- penSim$I.r[j] +  penSim$I.dif.TDA[j]
        
@@ -726,7 +730,7 @@ run_sim <- function(
     			 MA.TDA_QPP = MA.TDA / MA,
     			 i.leverage = i.r.wTDA - i.r,
     			 
-    			 termCost_UFT = MA.TDA * share_UFT * 0.0125,
+    			 # termCost_UFT = MA.TDA * share_UFT * 0.0125,
     			 
     			 SC_new = SC- SC_init
     			 

@@ -19,8 +19,8 @@ library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had 
 library(xlsx)
 library("btools")
 library("scales")
-library(gridExtra)
-library(grid)
+library(gridExtra) # needed to draw arrows in ggplot2
+library(grid)      # needed to draw arrows in ggplot2
 library(plotly)
 library(ggfan) # fan charts using ggplot2
 
@@ -967,18 +967,23 @@ fig_lowFR.fPolicy <-
 	# mutate(variable = factor(variable, 
 	# 												 levels = c("FR40less", "FR50less"),
 	# 												 labels = c("Funded ratio below 40%", "Funded ratio below 50%"))) %>% 
-	ggplot(aes(x = year, y = FR40less, color = runname.fct, shape = runname.fct)) + theme_bw() + 
+	ggplot(aes(x = year, y = FR40less/100, color = runname.fct, shape = runname.fct)) + theme_bw() + 
 	#facet_grid(.~ variable) + 
-	geom_point(size = 1.9) + geom_line() + 
-	coord_cartesian(ylim = c(0,35)) + 
-	scale_y_continuous(breaks = seq(0,200, 5)) +
+	geom_point(size = 1.9) + geom_line() +
+	geom_segment(mapping=aes(x=2046.5, y=0.14, xend=2046.5, yend=0.02), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color="red") +
+	geom_segment(mapping=aes(x=2048, y=0.02, xend=2048, yend=0.26), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color="blue") + 
+	geom_text(aes(x = c(2044), y = c(0.08), label = c("Effect of\nclosed\namort.")), color = "red", size = 4.5)+
+	geom_text(aes(x = c(2045.5), y = c(0.20), label = c("Effect of\nTDA")), color = "blue", size = 4.5)+
+	
+	coord_cartesian(ylim = c(0,0.35)) + 
+	scale_y_continuous(breaks = seq(0,2, 0.05), label = percent) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
 	scale_color_manual(values = c("black", "grey40",  "black", "grey60",  RIG.blue, RIG.red, RIG.green)) + 
 	scale_shape_manual(values = c(1,16, 15, 21, 18, 19, 20)) +
 	labs(title = fig.title,
 			 subtitle = fig.subtitle,
 			 x = NULL, 
-			 y = "Probability (%)",
+			 y = "Probability",
 			 color = NULL,
 			 shape = NULL) + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
@@ -1002,17 +1007,22 @@ fig_ERChike.fPolicy <- df_all.stch %>%
 																				 "TDA, \nClosed 15-year amort. \n(TRS policy)"))) %>%	select(runname.fct, year, ERC_hike) %>% 
 	#mutate(ERChike.det = 0) %>% 
 	# gather(type, value, -year, -runname) %>% 
-	ggplot(aes(x = year, y = ERC_hike, color = runname.fct, shape = runname.fct)) + theme_bw() + 
+	ggplot(aes(x = year, y = ERC_hike/100, color = runname.fct, shape = runname.fct)) + theme_bw() + 
 	geom_point(size = 2) + geom_line() + 
-	coord_cartesian(ylim = c(0,100)) + 
-	scale_y_continuous(breaks = seq(0,200, 10)) +
+	geom_segment(mapping=aes(x=2047, y=0.11, xend=2047, yend=0.52), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color="red") +
+	geom_segment(mapping=aes(x=2047, y=0.57, xend=2047, yend=0.72), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color="blue") + 
+	geom_text(aes(x = c(2044), y = c(0.25), label = c("Effect of\nclosed\namort.")), color = "red", size = 4.5)+
+	geom_text(aes(x = c(2044), y = c(0.58), label = c("Effect of\nTDA")), color = "blue", size = 4.5)+
+	
+	coord_cartesian(ylim = c(0,1)) + 
+	scale_y_continuous(breaks = seq(0,2, 0.10), labels = percent) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5))) + 
 	scale_color_manual(values = c("black", "grey40",  "black", "grey60",  RIG.blue, RIG.red, RIG.green)) + 
 	scale_shape_manual(values = c(1,16, 15, 21, 18, 19, 20)) +
 	labs(title = fig.title,
 			 subtitle = fig.subtitle,
 			 x = NULL, 
-			 y = "Probability (%)",
+			 y = "Probability",
 			 color = NULL,
 			 shape = NULL) + 
 	guides(color = guide_legend(keywidth = 1.5, keyheight = 3))+
