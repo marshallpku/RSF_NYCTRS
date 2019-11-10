@@ -36,4 +36,6 @@ vignettes/*.pdf
 
 
 Results*/**/*.RData
+Inputs_data*/**/*.RData
+
 ~$*
