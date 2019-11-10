@@ -1,17 +1,15 @@
-# This script loads decrement tables from the 2015 experience study of NYCTRS
+#' This script loads decrement tables from the document
+#' "Proposed Changes in Actuarial Assumpitons and Methods Used in Determining Employer Contribuitons
+#' for Fiscal Years Beginning on and after July 1, 2018 for NYCTRS"
 
 
 # General Comments
 
+#' 1. The current prabilities in this documents are not always equal to the probabilities 
+#'    given in the 2015 experience study. From the Nov 2018 draft, we will use probabilities
+#'    from this document.  
 
 
-# Comments on data issues in experience study 2015 ####
- # consistency issue:
- # why assumed probability != expected # / Total Exposed
-
-# TODO: 
-  # need to check the difference between elected and mandated 
-  # further check if the disability rates are accurate
 
 
 # Notes on retirement rates of elected and mandated members
@@ -24,12 +22,19 @@
 #          62 for after 2nd year eligibility
 
 
+quiet <- function(x) { 
+	sink(tempfile()) 
+	on.exit(sink()) 
+	invisible(force(x)) 
+} 
+
+
 #*********************************************************************************************************
 #                      ## Import Data  ####
 #*********************************************************************************************************
 
 dir_data  <- "Inputs_data/"
-file_name <- "NYCTRS_Decrements&SalaryScale_ES2015.xlsx" 
+file_name <- "NYCTRS_Decrements&SalaryScale_update2019.xlsx" 
 file_path <- paste0(dir_data, file_name)
 file_path
 
@@ -37,49 +42,52 @@ file_path
 
 ## 1. Mortality for Service Retirees ####
 
-# - Assumed mortality rates are not provided.
-# - Rates are calculated as "expected death under current assumption" (5) / "Total Exposure" (3)
-# - Use 4-year period experience
-# - Data: Male in Sheet3, female in Sheet4
-# - Output variables:
-#      - qxm_servRet_male
-#      - qxm_servRet_female
+# - Data: Male in Sheet16, female in Sheet17
+# - Output variables: _c for current, _p for proposed for FY2019 and after
+#      - qxm_servRet_male_c 
+#      - qxm_servRet_female_c
+#      - qxm_servRet_male_p 
+#      - qxm_servRet_female_p
 
 
-get_mort1 <- function(data_sheet, data_range, rateName, file = file_path) {
-  
-	read_excel(file, sheet = data_sheet, range = data_range) %>% 
-		select(age = 1, exposed = 3, death_assumed = 6) %>% 
-  	mutate(!!rateName := death_assumed / exposed,
-  				 age = str_extract(age, "\\d+") %>% as.numeric) %>% 
-  	select(age, !!rateName)
-} 
+get_mortRet <- function(data_sheet, data_range, rateName, file = file_path) {
+	# Extract mortality rate for retirees (service and disability) and beneficiaries 
+	
+	rateName_c <- paste0(rateName, '_c')
+	rateName_p <- paste0(rateName, '_p')
+	
+	df <- read_excel(file, sheet = data_sheet, range = data_range)
+	df <- bind_rows(df[, 1:3]  %>% rename(age = 1, !!rateName_c := 2, !!rateName_p := 3 ), 
+									df[, 4:6]  %>% rename(age = 1, !!rateName_c := 2, !!rateName_p := 3 )) %>% 
+		filter(!is.na(age)) %>% 
+		mutate_all(~ as.numeric(.))
+}
+	
+# file <- file_path
+# data_sheet <- 'Sheet16'
+# data_range <- 'b2:g55'
+# rateName <- 'qxm_servRet_male'
 
-
-df_qxm_servRet <- 
-		left_join(get_mort1("Sheet3", "c10:j70", "qxm_servRet_male"),
-							get_mort1("Sheet4", "c10:j70", "qxm_servRet_female")
-		) %>% 
-  	mutate_all(funs(ifelse(is.nan(.), 0, .))) # convert NaNs to 0
-
+df_qxm_servRet <- left_join(get_mortRet("Sheet16", "b2:g55", "qxm_servRet_male"),
+														get_mortRet("Sheet17", "b2:g55", "qxm_servRet_female")
+														)
 df_qxm_servRet
 
 
 
 ## 2. Mortality for disabiltiy retirees ####
 
-# - Assumed mortality rates are not provided.
-# - Rates are calculated as "expected death under current assumption" (5) / "Total Exposure" (3)
-# - Use 4-year period experience
-# - Data: Male in Sheet10, female in Sheet11
+# - Data: Male in Sheet18, female in Sheet19
 # - Output variables:
-#      - qxm_servRet_male
-#      - qxm_servRet_female
+#      - qxm_servRet_male_c
+#      - qxm_servRet_female_c
+#      - qxm_servRet_male_p
+#      - qxm_servRet_female_p
 
 
 df_qxm_disbRet <- 
-	left_join(get_mort1("Sheet10", "c10:j70", "qxm_disbRet_male"),
-						get_mort1("Sheet11", "c10:j70", "qxm_disbRet_female")
+	left_join(get_mortRet("Sheet18", "b2:G55", "qxm_disbRet_male"),
+						get_mortRet("Sheet19", "b2:G55", "qxm_disbRet_female")
 	)
 df_qxm_disbRet
 
@@ -87,298 +95,193 @@ df_qxm_disbRet
 
 ## 3. Mortality (ordinary) for active members ####
 
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet17, female in Sheet18
+# - Data: in Sheet10
 # - Output variables:
-#      - qxm_actives_male
-#      - qxm_actives_female
+#      - qxm_actives_male_c
+#      - qxm_actives_female_c
+#      - qxm_actives_male_p
+#      - qxm_actives_female_p
 
-# Issue:
-# - Assumed rates for age 70-74 are 0, but the expected death are actually calculated using rates at age 69. 
-#   We use rates of 69 for age 70-74.
+df_qxm_actives <- read_excel(file_path, sheet = 'Sheet10', range = 'b3:f69') %>% 
+	filter(!is.na(Age)) %>% 
+	mutate_all(~ as.numeric(.))
 
-
-get_mort2 <- function(data_sheet, data_range, rateName, calc_rate = TRUE, indexVar = "age", file = file_path) {
-
- # data_sheet <- "Sheet17"
- # data_range <- "A10:J65"
- # file <- file_path
- # rateName <- "qxt_act_male"
- # calc_rate <- TRUE
-			
-	read_excel(file, sheet = data_sheet, range = data_range) %>% 
-		select(Index = 1, exposed = 3, num_assumed = 7, rate_assumed = 5) %>% 
-		mutate(calc_rate = calc_rate, # ifelse cannot take vector of conditions. If the condition is a single value while values are vectors, only the first element will be used. 
-			     !!rateName  := ifelse(calc_rate, num_assumed / exposed, rate_assumed),
-					 Index       = str_extract(Index , "\\d+") %>% as.numeric,
-					 !!indexVar  := Index) %>% 
-		select(!!indexVar, !!rateName)
-} 
-
-
-df_qxm_actives <-
-	left_join(get_mort2("Sheet17", "A10:J65", "qxm_actives_male",   calc_rate = FALSE),
-						get_mort2("Sheet18", "A10:J65", "qxm_actives_female", calc_rate = FALSE)
-	)
-
-# Adjust rates for 70-74
-df_qxm_actives %<>% 
-	mutate(qxm_actives_male   = ifelse(age < 70, qxm_actives_male,   qxm_actives_male[age == 69]),
-				 qxm_actives_female = ifelse(age < 70, qxm_actives_female, qxm_actives_female[age == 69]))
-
+names(df_qxm_actives) <- c('age', 'qxm_actives_male_c', 'qxm_actives_female_c', 'qxm_actives_male_p', 'qxm_actives_female_p')
 df_qxm_actives
+
+
 
 
 
 ## 4. Retirement rate in the first year of eligibility  ####
 
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet24, female in Sheet25
+# - Data: in Sheet13 and Sheet14, same for both genders
 # - Output variables:
-#      - qxr_y1_male_EM    (elected+mandated)
-#      - qxr_y1_female_EM  (elected+mandated)
+#      - qxr_y1_M_c   
+#      - qxr_y2_M_c   
+#      - qxr_y2post_M_c   
+
+#      - qxr_y1_E_c   
+#      - qxr_y2_E_c   
+#      - qxr_y2post_E_c   
+
+#      - qxr_y1_M_t4_p  
+#      - qxr_y1_M_t6_p  
+#      - qxr_y1post_M_p 
+
+#      - qxr_y1_E_p  
+#      - qxr_y1post_E_p   
+
  
+df_qxr_M <- read_excel(file_path, sheet = 'Sheet13', range = 'a3:g29') %>% 
+	filter(!is.na(Age)) %>% 
+	mutate_all(~ as.numeric(.))
 
-df_qxr_y1_EM <-
-	left_join(get_mort2("Sheet24", "A10:J42", "qxr_y1_male_EM",   calc_rate = FALSE),
-						get_mort2("Sheet25", "A10:J42", "qxr_y1_female_EM", calc_rate = FALSE)
-	)
-df_qxr_y1_EM
-
-
-df_qxr_y1_E <-
-	left_join(get_mort2("Sheet43", "A10:J42", "qxr_y1_male_E",   calc_rate = FALSE),
-						get_mort2("Sheet44", "A10:J42", "qxr_y1_female_E", calc_rate = FALSE)
-	)
-df_qxr_y1_E
-
-
-df_qxr_y1_M <-
-	left_join(get_mort2("Sheet61", "A10:J42", "qxr_y1_male_M",   calc_rate = FALSE),
-						get_mort2("Sheet62", "A10:J42", "qxr_y1_female_M", calc_rate = FALSE)
-	)
-df_qxr_y1_M
-
-df_qxr_y1 <- df_qxr_y1_EM %>% 
-	 left_join(df_qxr_y1_E) %>% 
-	 left_join(df_qxr_y1_M)
-
-df_qxr_y1
+names(df_qxr_M) <-  c(
+	'age',
+	'qxr_y1_M_c',
+	'qxr_y2_M_c',   
+	'qxr_y2post_M_c', 
+	'qxr_y1_M_t4_p',  
+	'qxr_y1_M_t6_p',  
+	'qxr_y1post_M_p' 
+)
 
 
+df_qxr_E <- read_excel(file_path, sheet = 'Sheet14', range = 'a3:f29') %>% 
+	filter(!is.na(Age)) %>% 
+	mutate_all(~ as.numeric(.))
+
+names(df_qxr_E) <-  c(
+	'age',
+	'qxr_y1_E_c',
+	'qxr_y2_E_c',   
+	'qxr_y2post_E_c', 
+	'qxr_y1_E_p',  
+	'qxr_y1post_E_p' 
+)
+
+df_qxr_E
 
 
-## 5. Retirement rate in the second year of eligibility ####
 
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet27, female in Sheet28
+
+
+## 5. Retirement rates, early retirement ####
+
+# - Data: in Sheet15 (same rate for male and female)
 # - Output variables:
-#      - qxr_y2_male_EM
-#      - qxr_y2_female_EM
+#      - qxr_early_c
+#      - qxr_early_t4_p
+#      - qxr_early_t6_p
 
+df_qxr_early <- read_excel(file_path, sheet = 'Sheet15', range = 'a2:d28') %>% 
+	filter(!is.na(Age)) %>% 
+	mutate_all(~ as.numeric(.))
+names(df_qxr_early) <- c("age", 'qxr_early_c', 'qxr_early_t4_p', 'qxr_early_t6_p')
 
-df_qxr_y2_EM <-
-	left_join(get_mort2("Sheet27", "A10:J42", "qxr_y2_male_EM",   calc_rate = FALSE),
-						get_mort2("Sheet28", "A10:J42", "qxr_y2_female_EM", calc_rate = FALSE)
-	)
-df_qxr_y2_EM
-
-
-df_qxr_y2_E <-
-	left_join(get_mort2("Sheet46", "A10:J42", "qxr_y2_male_E",   calc_rate = FALSE),
-						get_mort2("Sheet47", "A10:J42", "qxr_y2_female_E", calc_rate = FALSE)
-	)
-df_qxr_y2_E
-
-df_qxr_y2_M <-
-	left_join(get_mort2("Sheet64", "A10:J42", "qxr_y2_male_M",   calc_rate = FALSE),
-						get_mort2("Sheet65", "A10:J42", "qxr_y2_female_M", calc_rate = FALSE)
-	)
-df_qxr_y2_M
-
-
-df_qxr_y2 <- df_qxr_y2_EM %>% 
-	 left_join(df_qxr_y2_E) %>% 
-	 left_join(df_qxr_y2_M)
-
-df_qxr_y2
-
-
-## 6. Retirement rate AFTER the second year of eligibility ####
-
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet30, female in Sheet31
-# - Output variables:
-#      - qxr_y2post_male_EM
-#      - qxr_y2post_female_EM
-
-
-df_qxr_y2post_EM <-
-	left_join(get_mort2("Sheet30", "A10:J42", "qxr_y2post_male_EM",   calc_rate = FALSE),
-						get_mort2("Sheet31", "A10:J42", "qxr_y2post_female_EM", calc_rate = FALSE)
-	)
-df_qxr_y2post_EM
-
-
-df_qxr_y2post_E <-
-	left_join(get_mort2("Sheet49", "A10:J42", "qxr_y2post_male_E",   calc_rate = FALSE),
-						get_mort2("Sheet50", "A10:J42", "qxr_y2post_female_E", calc_rate = FALSE)
-	)
-df_qxr_y2post_E
-
-
-df_qxr_y2post_M <-
-	left_join(get_mort2("Sheet67", "A10:J42", "qxr_y2post_male_M",   calc_rate = FALSE),
-						get_mort2("Sheet68", "A10:J42", "qxr_y2post_female_M", calc_rate = FALSE)
-	)
-df_qxr_y2post_M
-
-
-
-df_qxr_y2post <- df_qxr_y2post_EM %>% 
-	left_join(df_qxr_y2post_E) %>% 
-	left_join(df_qxr_y2post_M)
-
-df_qxr_y2post
-
-
-## 7. Retirement rates, early retirement ####
-
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet79, female in Sheet80 (same rate for male and female)
-# - Output variables:
-#      - qxr_early_male
-#      - qxr_early_female
-
-
-df_qxr_early <-
-	left_join(get_mort2("Sheet79", "A10:J42", "qxr_early_male",   calc_rate = FALSE),
-						get_mort2("Sheet80", "A10:J42", "qxr_early_female", calc_rate = FALSE)
-	)
 df_qxr_early
 
 
+## 6. Withdrawal rates for active members ####
 
-## 8. Withdrawal rates for active members ####
-
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet79, female in Sheet80 (same rate for male and female)
+# - Data: in Sheet9 (same rate for male and female)
 # - Output variables:
-#      - qxr_early_male
-#      - qxr_early_female
+#      - qxt_c
+#      - qxt_p
 
+df_qxt <- read_excel(file_path, sheet = 'Sheet9', range = 'b2:c28') %>% 
+	mutate_all(~ as.numeric(.)) %>% 
+	rename(yos = 1, 
+				 qxt_c = 2) %>% 
+	mutate(qxt_p = qxt_c)
 
-df_qxt <-
-	left_join(get_mort2("Sheet87", "A10:J42", "qxt_male",   calc_rate = FALSE, indexVar = "yos"),
-						get_mort2("Sheet87", "A10:J42", "qxt_female", calc_rate = FALSE, indexVar = "yos")
-	)
 df_qxt
 
 
 
-
-## 9. Ordinary disability rates ####
-
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
-# - Data: Male in Sheet93, female in Sheet94
+## 7. Ordinary disability rates ####
+# - Data: Male in Sheet 11
 # - Output variables:
-#      - qxd_ord_male
-#      - qxd_ord_female
+#      - qxd_ord_male_c
+#      - qxd_ord_female_c
+#      - qxd_ord_male_p
+#      - qxd_ord_female_p
 
+df_qxd_ord <- read_excel(file_path, sheet = 'Sheet11', range = 'a7:e73') %>% 
+	mutate_all(~ as.numeric(.)) %>% 
+	rename(age = 1,
+				 qxd_ord_male_c = 2,
+				 qxd_ord_female_c = 3,
+				 qxd_ord_male_p = 4,
+				 qxd_ord_female_p = 5)
 
-df_qxd_ord <-
-	left_join(get_mort2("Sheet93", "A10:J65", "qxd_ord_male",   calc_rate = FALSE),
-						get_mort2("Sheet94", "A10:J65", "qxd_ord_female", calc_rate = FALSE)
-	)
 df_qxd_ord
 
 
-## 10. Accidental disability rates ####
+## 8. Accidental disability rates ####
 
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use Assumed probability under "current assumption" 
-# - Use 4-year period experience
+
 # - Data: Male in Sheet100, female in Sheet101
 # - Output variables:
-#      - qxd_acc_male
-#      - qxd_acc_female
+#      - qxd_acc_male_c
+#      - qxd_acc_female_c
+#      - qxd_acc_male_p
+#      - qxd_acc_female_p
 
+df_qxd_acc <- read_excel(file_path, sheet = 'Sheet12', range = 'a6:e72') %>% 
+	mutate_all(~ as.numeric(.)) %>% 
+	rename(age = 1,
+				 qxd_acc_male_c = 2,
+				 qxd_acc_female_c = 3,
+				 qxd_acc_male_p = 4,
+				 qxd_acc_female_p = 5)
 
-df_qxd_acc <-
-	left_join(get_mort2("Sheet100", "A10:J65", "qxd_acc_male",   calc_rate = FALSE),
-						get_mort2("Sheet101", "A10:J65", "qxd_acc_female", calc_rate = FALSE)
-	)
 df_qxd_acc
 
-df_qxd <- left_join(df_qxd_ord, df_qxd_acc)
-df_qxd
 
 
+## 9. Salary scales, total and merit ####
 
-## 11. Salary scales, total and merit ####
-
-# - We consider the assumed probabilities provided are accurate (not rounded). 
-# - Use "annual rates of salary increase"
-# - Use 4-year period experience
-# - Data: total in Sheet106, merit in Sheet111
+# - Data: in Sheet22
 # - Output variables:
-#      - salScale_total
-#      - salScale_merit
+#      - salScale_total_c
+#      - salScale_merit_c
+#      - salScale_total_p
+#      - salScale_merit_p
 
-df_salScale <- 
-	left_join(
-		read_excel(file_path, sheet = "Sheet106", range = "A11:I42") %>% 
-	      select(yos = 1, salScale_total = 5) %>% 
-	      mutate(yos = str_extract(yos, "\\d+") %>% as.numeric),
-    
-    read_excel(file_path, sheet = "Sheet111", range = "A10:I41") %>% 
-    	  select(yos = 1, salScale_merit = 5) %>% 
-    	  mutate(yos = str_extract(yos, "\\d+") %>% as.numeric)
-	)
 
-df_salScale %>% 
-	mutate(dif = salScale_total - salScale_merit)
-
+df_salScale <- read_excel(file_path, sheet = 'Sheet22', range = 'a3:c26') %>% 
+	mutate_all(~ as.numeric(.)) %>% 
+	rename(yos = 1,
+				 salScale_merit_c = 2,
+				 salScale_total_c = 3) %>% 
+	mutate(salScale_merit_p = salScale_merit_c,
+				 salScale_total_p = salScale_total_c)
+df_salScale
 
 
 #*************************************************************************************************************
-#                               12. Loading MP2015 data                       #####                  
+#                               10. Loading MP2018 data                       #####                  
 #*************************************************************************************************************
 
 # Import projection scale (scale BB-2D)
 
-data_scale_M <- read_excel(file_path, sheet = "MP2015_Male", skip = 1) %>% 
-	filter(!is.na(Age)) %>% 
-	mutate(Age = 20:120, 
-				 gender = "male")
-names(data_scale_M) <- c("age",1951:2030,"gender")
+data_scale_M <- read_excel(file_path, sheet = "MP2018_Male", skip = 1) %>% 
+	mutate(gender  = "male",
+				 MP_table = "MP2018")
+names(data_scale_M) <- c("age",1951:2034,"gender", 'MP_table')
+data_scale_M
 
-
-data_scale_F <- read_excel(file_path, sheet = "MP2015_Female", skip = 1) %>%
-	filter(!is.na(Age)) %>% 
-	mutate(Age = 20:120, 
-				 gender = "female")
-names(data_scale_F) <- c("age",1951:2030, "gender")
-
-
+data_scale_F <- read_excel(file_path, sheet = "MP2018_Female", skip = 1) %>% 
+	mutate(gender = "female",
+				 MP_table = "MP2018")
+names(data_scale_F) <- c("age",1951:2034,"gender", 'MP_table')
+data_scale_F
 
 # Transform data to long format
-data_scale_M %<>% gather(year_match, scale.M, -age, -gender) %>% mutate(year_match = as.numeric((year_match)))
-data_scale_F %<>% gather(year_match, scale.F, -age, -gender) %>% mutate(year_match = as.numeric((year_match)))
+data_scale_M %<>% gather(year_match, scale.M, -age, -gender, -MP_table) %>% mutate(year_match = as.numeric((year_match)))
+data_scale_F %<>% gather(year_match, scale.F, -age, -gender, -MP_table) %>% mutate(year_match = as.numeric((year_match)))
 
 
 
@@ -394,11 +297,11 @@ df_qxm_servRet
 df_qxm_disbRet
 df_qxm_actives
 
-df_qxr_y1
-df_qxr_y2
-df_qxr_y2post
+df_qxr_M
+df_qxr_E
 df_qxr_early
-df_qxd
+df_qxd_acc
+df_qxd_ord
 
 df_qxt
 df_salScale
@@ -406,26 +309,26 @@ df_salScale
 data_scale_M
 data_scale_F
 
-save(df_qxm_servRet,
-		 df_qxm_disbRet,
-		 df_qxm_actives,
+save(
+	df_qxm_servRet,
+	df_qxm_disbRet,
+	df_qxm_actives,
+	
+	df_qxr_M,
+	df_qxr_E,
+	df_qxr_early,
+	df_qxd_acc,
+	df_qxd_ord,
+	
+	df_qxt,
+	df_salScale,
+	
+	data_scale_M,
+	data_scale_F,
 		 
-		 df_qxr_y1,
-		 df_qxr_y2,
-		 df_qxr_y2post,
-		 df_qxr_early,
-		 df_qxd,
-		 
-		 df_qxt,
-		 df_salScale,
-		 
-		 data_scale_M,
-		 data_scale_F,
-		 
-		 file = paste0(dir_data, "Data_ES2015.RData")
-		 )
+	file = paste0(dir_data, "Data_update2018.RData")
+	)
 
-df_qxt
 
 
 
