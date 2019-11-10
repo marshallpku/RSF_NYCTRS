@@ -33,9 +33,8 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 
-
-
+# Inputs_data*/**/*.RData
 Results*/**/*.RData
-Inputs_data*/**/*.RData
+
 
 ~$*
