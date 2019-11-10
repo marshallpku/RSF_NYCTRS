@@ -23,7 +23,7 @@ library(zoo)
 library("readxl")
 library("XLConnect") # slow but convenient because it reads ranges; NOTE: I had to install Java 64-bit on Windows 10 64-bit to load properly
 # library(xlsx)
-library("btools")
+# library("btools")
 options(dplyr.print_min = 60) # default is 10
 library(scales)
 

@@ -880,7 +880,7 @@ fig_TDA_FR40less_2fig <- df_all.stch %>%
 	RIG.theme()
 fig_TDA_FR40less_2fig
 
-
+fig_TDA_FR40less_2fig$data %>% filter(year == 2048)
 
 
 # Figure: Risk of ERC hike (3 lines in a single graph)
@@ -914,6 +914,7 @@ fig_TDA_ERChike <- df_all.stch %>%
 	RIG.theme()
 fig_TDA_ERChike
 
+fig_TDA_ERChike$data %>% filter(year == 2033)
 
 # Figure: Risk of high ERC (3 lines in a single graph)
 
@@ -946,7 +947,7 @@ fig_TDA_ERChigh <- df_all.stch %>%
 	RIG.theme()
 fig_TDA_ERChigh
 
-
+fig_TDA_ERChigh$data %>% filter(year == 2033)
 
 fig.title    <- "Distribution of employer contribution rates without TDA transfers across simulations"
 fig.subtitle <- "Assumption achieved: expected compound return = 7% (w/o TDA transfer)"
@@ -1066,6 +1067,8 @@ results_all %>%
 	RIG.theme()
 fig_shock1_FR
 
+fig_shock1_FR$data
+
 
 fig.title <- "TRS employer contribution rate under hypothetical asset shock scenario"
 fig.subtitle <- NULL
@@ -1093,6 +1096,8 @@ fig_shock1_ERC <-
 				legend.key.width = unit(0.5, "inch" )) +
 	RIG.theme()
 fig_shock1_ERC
+
+fig_shock1_ERC$data
 
 
 save_figure(fig_shock1_ERC, w = 1.6*4.5, h = 1*4.5 )
@@ -1252,11 +1257,54 @@ fig_TDA_alt_FR40less$data %>% filter(year == 2048)
 ## Analysis 5 Decompostion of contribution         ####
 #***********************************************************************
 
+
+IO_folder       <- "Results/"
+Outputs_folder  <- "Outputs_figures/"
+
+
+save_figure <- function(fig_ob, fig_folder = Outputs_folder,  fig_type = "png", ...){
+	figure_name <- deparse(substitute(fig_ob))
+	ggsave(paste0(fig_folder, figure_name, ".", fig_type ), fig_ob, ... )
+	
+}
+
+
+#*****************************************************
+##  Loading data  ####
+#*****************************************************
+
+IO_folder       <- "Results/"
+Outputs_folder  <- "Outputs_figures/"
+
+get_results <- function(IO_folder, Pattern = "^Outputs"){
+	
+	fn <- function(x) {
+		load(paste0(IO_folder, "/", x))
+		
+		# if("results.t7" %in% names(outputs_list)){
+		#   df_out <- bind_rows(outputs_list$results,
+		#                       outputs_list$results.t7,
+		#                       outputs_list$results.xt7)
+		#   return(df_out)
+		# } else {
+		#   return(outputs_list$results)
+		# }
+		
+		return(outputs_list$results)
+		
+	}
+	
+	file_select <- dir(IO_folder, Pattern)
+	results_all <- adply(file_select, 1, fn) %>% select(-X1)
+}
+results_all <- get_results(IO_folder) %>% select(runname, sim, year, everything())
+
+
 df_decomp <- 
 left_join(
 	results_all %>% 
 	filter(runname %in% c("multiTier_noTDA_OYLM")) %>% 
-  select(sim, year, NC, SC_init, SC_new_noTDA = SC_new, termCost_UFT, EEC, PR, AL, MA.QPP = MA, MA.TDA = MA.TDA),
+  select(sim, year, NC, SC_init, SC_new_noTDA = SC_new, termCost_UFT, EEC, PR, AL, MA.QPP = MA, MA.TDA = MA.TDA, i.r),
 	
 	results_all %>% 
 	filter(runname %in% c("multiTier_TDAamortAS_OYLM")) %>% 
@@ -1265,10 +1313,8 @@ left_join(
 	by = c("sim", "year")) %>% 
 	mutate(SC_TDA  = SC_new_wTDA - SC_new_noTDA,
 				 runname = "multiTier_OYLM" ) %>% 
-	select(runname, sim, year, NC, SC_init, SC_new_noTDA, SC_new_wTDA, SC_TDA, termCost_UFT, EEC, PR, AL, MA.QPP, MA.TDA)
+	select(runname, sim, year, NC, SC_init, SC_new_noTDA, SC_new_wTDA, SC_TDA, termCost_UFT, EEC, PR, AL, MA.QPP, MA.TDA, i.r)
   
-
-df_decomp %>% filter(sim == 1)
 
 save(df_decomp, file = "Decomposition.rda")
 

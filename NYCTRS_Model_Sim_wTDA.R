@@ -131,6 +131,7 @@ run_sim <- function(
            nretirees = 0,
            nterms    = 0,
     			 
+    			 
     			 # OYLM
     			 ADC_current = 0,
     			 ADC.ER_current = 0,
@@ -144,6 +145,8 @@ run_sim <- function(
     			 I.TDA.actual = 0, # actual TDA return
     			 I.dif.TDA    = 0, # investment losses/gains due to TDA
     			 i.r.wTDA     = 0, # effective QPP investment returns after accounting for TDA
+    			 
+    			 offset_C     = 0,
     			 
     			 termCost_UFT = 0
     			 
@@ -160,6 +163,7 @@ run_sim <- function(
   s.vector <- c(0, 0.2, 0.4, 0.55, 0.7, 0.85)
   s.vector.TDA <- s.vector
   
+
 
   #*************************************************************************************************************
   #                                 Defining variables in simulation  ####
@@ -259,6 +263,16 @@ run_sim <- function(
   
   MA_0_DB <- MA_0 - penSim0$AL.loads[1]
   AA_0_DB <- AA_0 - penSim0$AL.loads[1]
+  
+  
+  #*************************************************************************************************************
+  #                       # Additional contributions to offset TDA impact on funded ratio  ####
+  #*************************************************************************************************************
+ 
+  penSim0 %<>% 
+  	mutate(offset_C = offset_C_PR * PR)
+  
+  
   
 
   #*************************************************************************************************************
@@ -420,7 +434,7 @@ run_sim <- function(
       
       # Year 2 and after                      
       } else {
-        penSim$MA[j]  <- with(penSim, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1])
+        penSim$MA[j]  <- with(penSim, MA[j - 1] + I.r[j - 1] + C[j - 1] - B[j - 1] + offset_C[j - 1])
         penSim$EAA[j] <- with(penSim, AA[j - 1] + I.e[j - 1] + C[j - 1] - B[j - 1])
         penSim$AA[j]  <- switch(smooth_method,
                                 method1 = with(penSim, MA[j] - sum(s.vector[max(s.year + 2 - j, 1):s.year] * I.dif[(j-min(j, s.year + 1)+1):(j-1)])),  # MA minus unrecognized losses and gains
@@ -500,7 +514,7 @@ run_sim <- function(
       } else {
         penSim$EUAAL[j]       <- with(penSim, (UAAL[j - 1] + NC[j - 1])*(1 + i[j - 1]) - C[j - 1] - Ic[j - 1])
         penSim$LG[j]          <- with(penSim,  UAAL[j] - EUAAL[j])
-        penSim$Amort_basis[j] <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]))
+        penSim$Amort_basis[j] <- with(penSim,  LG[j] - (C_ADC[j - 1]) * (1 + i[j - 1]) + offset_C[j - 1] * (1 + i[j - 1]))
       }   
       
       
@@ -632,17 +646,17 @@ run_sim <- function(
       
       
       # I.e(j) Expected investment income
-      penSim$I.e[j] <- with(penSim, i[j] *(MA[j] + C[j] - B[j]))
+      penSim$I.e[j] <- with(penSim, i[j] *(MA[j] + C[j] - B[j] + offset_C[j]))
       
       
       # I.r(j) Actual investment income
-      penSim$I.r[j] <- with(penSim, i.r[j] *( MA[j] + C[j] - B[j]))   # C[j] should be multiplied by i.r if assuming contribution is made at year end. 
+      penSim$I.r[j] <- with(penSim, i.r[j] *( MA[j] + C[j] - B[j] + offset_C[j] ))   # C[j] should be multiplied by i.r if assuming contribution is made at year end. 
       
 
       penSim$I.TDA.fixed[j]  = with(penSim, MA.TDA[j] * i.TDAfixed)
       penSim$I.TDA.actual[j] = with(penSim, MA.TDA[j] * i.r[j])
       penSim$I.dif.TDA[j]    = with(penSim, I.TDA.actual[j] - I.TDA.fixed[j])
-      penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j]))
+      penSim$i.r.wTDA[j]     = with(penSim, (I.r[j] + I.dif.TDA[j]) / ( MA[j] + C[j] - B[j] + offset_C[j]))
      
       penSim$termCost_UFT[j] = with(penSim, MA.TDA[j] * share_UFT * 0.0125)
       
