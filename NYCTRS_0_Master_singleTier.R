@@ -764,6 +764,38 @@ fig_FRdist <- df_all.stch %>% # filter(runname %in% c("RS1.closed", "RS1.open"))
 fig_FRdist
 
 
+# AggLiab.sumTiers$active %>% as.data.frame %>% select(contains("NCx."), PR.yearsum) %>% 
+# 	mutate(NC_PR = NCx.actAll.yearsum / PR.yearsum )
+# 
+# AggLiab_t4a$active %>% as.data.frame %>% select(year, contains("NCx."), PR.yearsum) %>% 
+# 	mutate(NC_PR = NCx.actAll.yearsum / PR.yearsum )
+# 
+# AggLiab_t4b$active %>% as.data.frame %>% select(year, contains("NCx."), PR.yearsum) %>% 
+# 	mutate(NC_PR = NCx.actAll.yearsum / PR.yearsum )
+# 
+# AggLiab_t6$active %>% as.data.frame %>% select(year, contains("NCx."), PR.yearsum) %>% 
+# 	mutate(NC_PR = NCx.actAll.yearsum / PR.yearsum )
+# 
+# 
+# left_join(AggLiab_t4a$active %>% as.data.frame %>%  select(year, NC_t4a = NCx.actAll.yearsum, PR_t4a = PR.yearsum),
+#           AggLiab_t4b$active %>% as.data.frame %>%  select(year, NC_t4b = NCx.actAll.yearsum, PR_t4b = PR.yearsum),
+# by = 'year') %>% 
+# 	mutate(NC = NC_t4a + NC_t4b,
+# 				 PR = PR_t4a + PR_t4b,
+# 				 NC_PR = NC/PR) %>% 
+# 	filter(year %in% c(2016, 2018, 2019, 2030, 2048))
+# 					
+# 
+# AggLiab_t6$active %>% as.data.frame %>% select(year, NCx.actAll.yearsum, PR.yearsum) %>% 
+# 	mutate(NC_PR = NCx.actAll.yearsum / PR.yearsum ) %>% 
+# 	filter(year %in% c(2016, 2018, 2019, 2030, 2048))
+# 
+# AggLiab.sumTiers$active %>% as.data.frame %>% select(year, contains("NCx."), PR.yearsum) %>% 
+# 	mutate(NC_PR = NCx.actAll.yearsum / PR.yearsum ) %>% 
+# 	filter(year %in% c(2016, 2018, 2019, 2030, 2048))
+
+
+
 
 # # Distribution of ERC ($ value)
 # fig.title <- "Distribution of employer contribution rates across simulations"
