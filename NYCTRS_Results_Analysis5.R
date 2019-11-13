@@ -1271,7 +1271,7 @@ fig_TDA_alt_FR40less$data %>% filter(year == 2048)
 
 
 runs_TDA_offset <-  c(
-	#"multiTier_TDAamortAS_OYLM",
+	"multiTier_TDAamortAS_OYLM",
 	"multiTier_noTDA_OYLM",
 	#"multiTier_TDAamortAS_OYLM_offset10",
 	#"multiTier_TDAamortAS_OYLM_offset15",
@@ -1286,13 +1286,30 @@ runs_TDA_offset_labels <- c(
 	)
 
 TDA_offset <- df_all.stch %>% 
-	filter(runname %in% runs_TDA_offset, year %in% c(2020, 2030, 2040, 2048)) 
+	filter(runname %in% runs_TDA_offset, year %in% c(2025, 2035, 2045)) 
 
 TDA_offset
 
+# PV of Additional contributions as a percentage of PV contributions under the current policy.  
+
+
+
+
 # add 18% of ERC rate to offset the impact on the risk of low funded ratio
 
+df_offset <- 
+results_all %>% 
+	filter(runname %in% runs_TDA_offset, year >= 2019) %>% 
+	mutate(ERC_tot    = ERC + ifelse(runname == "multiTier_TDAamortAS_OYLM_offset18", 0.18*PR, 0), 
+				 PV_ERC_tot = ERC_tot / (1 + 0.07)^(year - 2019)) %>%
+	group_by(runname, sim) %>% 
+	summarize(PV_ERC_tot = sum(PV_ERC_tot)) %>% 
+	summarize(PV_ERC_tot_med = median(PV_ERC_tot))
+df_offset
+	
+df_offset[3,2]/df_offset[2,2] # 94% more PV erc
 
+39207685103/44888210967.
 
 
 #***********************************************************************
