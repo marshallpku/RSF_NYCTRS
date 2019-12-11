@@ -1273,20 +1273,23 @@ fig_TDA_alt_FR40less$data %>% filter(year == 2048)
 runs_TDA_offset <-  c(
 	"multiTier_TDAamortAS_OYLM",
 	"multiTier_noTDA_OYLM",
-	#"multiTier_TDAamortAS_OYLM_offset10",
-	#"multiTier_TDAamortAS_OYLM_offset15",
+	"multiTier_TDAamortAS_OYLM_offset10",
+	"multiTier_TDAamortAS_OYLM_offset15",
 	"multiTier_TDAamortAS_OYLM_offset18"
 )
 
 runs_TDA_offset_labels <- c(
 	"TRS policy",
 	"No TDA",
-	"Additional contribution: \n10% of payroll",
-	"Additional contribution: \n15%   of payroll"
+	# "Additional contribution: \n10% of payroll",
+	# "Additional contribution: \n15%   of payroll"
+	# "Additional contribution: \n15%   of payroll"
+	"4% of payroll",
+	"4.5%   of payroll",
+	"8%   of payroll"
 	)
-
 TDA_offset <- df_all.stch %>% 
-	filter(runname %in% runs_TDA_offset, year %in% c(2025, 2035, 2045)) 
+	filter(runname %in% runs_TDA_offset, year %in% c(2048)) 
 
 TDA_offset
 
