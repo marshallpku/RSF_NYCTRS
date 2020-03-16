@@ -983,8 +983,8 @@ fig14_lowFR.fPolicy <-
 	geom_point(size = 1.9) + geom_line() +
 	geom_segment(mapping=aes(x=2046.5, y=0.14, xend=2046.5, yend=0.02), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color= marron_red) +
 	geom_segment(mapping=aes(x=2048, y=0.02, xend=2048, yend=0.26), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color= marron_blue2 ) + 
-	geom_text(aes(x = c(2044), y = c(0.08), label = c("Effect of\nclosed\namort.")), color = marron_red, size = 4.5)+
-	geom_text(aes(x = c(2045.5), y = c(0.20), label = c("Effect of\nTDA")), color =  marron_blue2, size = 4.5)+
+	geom_text(aes(x = c(2044), y = c(0.08), label = c("Effect of\nclosed\namort.")), color = marron_red, size = 4.5, family = "Gotham Book")+
+	geom_text(aes(x = c(2045.5), y = c(0.20), label = c("Effect of\nTDA")), color =  marron_blue2, size = 4.5, family = "Gotham Book")+
 	
 	coord_cartesian(ylim = c(0,0.35),
 									xlim = c(2019, 2048), 
@@ -1005,16 +1005,16 @@ fig14_lowFR.fPolicy <-
 				legend.justification = c(0,1),
 				legend.background = element_rect(fill="white", 
 																				 size=0.5, linetype="solid", color = "grey70"),
-				plot.margin = margin(t = 2, r =90, b = 2, l = 2, unit = "pt")
+				plot.margin = margin(t = 2, r =95, b = 2, l = 2, unit = "pt")
 				) + 
-	geom_text(aes(x = c(2050), y = c(0.025), label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0) + 
-  geom_text(aes(x = c(2050), y = c(0.003),  label = c("No TDA")), color =  "grey40", size = 3, hjust = 0) + 
+	geom_text(aes(x = c(2050), y = c(0.025), label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0, family = "Gotham Book") + 
+  geom_text(aes(x = c(2050), y = c(0.003),  label = c("No TDA")), color =  "grey40", size = 3, hjust = 0, family = "Gotham Book") + 
   
-	geom_text(aes(x = c(2050), y = c(0.16), label = c("Risky funding policy,\nNo TDA")), color = "grey40", size = 3, hjust = 0)+
+	geom_text(aes(x = c(2050), y = c(0.16), label = c("Risky funding policy,\nNo TDA")), color = "grey40", size = 3, hjust = 0, family = "Gotham Book")+
 	
-  geom_text(aes(x = c(2050), y = c(0.30), label = c("Current TRS policy:")), color = "black", size = 3, hjust = 0) + 
-	geom_text(aes(x = c(2050), y = c(0.30 - 0.022),  label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0) +  
-  geom_text(aes(x = c(2050), y = c(0.30 - 0.045),  label = c("Plus TDA")), color =  marron_blue2, size = 3, hjust = 0)  
+  geom_text(aes(x = c(2050), y = c(0.30), label = c("Current TRS policy:")), color = "black", size = 3, hjust = 0, family = "Gotham Book") + 
+	geom_text(aes(x = c(2050), y = c(0.30 - 0.022),  label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0, family = "Gotham Book") +  
+  geom_text(aes(x = c(2050), y = c(0.30 - 0.045),  label = c("Plus TDA")), color =  marron_blue2, size = 3, hjust = 0, family = "Gotham Book")  
  fig14_lowFR.fPolicy
 
 
@@ -1036,8 +1036,8 @@ fig13_ERChike.fPolicy <- df_all.stch %>%
 	geom_point(size = 2) + geom_line() + 
 	geom_segment(mapping=aes(x=2047, y=0.11, xend=2047, yend=0.52), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color=marron_red) +
 	geom_segment(mapping=aes(x=2047, y=0.57, xend=2047, yend=0.72), arrow=arrow(angle = 25, type = "closed",length = unit(0.3, "cm")), size=0.8, color=marron_blue2) + 
-	geom_text(aes(x = c(2044), y = c(0.25), label = c("Effect of\nclosed\namort.")), color = marron_red, size = 4.5)+
-	geom_text(aes(x = c(2044), y = c(0.58), label = c("Effect of\nTDA")), color = marron_blue2, size = 4.5)+
+	geom_text(aes(x = c(2044), y = c(0.25), label = c("Effect of\nclosed\namort.")), color = marron_red, size = 4.5, family = "Gotham Book")+
+	geom_text(aes(x = c(2044), y = c(0.58), label = c("Effect of\nTDA")), color = marron_blue2, size = 4.5, family = "Gotham Book")+
 	coord_cartesian(ylim = c(0,1),
 									xlim = c(2019, 2048), 
 									clip = "off") + 
@@ -1056,18 +1056,16 @@ fig13_ERChike.fPolicy <- df_all.stch %>%
 				legend.justification = c(0,1),
 				legend.background = element_rect(fill="white", 
 																				 size=0.5, linetype="solid", color = "grey70"),
-				plot.margin = margin(t = 2, r =90, b = 2, l = 2, unit = "pt")) + 
+				plot.margin = margin(t = 2, r =95, b = 2, l = 2, unit = "pt")) + 
 	
-	geom_text(aes(x = c(2050), y = c(0.1), label = c("Risky funding policy,\nNo TDA")), color = "grey40", size = 3, hjust = 0)+
+	geom_text(aes(x = c(2050), y = c(0.1), label = c("Risky funding policy,\nNo TDA")), color = "grey40", size = 3, hjust = 0, family = "Gotham Book")+
 	
-	geom_text(aes(x = c(2050), y = c(0.6), label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0) + 
-	geom_text(aes(x = c(2050), y = c(0.6 - 0.022/0.36),  label = c("No TDA")), color =  "grey40", size = 3, hjust = 0) + 
+	geom_text(aes(x = c(2050), y = c(0.6), label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0, family = "Gotham Book") + 
+	geom_text(aes(x = c(2050), y = c(0.6 - 0.022/0.36),  label = c("No TDA")), color =  "grey40", size = 3, hjust = 0, family = "Gotham Book") + 
 	
-
-	
-	geom_text(aes(x = c(2050), y = c(0.88), label = c("Current TRS policy:")), color = "black", size = 3, hjust = 0) + 
-	geom_text(aes(x = c(2050), y = c(0.88 - 0.022/0.36),  label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0) +  
-	geom_text(aes(x = c(2050), y = c(0.88 - 0.045/0.36),  label = c("Plus TDA")), color =  marron_blue2, size = 3, hjust = 0)  
+	geom_text(aes(x = c(2050), y = c(0.88), label = c("Current TRS policy:")), color = "black", size = 3, hjust = 0, family = "Gotham Book") + 
+	geom_text(aes(x = c(2050), y = c(0.88 - 0.022/0.36),  label = c("Conservative\nfunding policy,")), color =  marron_red, size = 3, hjust = 0, family = "Gotham Book") +  
+	geom_text(aes(x = c(2050), y = c(0.88 - 0.045/0.36),  label = c("Plus TDA")), color =  marron_blue2, size = 3, hjust = 0, family = "Gotham Book")  
 
 fig13_ERChike.fPolicy
 
