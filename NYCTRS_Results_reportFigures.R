@@ -550,16 +550,19 @@ df_singleRuns %>%
 	mutate(Var = factor(Var, levels = c("i.r", "i.r.wTDA"),
 											labels = c("Actual market return",
 																 "Effective return with TDA"))) %>% 
-	ggplot(aes(x = year, y = value, color = Var)) + theme_marron() +
+	ggplot(aes(x = year, y = value, color = Var, shape = Var)) + theme_marron() +
 	geom_line() + 
 	geom_point() +
 	geom_hline(yintercept = 0.07, linetype = 2)+
 	scale_y_continuous(breaks = c(0.07, seq(-100,100, 0.1)), labels = function(x) percent(x, accuracy = 1)) +
 	scale_x_continuous(breaks = c(2016, seq(2020, 2045, 5), 2048)) + 
-	scale_color_manual(values = c(marron_blue2, marron_orange)) + 
+	# scale_color_manual(values = c(marron_blue2, marron_orange)) + 
+	scale_color_manual(values = c(marron_blue2, marron_blue1)) + 
+	scale_shape_manual(values = c(1, 16)) + 
 	labs(title =    "Actual returns and effective returns with TDA transfers",
 			 subtitle = "sim #424; 30-year geometric return = 7.0%",
 			 color = NULL,
+			 shape = NULL,
 			 x = NULL, y = "Rate of return") + 
 	theme(legend.position = "bottom" )
 
@@ -1203,7 +1206,7 @@ fig6 <-
 	gather(Var, value, -year) %>% 
 	mutate(Var = factor(Var, levels = c("r_portfolio", "r_effective"),
 											labels = c("Return on investment portfolio", "QPP effective rate of return"))) %>% 
-	ggplot(aes(x = year, y = value, color = Var)) + theme_marron() + 
+	ggplot(aes(x = year, y = value, color = Var, shape  = Var)) + theme_marron() + 
 	geom_line() + 
 	geom_point(size = 2) +
 	geom_hline(yintercept = 0.072, linetype = 2, size = 0.4) + 
@@ -1211,8 +1214,9 @@ fig6 <-
 									clip = "off") + 
 	scale_y_continuous(breaks = seq(-1,1, 0.05), labels = function(x) percent(x, accuracy = 1)) +
 	scale_x_continuous(breaks = c(2008:2017)) +
-	scale_color_manual(values = c(marron_blue1, marron_orange)) + 
-	# scale_shape_manual(values = c(1,16, 15, 21, 18, 19, 20)) +
+	# scale_color_manual(values = c(marron_blue1, marron_orange)) + 
+	scale_color_manual(values = c(marron_blue2, marron_blue1)) + 
+	scale_shape_manual(values = c(1, 16)) + 
 	labs(title = fig.title,
 			 #subtitle = fig.subtitle,
 			 x = NULL, 
