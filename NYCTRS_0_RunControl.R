@@ -114,8 +114,8 @@ for(runName in runList$runname ){
 	
 	Global_paramlist$calib_g <- 0.008  # -0.005
 	
-  source("NYCTRS_0_Master_singleTier.R")
-  save(outputs_list, file = paste0(folder_save, "Outputs_", runName, ".RData"))
+  source("NYCTRS_0_Master.R")
+  # save(outputs_list, file = paste0(folder_save, "Outputs_", runName, ".RData"))
 
 }
 
